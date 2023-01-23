@@ -293,15 +293,7 @@ static gboolean gst_tcam_ic4_src_negotiate(GstBaseSrc* basesrc)
     GstTcamIC4Src* self = GST_TCAM_IC4_SRC(basesrc);
 
     /* first see what is possible on our source pad */
-    //GstCaps *thiscaps = gst_pad_query_caps(GST_BASE_SRC_PAD(basesrc), NULL);
-     gst_pad_query_caps(GST_BASE_SRC_PAD(basesrc), NULL);
-    GstCaps* thiscaps = gst_caps_from_string(
-"video/x-raw,format=GRAY8,width=320,height=240,framerate={15/1,25/1,30/1,60/1,80/1,120/1,5000/31};"
-"video/x-raw,format=GRAY8,width=640,height=480,framerate={5/1,15/2,15/1,25/1,30/1,60/1,87/1};"
-"video/x-raw,format=GRAY8,width=744,height=480,framerate={5/1,15/2,15/1,25/1,30/1,60/1,20000/263};"
-"video/x-bayer,format=gbrg,width=320,height=240,framerate={15/1,25/1,30/1,60/1,80/1,120/1,5000/31};"
-"video/x-bayer,format=gbrg,width=640,height=480,framerate={5/1,15/2,15/1,25/1,30/1,60/1,87/1};"
-"video/x-bayer,format=gbrg,width=744,height=480,framerate={5/1,15/2,15/1,25/1,30/1,60/1,20000/263}");
+    GstCaps *thiscaps = gst_pad_query_caps(GST_BASE_SRC_PAD(basesrc), NULL);
 
     // nothing or anything is allowed, we're done
     if (gst_caps_is_empty(thiscaps) || gst_caps_is_any(thiscaps))
