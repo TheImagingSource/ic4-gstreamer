@@ -1,0 +1,3 @@
+[submodule "libs/tcam-property"]
+	path = libs/tcam-property
+	url = ssh://git@gitlab.theimagingsource.com:49107/linux/tcamprop.git

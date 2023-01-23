@@ -1,0 +1,946 @@
+<?xml version="1.0"?>
+<root>
+	<Integer Name="OffsetX">
+		<Extension>
+			<VCDCategoryName>Partial Scan</VCDCategoryName>
+			<GenICamCategory>ImageFormatControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Integer>
+	<Integer Name="OffsetY">
+		<Extension>
+			<VCDCategoryName>Partial Scan</VCDCategoryName>
+			<GenICamCategory>ImageFormatControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Integer>
+	<Enumeration Name="OffsetAutoCenter">
+		<Extension>
+			<VCDCategoryName>Partial Scan</VCDCategoryName>
+			<GenICamCategory>ImageFormatControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+        <EnumEntry Name="Off">
+            <DisplayName>Off</DisplayName>
+        </EnumEntry>
+        <EnumEntry Name="On">
+            <DisplayName>On</DisplayName>
+        </EnumEntry>
+	</Enumeration>
+	<Boolean Name="AutoFunctionsROIEnable">
+		<Extension>
+			<VCDCategoryName>Auto ROI</VCDCategoryName>
+			<GenICamCategory>AutoFunctionsROI</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Boolean>
+	<Enumeration Name="AutoFunctionsROIPreset">
+		<Extension>
+			<VCDCategoryName>Auto ROI</VCDCategoryName>
+			<GenICamCategory>AutoFunctionsROI</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<EnumEntry Name="AutoFunctionsROIPreset_FullSensor">
+			<DisplayName>Full Sensor</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="AutoFunctionsROIPreset_CustomRectangle">
+			<DisplayName>Custom Rectangle</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="AutoFunctionsROIPreset_Center50">
+			<DisplayName>Center 50%</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="AutoFunctionsROIPreset_Center25">
+			<DisplayName>Center 25%</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="AutoFunctionsROIPreset_BottomHalf">
+			<DisplayName>Bottom Half</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="AutoFunctionsROIPreset_TopHalf">
+			<DisplayName>Top Half</DisplayName>
+		</EnumEntry>
+	</Enumeration>
+	<Float Name="AutoFunctionsROILeft">
+		<Extension>
+			<VCDCategoryName>Auto ROI</VCDCategoryName>
+			<GenICamCategory>AutoFunctionsROI</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Float>
+	<Float Name="AutoFunctionsROITop">
+		<Extension>
+			<VCDCategoryName>Auto ROI</VCDCategoryName>
+			<GenICamCategory>AutoFunctionsROI</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Float>
+	<Float Name="AutoFunctionsROIWidth">
+		<Extension>
+			<VCDCategoryName>Auto ROI</VCDCategoryName>
+			<GenICamCategory>AutoFunctionsROI</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Float>
+	<Float Name="AutoFunctionsROIHeight">
+		<Extension>
+			<VCDCategoryName>Auto ROI</VCDCategoryName>
+			<GenICamCategory>AutoFunctionsROI</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Float>
+	<String Name="DeviceUserID">
+		<Extension>
+			<VCDCategoryName>N/A</VCDCategoryName>
+			<GenICamCategory>DeviceControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</String>
+	<Enumeration Name="DeviceTemperatureSelector">
+		<Extension>
+			<VCDCategoryName>Diagnostics</VCDCategoryName>
+			<GenICamCategory>DeviceControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Enumeration>
+	<Float Name="DeviceTemperature">
+		<Extension>
+			<VCDCategoryName>Diagnostics</VCDCategoryName>
+			<GenICamCategory>DeviceControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+		<Unit>C</Unit>
+	</Float>
+	<Enumeration Name="UserSetSelector">
+		<Extension>
+			<VCDCategoryName>N/A</VCDCategoryName>
+			<GenICamCategory>UserSetControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+		<EnumEntry Name="UserSetSelector_UserSet1">
+			<DisplayName>UserSet1</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="UserSetSelector_UserSet2">
+			<DisplayName>UserSet2</DisplayName>
+		</EnumEntry>
+	</Enumeration>
+	<Command Name="UserSetLoad">
+		<Extension>
+			<VCDCategoryName>N/A</VCDCategoryName>
+			<GenICamCategory>UserSetControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Command>
+	<Command Name="UserSetSave">
+		<Extension>
+			<VCDCategoryName>N/A</VCDCategoryName>
+			<GenICamCategory>UserSetControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Command>
+	<Enumeration Name="UserSetDefault">
+		<Extension>
+			<VCDCategoryName>N/A</VCDCategoryName>
+			<GenICamCategory>UserSetControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+		<EnumEntry Name="UserSetDefault_Default">
+			<DisplayName>Default</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="UserSetDefault_UserSet1">
+			<DisplayName>UserSet1</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="UserSetDefault_UserSet2">
+			<DisplayName>UserSet2</DisplayName>
+		</EnumEntry>
+	</Enumeration>
+	<Integer Name="BinningHorizontal">
+		<Extension>
+			<VCDCategoryName>N/A</VCDCategoryName>
+			<GenICamCategory>ImageFormatControl</GenICamCategory>
+			<Comments>Driver</Comments>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Integer>
+	<Integer Name="BinningVertical">
+		<Extension>
+			<VCDCategoryName>N/A</VCDCategoryName>
+			<GenICamCategory>ImageFormatControl</GenICamCategory>
+			<Comments>Driver</Comments>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Integer>
+	<Integer Name="DecimationHorizontal">
+		<Extension>
+			<VCDCategoryName>N/A</VCDCategoryName>
+			<GenICamCategory>ImageFormatControl</GenICamCategory>
+			<Comments>Driver</Comments>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Integer>
+	<Integer Name="DecimationVertical">
+		<Extension>
+			<VCDCategoryName>N/A</VCDCategoryName>
+			<GenICamCategory>ImageFormatControl</GenICamCategory>
+			<Comments>Driver</Comments>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Integer>
+	<Float Name="BlackLevel">
+		<Extension>
+			<VCDCategoryName>Exposure</VCDCategoryName>
+			<GenICamCategory>AnalogControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Float>
+	<Enumeration Name="ColorTransformationSelector">
+		<Extension>
+			<GenICamCategory>ColorTransformationControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+		<EnumEntry Name="ColorTransformationSelector_RGBtoRGB">
+			<DisplayName>RGBtoRGB</DisplayName>
+		</EnumEntry>
+	</Enumeration>
+	<Boolean Name="ColorTransformationEnable">
+		<Extension>
+			<VCDCategoryName>Color Correction</VCDCategoryName>
+			<GenICamCategory>ColorTransformationControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Boolean>
+	<Enumeration Name="ColorTransformationValueSelector">
+		<Extension>
+			<GenICamCategory>ColorTransformationControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Enumeration>
+	<Float Name="ColorTransformationValue">
+		<Extension>
+			<VCDCategoryName>Color Correction</VCDCategoryName>
+			<GenICamCategory>ColorTransformationControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Float>
+	<Float Name="ExposureTime">
+		<Extension>
+			<VCDCategoryName>Exposure</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+		<Unit>us</Unit>
+	</Float>
+	<Enumeration Name="ExposureAuto">
+		<Extension>
+			<VCDCategoryName>Exposure</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+		<EnumEntry Name="ExposureAuto_Off">
+			<DisplayName>Off</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="ExposureAuto_Continuous">
+			<DisplayName>Continuous</DisplayName>
+		</EnumEntry>
+	</Enumeration>
+	<Integer Name="ExposureAutoReference">
+		<Extension>
+			<VCDCategoryName>Exposure</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Integer>
+	<Float Name="ExposureAutoLowerLimit">
+		<Extension>
+			<VCDCategoryName>Exposure</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Unit>us</Unit>
+	</Float>
+	<Float Name="ExposureAutoUpperLimit">
+		<Extension>
+			<VCDCategoryName>Exposure</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Unit>us</Unit>
+	</Float>
+	<Enumeration Name="ExposureAutoUpperLimitAuto">
+		<Extension>
+			<VCDCategoryName>Exposure</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<EnumEntry Name="ExposureAutoUpperLimitAuto_Off">
+			<DisplayName>Off</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="ExposureAutoUpperLimitAuto_Continuous">
+			<DisplayName>Continuous</DisplayName>
+		</EnumEntry>
+	</Enumeration>
+	<Boolean Name="ExposureAutoHighlightReduction">
+		<Extension>
+			<VCDCategoryName>Exposure</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Boolean>
+	<Boolean Name="ReverseX">
+		<Extension>
+			<VCDCategoryName>Image</VCDCategoryName>
+			<GenICamCategory>ImageFormatControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Boolean>
+	<Boolean Name="ReverseY">
+		<Extension>
+			<VCDCategoryName>Image</VCDCategoryName>
+			<GenICamCategory>ImageFormatControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Boolean>
+	<Float Name="Gain">
+		<Extension>
+			<VCDCategoryName>Exposure</VCDCategoryName>
+			<GenICamCategory>AnalogControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+		<Unit>dB</Unit>
+	</Float>
+	<Enumeration Name="GainAuto">
+		<Extension>
+			<VCDCategoryName>Exposure</VCDCategoryName>
+			<GenICamCategory>AnalogControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+		<EnumEntry Name="GainAuto_Off">
+			<DisplayName>Off</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="GainAuto_Continuous">
+			<DisplayName>Continuous</DisplayName>
+		</EnumEntry>
+	</Enumeration>
+	<Float Name="GainAutoLowerLimit">
+		<Extension>
+			<VCDCategoryName>Exposure</VCDCategoryName>
+			<GenICamCategory>AnalogControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Unit>dB</Unit>
+	</Float>
+	<Float Name="GainAutoUpperLimit">
+		<Extension>
+			<VCDCategoryName>Exposure</VCDCategoryName>
+			<GenICamCategory>AnalogControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Unit>dB</Unit>
+	</Float>
+	<Float Name="Gamma">
+		<Extension>
+			<VCDCategoryName>Image</VCDCategoryName>
+			<GenICamCategory>AnalogControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Float>
+	<Integer Name="GPIn">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>DigitalIO</GenICamCategory>
+			<Comments>GPIn/GPOut don't follow SFNC right now</Comments>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Integer>
+	<Integer Name="GPOut">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>DigitalIO</GenICamCategory>
+			<Comments>GPIn/GPOut don't follow SFNC right now</Comments>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Integer>
+	<Float Name="Hue">
+		<Extension>
+			<VCDCategoryName>Color</VCDCategoryName>
+			<GenICamCategory>ColorTransformationControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+		<Unit>Degrees</Unit>
+	</Float>
+	<Boolean Name="LUTEnable">
+		<Extension>
+			<VCDCategoryName>N/A</VCDCategoryName>
+			<GenICamCategory>LUTControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Boolean>
+	<Integer Name="LUTIndex">
+		<Extension>
+			<VCDCategoryName>N/A</VCDCategoryName>
+			<GenICamCategory>LUTControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Integer>
+	<Integer Name="LUTValue">
+		<Extension>
+			<VCDCategoryName>N/A</VCDCategoryName>
+			<GenICamCategory>LUTControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Integer>
+	<Integer Name="LUTValueAll">
+		<Extension>
+			<VCDCategoryName>N/A</VCDCategoryName>
+			<GenICamCategory>LUTControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Integer>
+	<Boolean Name="MultiFrameSetOutputModeEnable">
+		<Extension>
+			<VCDCategoryName>Multi-Frame Output Mode</VCDCategoryName>
+			<GenICamCategory>MultiFrameSetOutputMode</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Boolean>
+	<Enumeration Name="MultiFrameSetOutputModeFrameCount">
+		<Extension>
+			<VCDCategoryName>Multi-Frame Output Mode</VCDCategoryName>
+			<GenICamCategory>MultiFrameSetOutputMode</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<EnumEntry Name="MultiFrameSetOutputModeFrameCount_2Frames">
+			<DisplayName>2Frames</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="MultiFrameSetOutputModeFrameCount_4Frames">
+			<DisplayName>4Frames</DisplayName>
+		</EnumEntry>
+	</Enumeration>
+	<Float Name="MultiFrameSetOutputModeExposureTime0">
+		<Extension>
+			<VCDCategoryName>Multi-Frame Output Mode</VCDCategoryName>
+			<GenICamCategory>MultiFrameSetOutputMode</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Unit>us</Unit>
+	</Float>
+	<Float Name="MultiFrameSetOutputModeExposureTime1">
+		<Extension>
+			<VCDCategoryName>Multi-Frame Output Mode</VCDCategoryName>
+			<GenICamCategory>MultiFrameSetOutputMode</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Unit>us</Unit>
+	</Float>
+	<Float Name="MultiFrameSetOutputModeExposureTime2">
+		<Extension>
+			<VCDCategoryName>Multi-Frame Output Mode</VCDCategoryName>
+			<GenICamCategory>MultiFrameSetOutputMode</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Unit>us</Unit>
+	</Float>
+	<Float Name="MultiFrameSetOutputModeExposureTime3">
+		<Extension>
+			<VCDCategoryName>Multi-Frame Output Mode</VCDCategoryName>
+			<GenICamCategory>MultiFrameSetOutputMode</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Unit>us</Unit>
+	</Float>
+	<Boolean Name="MultiFrameSetOutputModeCustomGain">
+		<Extension>
+			<VCDCategoryName>Multi-Frame Output Mode</VCDCategoryName>
+			<GenICamCategory>MultiFrameSetOutputMode</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Boolean>
+	<Float Name="MultiFrameSetOutputModeGain0">
+		<Extension>
+			<VCDCategoryName>Multi-Frame Output Mode</VCDCategoryName>
+			<GenICamCategory>MultiFrameSetOutputMode</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Unit>dB</Unit>
+	</Float>
+	<Float Name="MultiFrameSetOutputModeGain1">
+		<Extension>
+			<VCDCategoryName>Multi-Frame Output Mode</VCDCategoryName>
+			<GenICamCategory>MultiFrameSetOutputMode</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Unit>dB</Unit>
+	</Float>
+	<Float Name="MultiFrameSetOutputModeGain2">
+		<Extension>
+			<VCDCategoryName>Multi-Frame Output Mode</VCDCategoryName>
+			<GenICamCategory>MultiFrameSetOutputMode</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Unit>dB</Unit>
+	</Float>
+	<Float Name="MultiFrameSetOutputModeGain3">
+		<Extension>
+			<VCDCategoryName>Multi-Frame Output Mode</VCDCategoryName>
+			<GenICamCategory>MultiFrameSetOutputMode</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Unit>dB</Unit>
+	</Float>
+	<Float Name="Saturation">
+		<Extension>
+			<VCDCategoryName>Color</VCDCategoryName>
+			<GenICamCategory>ColorTransformationControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+		<Unit>%</Unit>
+	</Float>
+	<Enumeration Name="StrobeEnable">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>DigitalIO</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<EnumEntry Name="StrobeEnable_Off">
+			<DisplayName>Off</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="StrobeEnable_On">
+			<DisplayName>On</DisplayName>
+		</EnumEntry>
+	</Enumeration>
+	<Enumeration Name="StrobePolarity">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>DigitalIO</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<EnumEntry Name="StrobePolarity_ActiveHigh">
+			<DisplayName>ActiveHigh</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="StrobePolarity_ActiveLow">
+			<DisplayName>ActiveLow</DisplayName>
+		</EnumEntry>
+	</Enumeration>
+	<Enumeration Name="StrobeOperation">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>DigitalIO</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<EnumEntry Name="StrobeOperation_Exposure">
+			<DisplayName>Exposure</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="StrobeOperation_FixedDuration">
+			<DisplayName>Fixed Duration</DisplayName>
+		</EnumEntry>
+	</Enumeration>
+	<Integer Name="StrobeDuration">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>DigitalIO</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Integer>
+	<Integer Name="StrobeDelay">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>DigitalIO</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Integer>
+	<Enumeration Name="TriggerOperation">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<EnumEntry Name="TriggerOperation_Default">
+			<DisplayName>Default</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="TriggerOperation_GlobalResetRelease">
+			<DisplayName>GlobalResetRelease</DisplayName>
+		</EnumEntry>
+	</Enumeration>
+	<Boolean Name="IMXLowLatencyTriggerMode">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Boolean>
+	<Enumeration Name="TriggerSelector">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<Comments>Should be ExposureMode</Comments>
+			<SFNC>Y</SFNC>
+		</Extension>
+		<EnumEntry Name="TriggerSelector_Default">
+			<DisplayName>Default</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="TriggerSelector_ExposureActive">
+			<DisplayName>ExposureActive</DisplayName>
+		</EnumEntry>
+	</Enumeration>
+	<Enumeration Name="TriggerMode">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+		<EnumEntry Name="TriggerMode_Off">
+			<DisplayName>Off</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="TriggerMode_On">
+			<DisplayName>On</DisplayName>
+		</EnumEntry>
+	</Enumeration>
+	<Enumeration Name="TriggerSource">
+		<Extension>
+			<VCDCategoryName>N/A</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Enumeration>
+	<Enumeration Name="TriggerActivation">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+		<EnumEntry Name="TriggerActivation_RisingEdge">
+			<DisplayName>RisingEdge</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="TriggerActivation_FallingEdge">
+			<DisplayName>FallingEdge</DisplayName>
+		</EnumEntry>
+	</Enumeration>
+	<Command Name="TriggerSoftware">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Command>
+	<Float Name="TriggerDelay">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+		<Unit>us</Unit>
+	</Float>
+	<Float Name="TriggerDebouncer">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Unit>us</Unit>
+	</Float>
+	<Float Name="TriggerMask">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Unit>us</Unit>
+	</Float>
+	<Float Name="TriggerDenoise">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Unit>us</Unit>
+	</Float>
+	<Integer Name="AcquisitionBurstFrameCount">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Integer>
+	<Integer Name="AcquisitionBurstInterval">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Integer>
+	<Enumeration Name="TriggerOverlap">
+		<Extension>
+			<VCDCategoryName>Special</VCDCategoryName>
+			<GenICamCategory>AcquisitionControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+		<EnumEntry Name="TriggerOverlap_Off">
+			<DisplayName>Off</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="TriggerOverlap_ReadOut">
+			<DisplayName>ReadOut</DisplayName>
+		</EnumEntry>
+	</Enumeration>
+	<Enumeration Name="BalanceRatioSelector">
+		<Extension>
+			<GenICamCategory>AnalogControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+		<EnumEntry Name="BalanceRatioSelector_Red">
+			<DisplayName>Red</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="BalanceRatioSelector_Green">
+			<DisplayName>Green</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="BalanceRatioSelector_Blue">
+			<DisplayName>Blue</DisplayName>
+		</EnumEntry>
+	</Enumeration>
+	<Float Name="BalanceRatio">
+		<Extension>
+			<VCDCategoryName>Color</VCDCategoryName>
+			<GenICamCategory>AnalogControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+	</Float>
+	<Enumeration Name="BalanceWhiteAuto">
+		<Extension>
+			<VCDCategoryName>Color</VCDCategoryName>
+			<GenICamCategory>AnalogControl</GenICamCategory>
+			<SFNC>Y</SFNC>
+		</Extension>
+		<EnumEntry Name="BalanceWhiteAuto_Off">
+			<DisplayName>Off</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="BalanceWhiteAuto_Once">
+			<DisplayName>Once</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="BalanceWhiteAuto_Continuous">
+			<DisplayName>Continuous</DisplayName>
+		</EnumEntry>
+	</Enumeration>
+	<Enumeration Name="BalanceWhiteMode">
+		<Extension>
+			<VCDCategoryName>Color</VCDCategoryName>
+			<GenICamCategory>AnalogControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Enumeration>
+	<Enumeration Name="BalanceWhiteAutoPreset">
+		<Extension>
+			<VCDCategoryName>Color</VCDCategoryName>
+			<GenICamCategory>AnalogControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Enumeration>
+	<Enumeration Name="BalanceWhiteTemperaturePreset">
+		<Extension>
+			<VCDCategoryName>Color</VCDCategoryName>
+			<GenICamCategory>AnalogControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Enumeration>
+	<Integer Name="BalanceWhiteTemperature">
+		<Extension>
+			<VCDCategoryName>Color</VCDCategoryName>
+			<GenICamCategory>AnalogControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Integer>
+	<Boolean Name="AutoFocusROIEnable">
+		<Extension>
+			<VCDCategoryName>Lens</VCDCategoryName>
+			<GenICamCategory>AutoFocusROI</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Boolean>
+	<Integer Name="AutoFocusROILeft">
+		<Extension>
+			<VCDCategoryName>Lens</VCDCategoryName>
+			<GenICamCategory>AutoFocusROI</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Integer>
+	<Integer Name="AutoFocusROITop">
+		<Extension>
+			<VCDCategoryName>Lens</VCDCategoryName>
+			<GenICamCategory>AutoFocusROI</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Integer>
+	<Integer Name="AutoFocusROIWidth">
+		<Extension>
+			<VCDCategoryName>Lens</VCDCategoryName>
+			<GenICamCategory>AutoFocusROI</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Integer>
+	<Integer Name="AutoFocusROIHeight">
+		<Extension>
+			<VCDCategoryName>Lens</VCDCategoryName>
+			<GenICamCategory>AutoFocusROI</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Integer>
+	<Integer Name="Focus">
+		<Extension>
+			<VCDCategoryName>Lens</VCDCategoryName>
+			<GenICamCategory>LensControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Integer>
+	<Command Name="FocusAuto">
+		<Extension>
+			<VCDCategoryName>Lens</VCDCategoryName>
+			<GenICamCategory>LensControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Command>
+	<Integer Name="Zoom">
+		<Extension>
+			<VCDCategoryName>Lens</VCDCategoryName>
+			<GenICamCategory>LensControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Integer>
+	<Integer Name="Iris">
+		<Extension>
+			<VCDCategoryName>Lens</VCDCategoryName>
+			<GenICamCategory>LensControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Integer>
+	<Boolean Name="IrisAuto">
+		<Extension>
+			<VCDCategoryName>Lens</VCDCategoryName>
+			<GenICamCategory>LensControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Boolean>
+	<Boolean Name="IRCutFilterEnable">
+		<Extension>
+			<VCDCategoryName>Lens</VCDCategoryName>
+			<GenICamCategory>LensControl</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Boolean>
+	<Float Name="BalanceWhiteRed">
+		<Extension>
+			<VCDCategoryName>Color</VCDCategoryName>
+			<GenICamCategory>AnalogControl</GenICamCategory>
+			<Default>1.0</Default>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Min>0.0</Min>
+		<Max>4.0</Max>
+	</Float>
+	<Float Name="BalanceWhiteGreen">
+		<Extension>
+			<VCDCategoryName>Color</VCDCategoryName>
+			<GenICamCategory>AnalogControl</GenICamCategory>
+			<Default>1.0</Default>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Min>0.0</Min>
+		<Max>4.0</Max>
+	</Float>
+	<Float Name="BalanceWhiteBlue">
+		<Extension>
+			<VCDCategoryName>Color</VCDCategoryName>
+			<GenICamCategory>AnalogControl</GenICamCategory>
+			<Default>1.0</Default>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Min>0.0</Min>
+		<Max>4.0</Max>
+	</Float>
+	<Integer Name="Denoise">
+		<Extension>
+			<VCDCategoryName>Image</VCDCategoryName>
+			<GenICamCategory>TODO</GenICamCategory>
+			<Default>0</Default>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Min>0</Min>
+		<Max>25</Max>
+	</Integer>
+	<Integer Name="Sharpness">
+		<Extension>
+			<VCDCategoryName>Image</VCDCategoryName>
+			<GenICamCategory>TODO</GenICamCategory>
+			<Default>0</Default>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Min>0</Min>
+		<Max>14</Max>
+	</Integer>
+	<Integer Name="Contrast">
+		<Extension>
+			<VCDCategoryName>Image</VCDCategoryName>
+			<GenICamCategory>TODO</GenICamCategory>
+			<Default>0</Default>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Min>-64</Min>
+		<Max>255</Max>
+	</Integer>
+	<Boolean Name="TonemappingEnable">
+		<Extension>
+			<VCDCategoryName>WDR</VCDCategoryName>
+			<GenICamCategory>TODO</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+	</Boolean>
+	<Float Name="TonemappingGlobalBrightness">
+		<Extension>
+			<VCDCategoryName>WDR</VCDCategoryName>
+			<GenICamCategory>TODO</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Min>0.0</Min>
+		<Max>1.0</Max>
+		<Inc>0.01</Inc>
+	</Float>
+	<Float Name="TonemappingIntensity">
+		<Extension>
+			<VCDCategoryName>WDR</VCDCategoryName>
+			<GenICamCategory>TODO</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Min>-8.0</Min>
+		<Max>8.0</Max>
+		<Inc>0.01</Inc>
+	</Float>
+	<Float Name="HDRGain">
+		<Extension>
+			<VCDCategoryName>Image</VCDCategoryName>
+			<GenICamCategory>TODO</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Min>0.0</Min>
+		<Max>120.0</Max>
+		<Inc>0.1</Inc>
+	</Float>
+	<Enumeration Name="HDRGainAuto">
+		<Extension>
+			<VCDCategoryName>Image</VCDCategoryName>
+			<GenICamCategory>TODO</GenICamCategory>
+			<SFNC>N</SFNC>
+		</Extension>
+		<EnumEntry Name="HDRGainAuto_Off">
+			<DisplayName>Off</DisplayName>
+		</EnumEntry>
+		<EnumEntry Name="HDRGainAuto_Continuous">
+			<DisplayName>Continuous</DisplayName>
+		</EnumEntry>
+	</Enumeration>
+	<Float Name="HDRGainAutoReference">
+		<Extension>
+			<VCDCategoryName>Image</VCDCategoryName>
+			<GenICamCategory>TODO</GenICamCategory>
+			<Default>0.5</Default>
+			<SFNC>N</SFNC>
+		</Extension>
+		<Min>0.0</Min>
+		<Max>1.0</Max>
+		<Inc>0.01</Inc>
+	</Float>
+</root>

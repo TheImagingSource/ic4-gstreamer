@@ -1,0 +1,10 @@
+
+*.user
+*.suo
+*.opendb
+*.db
+/bin
+/obj
+/out
+/build
+/.vs

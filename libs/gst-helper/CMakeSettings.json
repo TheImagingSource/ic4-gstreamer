@@ -1,0 +1,37 @@
+﻿{
+    "configurations": [
+        {
+            "name": "WSL-GCC-Debug",
+            "generator": "Ninja",
+            "configurationType": "Debug",
+            "buildRoot": "${projectDir}\\out\\build\\${name}",
+            "installRoot": "${projectDir}\\out\\install\\${name}",
+            "cmakeExecutable": "cmake",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "linux_x64" ],
+            "wslPath": "${defaultWSLPath}"
+        },
+        {
+            "name": "Linux-GCC-Debug",
+            "generator": "Ninja",
+            "configurationType": "Debug",
+            "cmakeExecutable": "cmake",
+            "remoteCopySourcesExclusionList": [ ".vs", ".git", "out" ],
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "linux_arm" ],
+            "remoteMachineName": "${defaultRemoteMachineName}",
+            "remoteCMakeListsRoot": "$HOME/remote-develop/${projectDirName}/${workspaceHash}/src",
+            "remoteBuildRoot": "$HOME/remote-develop/${projectDirName}/build/${name}",
+            "remoteInstallRoot": "$HOME/remote-develop/${projectDirName}/install/${name}",
+            "remoteCopySources": true,
+            "rsyncCommandArgs": "-t --delete --delete-excluded",
+            "remoteCopyBuildOutput": false,
+            "remoteCopySourcesMethod": "rsync",
+            "variables": []
+        }
+    ]
+}

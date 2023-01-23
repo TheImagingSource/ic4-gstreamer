@@ -1,0 +1,6 @@
+[submodule "libs/dutils_image"]
+	path = libs/dutils_image
+	url = ssh://git@gitlab.theimagingsource.com:49107/bv/dutils_image.git
+[submodule "libs/tcamprop"]
+	path = libs/tcamprop
+	url = ssh://git@gitlab.theimagingsource.com:49107/linux/tcamprop.git
