@@ -20,112 +20,21 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "../libs/gst-helper/include/gst-helper/gstelement_helper.h"
-#include "../libs/gst-helper/include/gst-helper/helper_functions.h"
+#include "ic4_device_state.h"
+#include "ic4_tcam_property.h"
 
 using namespace ic4;
 
 GST_DEBUG_CATEGORY(tcam_ic4_src_debug);
 #define GST_CAT_DEFAULT tcam_ic4_src_debug
 
-struct sink_listener;
 
-std::atomic<bool> _queued = false;
-
-struct ic4_device_state {
-
-    ///ic4::VideoCaptureDeviceItem
-
-    std::shared_ptr<ic4::Grabber> grabber;
-
-    std::shared_ptr<ic4::QueueSink> sink;
-
-    std::shared_ptr<sink_listener> listener;
-    void* dev_lost_token_ = nullptr;
-
-    std::atomic<bool> streaming_ = false;
-    std::mutex stream_mtx_;
-    std::condition_variable stream_cv_;
-
-    std::string serial_;
-
-    std::string get_serial ()
-    {
-        return serial_;
-    };
-
-    bool set_serial (const std::string s)
-    {
-        if (is_open())
-        {
-            return false;
-        }
-        GST_DEBUG("Device serial is now: %s", s.c_str());
-        serial_ = s;
-        return true;
-    };
-
-
-    bool is_open ()
-    {
-        if (grabber)
-        {
-            return grabber->isDevOpen();
-        }
-        return false;
-    };
-
-    bool is_streaming ()
-    {
-        return streaming_;
-    }
-
-    GstCaps* get_caps ()
-    {
-        if (!is_open())
-        {
-            GST_WARNING("==== Device not open");
-            return nullptr;
-        }
-        auto props = grabber->devPropertyMap();
-        return ic4::gst::create_caps(props);
-    }
-};
-
-struct sink_listener : public ic4::QueueSinkListener {
-
-  bool sinkConnected(ic4::QueueSink &sink,
-                     const ic4::FrameTypeInfo &frameType) {
-    (void)sink;
-    (void)frameType;
-
-    GST_INFO("sinkConnected");
-    state->sink->allocAndQueueBuffers(20);
-    return true;
-  }
-
-    void sinkDisconnected(ic4::QueueSink& /*sink*/)
-    {
-        //(void)sink;
-        GST_INFO("sinkDisconnected");
-    }
-
-    void framesQueued(ic4::QueueSink& /*sink*/)
-    {
-        //GST_ERROR("framesQueued");
-        _queued = true;
-        state->streaming_=true;
-        state->stream_cv_.notify_all();
-    };
-
-    ic4_device_state* state;
-};
 
 
 G_DEFINE_TYPE_WITH_CODE(
-    GstTcamIC4Src, gst_tcam_ic4_src, GST_TYPE_PUSH_SRC, NULL)
-    // G_IMPLEMENT_INTERFACE(TCAM_TYPE_PROPERTY_PROVIDER,
-    //                       tcam::mainsrc::gst_tcam_mainsrc_tcamprop_init))
+    GstTcamIC4Src, gst_tcam_ic4_src, GST_TYPE_PUSH_SRC,
+     G_IMPLEMENT_INTERFACE(TCAM_TYPE_PROPERTY_PROVIDER,
+                           ic4::gst::ic4_tcam_property_init))
 
 enum {
     SIGNAL_DEVICE_OPEN,
@@ -148,44 +57,7 @@ static GstStaticPadTemplate tcam_ic4_src_template = GST_STATIC_PAD_TEMPLATE(
 
 static void ic4_src_open_camera(GstTcamIC4Src *self)
 {
-
-    self->device->grabber = std::make_shared<ic4::Grabber>();
-
-    auto dev_list = ic4::DeviceEnum::getAvailableVideoCaptureDevices();
-    if (dev_list.empty())
-    {
-        GST_ERROR("No devices available");
-        return;
-    }
-    // use first device
-    if (self->device->serial_.empty())
-    {
-
-        if (!self->device->grabber->openDev(dev_list.at(0)))
-        {
-            GST_ERROR("Unable to open device");
-            return;
-        }
-        self->device->serial_ = dev_list.at(0).getSerial();
-    }
-    else
-    {
-        for (auto& item : dev_list)
-        {
-            if (item.getSerial() == self->device->serial_)
-            {
-                if (!self->device->grabber->openDev(item))
-                {
-                    GST_ERROR("Unable to open device");
-                    return;
-                }
-                break;
-            }
-        }
-    }
-    self->device->listener = std::make_shared<sink_listener>();
-
-    self->device->listener->state = self->device;
+    self->device->open_device();
 
     auto lost_cb = [self] (Grabber& g)
     {
@@ -473,14 +345,6 @@ static gboolean gst_tcam_ic4_src_negotiate(GstBaseSrc* basesrc)
         gst_caps_unref(caps);
     }
     return result;
-    // //gst_tcam_i
-
-    // caps = gst_caps_from_string("video/x-bayer,format=gbrg,width=744,height=480,framerate=30/1 ");
-
-    // gboolean result = gst_base_src_set_caps(basesrc, caps);
-
-    // gst_caps_unref(caps);
-    // return TRUE;
 }
 
 static GstCaps *gst_tcam_ic4_src_get_caps(GstBaseSrc *src, GstCaps *filter
@@ -489,13 +353,8 @@ static GstCaps *gst_tcam_ic4_src_get_caps(GstBaseSrc *src, GstCaps *filter
 
   auto caps = self->device->get_caps();
 
-  GST_ERROR("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Generated caps: \n%s", gst_caps_to_string(caps));
-  // auto caps = self->device->get_device_caps();
-  // if (caps == nullptr) {
-  //   GST_WARNING_OBJECT(
-  //       self, "Device not initialized. Must be in state >= GST_STATE_READY.");
-  //   return nullptr;
-  // }
+  //  GST_ERROR("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Generated caps: \n%s", gst_caps_to_string(caps));
+
   return caps;
 }
 
@@ -516,10 +375,7 @@ static gboolean gst_tcam_ic4_src_set_caps(GstBaseSrc *src, GstCaps *caps)
 
     gst_structure_get_fraction(struc, "framerate", &num, &denom);
 
-    double fps = num/denom;
-    //gst_structure_get_double(struc, "framerate", &fps);
-
-    GST_ERROR("SET CAPS");
+    double fps = (double)num/denom;
 
     auto p = self->device->grabber->devPropertyMap();
 
@@ -550,13 +406,13 @@ gst_tcam_ic4_src_change_state(GstElement *element, GstStateChange change)
     {
         case GST_STATE_CHANGE_NULL_TO_READY:
         {
-            GST_INFO("null->ready");
+            //GST_INFO("null->ready");
             ic4_src_open_camera(self);
             break;
         }
         case GST_STATE_CHANGE_READY_TO_PAUSED: {
           // self->device->n_buffers_delivered_ = 0; //
-          GST_INFO("ready->paused");
+          //GST_INFO("ready->paused");
           ret = GST_STATE_CHANGE_NO_PREROLL;
           break;
         }
@@ -584,7 +440,7 @@ gst_tcam_ic4_src_change_state(GstElement *element, GstStateChange change)
     {
         case GST_STATE_CHANGE_PAUSED_TO_READY:
         {
-            GST_INFO("paused->ready");
+            //GST_INFO("paused->ready");
 
             self->device->streaming_ = false;
             if (self->device->grabber->isStreaming()) {
@@ -594,7 +450,7 @@ gst_tcam_ic4_src_change_state(GstElement *element, GstStateChange change)
         }
         case GST_STATE_CHANGE_READY_TO_NULL:
         {
-            GST_INFO("ready->null");
+            //GST_INFO("ready->null");
 
             if (self->device->is_open())
             {

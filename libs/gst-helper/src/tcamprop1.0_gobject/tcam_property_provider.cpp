@@ -60,6 +60,7 @@ static GSList* tcamprop_impl_fetch_names( tcamprop1::property_list_interface& pr
     for( const auto& prop_name : prop_list_itf.get_property_list() )
     {
         auto prop_itf = prop_list_itf.find_property( prop_name );
+        //printf("prop:::::::: %s\n", std::string(prop_name).c_str());
         if( prop_itf == nullptr )
         {
             assert( prop_itf != nullptr );
@@ -91,7 +92,7 @@ namespace tcamprop1_gobj::impl
     {
     public:
         tcam_property_provider_impl_data( tcamprop1::property_list_interface* itf )
-            : prop_list_itf_{ itf } 
+            : prop_list_itf_{ itf }
         {}
         ~tcam_property_provider_impl_data()
         {
@@ -364,4 +365,3 @@ void tcamprop1_gobj::tcam_property_provider::set_command( tcam_property_provider
 
     g_object_unref( ptr_base );
 }
-

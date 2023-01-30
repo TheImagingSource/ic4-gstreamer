@@ -2,6 +2,8 @@
 
 #include "tcamprop_property_list_impl.h"
 
+#include <outcome/result.hpp>
+
 namespace tcamprop1::impl
 {
     struct property_interface_impl_base_data
@@ -68,7 +70,7 @@ namespace tcamprop1::impl
     private:
         set_value_func<double>              set_value_;
         get_value_func<double>              get_value_;
-        
+
         value_or_func<prop_range_float>     get_range_;
         value_or_func<double>               get_default_;
 
@@ -76,7 +78,7 @@ namespace tcamprop1::impl
         FloatRepresentation_t   rep_ = FloatRepresentation_t::Linear;
     public:
         property_interface_impl_float( const propgen_params_float& params );
-            
+
         auto get_property_range( uint32_t flags ) -> outcome::result<prop_range_float> final;
         auto get_property_default( uint32_t flags )->outcome::result<double> final;
         auto get_property_value( uint32_t flags )->outcome::result<double> final;
@@ -135,4 +137,3 @@ namespace tcamprop1::impl
         auto execute_command( uint32_t flags )->std::error_code final;
     };
 }
-

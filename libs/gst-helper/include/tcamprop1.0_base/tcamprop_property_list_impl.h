@@ -7,6 +7,8 @@
 #include <functional>
 #include <memory>
 
+#include <outcome/result.hpp>
+
 namespace tcamprop1
 {
     template<typename T>    using set_value_func = std::function<std::error_code( T )>;
@@ -159,4 +161,3 @@ namespace tcamprop1
         std::vector<std::unique_ptr<property_interface>> props_;
     };
 }
-

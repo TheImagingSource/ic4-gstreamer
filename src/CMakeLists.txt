@@ -12,15 +12,13 @@ add_library(gsttcamic4src SHARED
 
   ic4_gst_conversions.h
   ic4_gst_conversions.cpp
-  # mainsrc_tcamprop_impl.h
-  # mainsrc_tcamprop_impl.cpp
-  # mainsrc_device_state.h
-  # mainsrc_device_state.cpp
-  # tcamsrc_tcamprop_impl.h
-  # tcamsrc_tcamprop_impl.cpp
 
   # gsttcambufferpool.h
   # gsttcambufferpool.cpp
+  ic4_device_state.h
+  ic4_device_state.cpp
+  ic4_tcam_property.h
+  ic4_tcam_property.cpp
 
   ic4src_gst_device_provider.cpp
   ic4src_gst_device_provider.h
@@ -43,9 +41,13 @@ target_include_directories(gsttcamic4src
    ${GObject_INCLUDE_DIR}
 
    ${ic4_INCLUDE_PATH}
+
 )
 
 target_link_libraries( gsttcamic4src
+PUBLIC
+outcome::hl
+
   PRIVATE
   ${GSTREAMER_LIBRARIES}
   ${GSTREAMER_BASE_LIBRARIES}
@@ -60,7 +62,7 @@ target_link_libraries( gsttcamic4src
   tcam::gst-helper
   tcam::tcam-property
   # tcam::tcamgststatistics
-  # tcamprop1::provider_gobject
+  tcamprop1::provider_gobject
 )
 
 set_project_warnings(gsttcamic4src)

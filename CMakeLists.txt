@@ -58,6 +58,8 @@ set(ic4_INCLUDE_PATH "${ic4_PATH}/include")
 set(ic4_LIBRARY_PATH "${ic4_PATH}/lib")
 set(ic4_LIBRARIES "${ic4_PATH}/bin/libic4core.so")
 
+find_package(outcome REQUIRED)
+
 add_subdirectory(libs)
 add_subdirectory(src)
 

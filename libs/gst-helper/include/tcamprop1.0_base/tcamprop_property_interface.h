@@ -8,6 +8,8 @@
 #include <vector>
 #include <optional>
 
+namespace outcome = OUTCOME_V2_NAMESPACE;
+
 namespace tcamprop1
 {
 
@@ -28,15 +30,15 @@ struct prop_state
 };
 
 /**
- * Missing interfaces: 
+ * Missing interfaces:
     IString
     ICategory
  */
 
 /**
  * Reference: http://gitlab.theimagingsource.com/bv/genicam_lib/-/blob/master/include/genicam/genicam_interfaces.h#L58
- * Currently not implemented stuff: 
- * 
+ * Currently not implemented stuff:
+ *
  * get_tooltip -> std::string_view
  * get_docuurl -> std::string_view
  * is_deprecated -> bool
