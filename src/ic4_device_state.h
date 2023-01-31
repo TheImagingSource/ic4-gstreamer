@@ -95,7 +95,7 @@ struct ic4_device_state
     {
         if (grabber)
         {
-            return grabber->isDevOpen();
+            return grabber->isDeviceOpen();
         }
         return false;
     };
@@ -114,7 +114,7 @@ struct ic4_device_state
             GST_WARNING("==== Device not open");
             return nullptr;
         }
-        auto props = grabber->devPropertyMap();
+        auto props = grabber->devicePropertyMap();
         return ic4::gst::create_caps(props);
     }
 

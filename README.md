@@ -25,11 +25,9 @@ Building currently requires you to manually point to ic4.
 
 ### Open
 
-- Property handling
 - GstTcamStatistics
 - documentation
 - ic4 lookup
-- integration with tcamsrc
 - packaging
 - support for formats other than bayer/mono
 - caps support for resolution sets (not implemented in ic4)
@@ -39,6 +37,7 @@ Building currently requires you to manually point to ic4.
 - GstDevice Handling
 - Basic Image retrieval
 - Basic caps handling
+- Basic property handling
 - Device lost
 
 ## License

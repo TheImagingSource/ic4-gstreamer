@@ -48,10 +48,10 @@ static const char* provider_info = "Source/Video/Device/tcam";
 struct device
 {
     // tcam::DeviceInfo device_info; //
-    ic4::VideoCaptureDeviceItem device_info;
+    ic4::DeviceInfo device_info;
     gst_helper::gst_ptr<GstDevice> gstdev;
 
-    bool operator==(const ic4::VideoCaptureDeviceItem& dev) const noexcept
+    bool operator==(const ic4::DeviceInfo& dev) const noexcept
     {
         return dev == device_info;
     }
@@ -76,7 +76,7 @@ struct provider_state
 } // namespace tcammainsrc
 
 static GstDevice* tcam_ic4_src_device_new(GstElementFactory* factory,
-                                          const ic4::VideoCaptureDeviceItem& device)
+                                          const ic4::DeviceInfo& device)
 {
     GstCaps* caps = gst_caps_new_any();
 
@@ -120,7 +120,7 @@ static GstDevice* tcam_ic4_src_device_new(GstElementFactory* factory,
 
 static void run_update_logic(std::unique_lock<std::mutex>& /*lck*/,
                              TcamIC4SrcDeviceProvider* self,
-                             std::vector<ic4::VideoCaptureDeviceItem>&& new_list)
+                             std::vector<ic4::DeviceInfo>&& new_list)
 {
     auto& known_devices = self->state->known_devices_;
 

@@ -72,9 +72,7 @@ void iterate_node_children(ic4::PropCategory& category, ic4::gst::src_interface_
 
 void ic4_device_state::populate_tcamprop_interface()
 {
-    printf("populating/n");
-    GST_ERROR("populating");
-    auto properties = grabber->devPropertyMap();
+    auto properties = grabber->devicePropertyMap();
 
     auto root  = properties.getCategory("Root");
 
@@ -99,7 +97,7 @@ bool ic4_device_state::open_device()
     if (serial_.empty())
     {
 
-        if (!grabber->openDev(dev_list.at(0)))
+        if (!grabber->deviceOpen(dev_list.at(0)))
         {
             GST_ERROR("Unable to open device");
             return false;
@@ -112,7 +110,7 @@ bool ic4_device_state::open_device()
         {
             if (item.getSerial() == serial_)
             {
-                if (!grabber->openDev(item))
+                if (!grabber->deviceOpen(item))
                 {
                     GST_ERROR("Unable to open device");
                     return false;

@@ -121,8 +121,6 @@ static void ic4_src_close_camera(GstTcamIC4Src *self) {
 
     self->device->grabber->eventRemoveDeviceLost(self->device->dev_lost_token_);
 
-    self->device->grabber->closeDev();
-
     self->device->grabber = nullptr;
 }
 
@@ -377,7 +375,7 @@ static gboolean gst_tcam_ic4_src_set_caps(GstBaseSrc *src, GstCaps *caps)
 
     double fps = (double)num/denom;
 
-    auto p = self->device->grabber->devPropertyMap();
+    auto p = self->device->grabber->devicePropertyMap();
 
     const char* fmt = ic4::gst::caps_to_PixelFormat(*caps);
 
