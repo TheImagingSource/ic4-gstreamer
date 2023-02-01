@@ -27,9 +27,6 @@ add_library(gsttcamic4src SHARED
   ic4src_gst_device.h
 
   tcamic4src_plugin.cpp
-
-  # tcambind.h
-  # tcambind.cpp
 )
 
 target_include_directories(gsttcamic4src
@@ -59,10 +56,10 @@ outcome::hl
   ${INTROSPECTION_LIBS}
 
   ${ic4_LIBRARIES}
-  # tcamgstbase
+
   tcam::gst-helper
   tcam::tcam-property
-  # tcam::tcamgststatistics
+  tcam::tcamgststatistics
   tcamprop1::provider_gobject
 )
 

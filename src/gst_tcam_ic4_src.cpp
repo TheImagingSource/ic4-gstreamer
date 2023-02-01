@@ -23,6 +23,8 @@
 #include "ic4_device_state.h"
 #include "ic4_tcam_property.h"
 
+#include "../libs/tcam-property/src/gst/meta/gstmetatcamstatistics.h"
+
 using namespace ic4;
 
 GST_DEBUG_CATEGORY(tcam_ic4_src_debug);
@@ -505,7 +507,7 @@ get_buf:
 
     ic4::Error err;
     auto frame = self->device->sink->popOutputQueueBuffer(err);
-    //self->device->sink->
+
     if (!frame)
     {
         GST_ERROR("Unable to retrieve buffer: %s", err.toString().c_str());
@@ -528,16 +530,39 @@ get_buf:
 
     auto type = frame->getFrameType();
 
-    //GST_ERROR("buffer size: %zu", type.buffer_size());
     GstBuffer *new_buf = gst_buffer_new_wrapped_full(
         static_cast<GstMemoryFlags>(GST_MEMORY_FLAG_READONLY), frame->getPtr(),
         type.buffer_size(),
-        //type.height() * type.width(),
         0,
-        //type.buffer_size(),
         type.height() * type.width(),
         trans, buffer_destroy);
-    //wait_result.buf, buffer_destroy_callback);
+
+    ic4::Frame::MetaData meta_data;
+    if (frame->getMetaData(meta_data))
+    {
+        GstStructure* struc = gst_structure_new_empty("TcamStatistics");
+
+        gst_structure_set(struc,
+                          "frame_count",
+                          G_TYPE_UINT64,
+                          meta_data.device_frame_number,
+                          "frames_dropped",
+                          G_TYPE_UINT64,
+                          0, // potentially implementable
+                          "capture_time_ns",
+                          G_TYPE_UINT64,
+                          0, // driver time not supported by gentl
+                          "camera_time_ns",
+                          G_TYPE_UINT64,
+                          meta_data.device_timestamp_ns,
+                          "is_damaged",
+                          G_TYPE_BOOLEAN,
+                          FALSE, // seen as not supported, at this time
+                          nullptr);
+
+        gst_buffer_add_tcam_statistics_meta(new_buf, struc);
+    }
+
 
     *buffer = new_buf;
     gst_buffer_set_flags(*buffer, GST_BUFFER_FLAG_LIVE);
