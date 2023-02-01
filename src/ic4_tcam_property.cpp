@@ -15,6 +15,7 @@
 
 #include "../libs/gst-helper/include/tcamprop1.0_base/tcamprop_property_interface.h"
 #include "tcamprop1.0_base/tcamprop_base.h"
+#include "tcamprop1.0_base/tcamprop_property_info.h"
 
 namespace
 {
@@ -101,8 +102,12 @@ template <class TBase> struct TcamPropertyBase : TBase
         info.name = m_name;
         info.display_name = m_display_name;
         info.description = m_description;
-        //info.access = m_prop.
 
+        auto static_info = tcamprop1::find_prop_static_info(m_name);
+        if (static_info.info_ptr)
+        {
+            info.iccategory = static_info.info_ptr->iccategory;
+        }
         return info;
     }
 
