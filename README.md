@@ -28,12 +28,12 @@ Building currently requires you to manually point to ic4.
 - GstTcamStatistics
 - documentation
 - ic4 lookup
-- packaging
 - support for formats other than bayer/mono
 - caps support for resolution sets (not implemented in ic4)
 
 ### Done
 
+- packaging
 - GstDevice Handling
 - Basic Image retrieval
 - Basic caps handling

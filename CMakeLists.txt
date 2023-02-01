@@ -9,8 +9,12 @@ project(tcamic4src)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # include(version.cmake)
+set(IC4SRC_VERSION_MAJOR 0)
+set(IC4SRC_VERSION_MINOR 1)
+set(IC4SRC_VERSION_PATCH 0)
+set(IC4SRC_VERSION_MODIFIER "")
 
-set(IC4SRC_VERSION "${TCAM_VERSION_MAJOR}.${TCAM_VERSION_MINOR}.${TCAM_VERSION_PATCH}${TCAM_VERSION_MODIFIER}" CACHE STRING "Version number")
+set(IC4SRC_VERSION "${IC4SRC_VERSION_MAJOR}.${IC4SRC_VERSION_MINOR}.${IC4SRC_VERSION_PATCH}${IC4SRC_VERSION_MODIFIER}" CACHE STRING "Version number")
 
 
 set(IC4SRC_ORIGIN "https://theimagingsource.com")
@@ -31,9 +35,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${IC4SRC_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${IC4SRC_BINARY_DIR}/lib)
 
 if( ${GIT_REPO_PRESENT} )
-  message(STATUS "IC4SRC_VERSION: ${TCAM_VERSION}, Git: commit#=${GIT_COMMIT_COUNT}, branch=${GIT_BRANCH} hash=${GIT_COMMIT_HASH}" )
+  message(STATUS "IC4SRC_VERSION: ${IC4SRC_VERSION}, Git: commit#=${GIT_COMMIT_COUNT}, branch=${GIT_BRANCH} hash=${GIT_COMMIT_HASH}" )
 else()
-  message(STATUS "IC4SRC_VERSION: ${TCAM_VERSION}, Git: No repo found" )
+  message(STATUS "IC4SRC_VERSION: ${IC4SRC_VERSION}, Git: No repo found" )
 endif()
 
 # All option for configuration come from here
@@ -85,3 +89,39 @@ else (TARGET uninstall)
   add_custom_target(uninstall
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 endif (TARGET uninstall)
+
+include(CPackComponent)
+
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "The Imaging Source Europe GmbH <support@theimagingsource.com>")
+
+set(CPACK_PACKAGE_DESCRIPTION "The Imaging Source Linux Software")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "IC4 GStreamer Source")
+set(CPACK_PACKAGE_VENDOR "The Imaging Source Europe GmbH")
+set(CPACK_PACKAGE_CONTACT "support@theimagingsource.com")
+set(CPACK_DEBIAN_ENABLE_COMPONENT_DEPENDS ON)
+
+set(CPACK_PACKAGE_CHECKSUM "SHA512")
+set(CPACK_SET_DESTDIR "on")
+set(CPACK_GENERATOR "DEB")
+
+set(CPACK_PACKAGE_VERSION_MAJOR "${IC4SRC_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${IC4SRC_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${IC4SRC_VERSION_PATCH}")
+
+# TODO: once IC4 has package reference it!
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgstreamer1.0-0 >= 1.8.0, tcam-property >= 1.1.0")
+
+git_commit_count(GIT_COMMIT_COUNT)
+
+set(CPACK_DEBIAN_PACKAGE_VERSION "${IC4SRC_VERSION}.${GIT_COMMIT_COUNT}")
+set(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
+
+set(CPACK_DEBIAN_BIN_PACKAGE_PRIORITY "optional")
+
+include(package-name)
+
+create_package_name(CPACK_DEBIAN_FILE_NAME "tcamic4src" "${IC4SRC_VERSION}")
+set(CPACK_DEBIAN_FILE_NAME "${CPACK_DEBIAN_FILE_NAME}.deb")
+
+# always last
+include(CPack)

@@ -1,3 +1,4 @@
+find_package(PkgConfig REQUIRED QUIET)
 
 find_package(GObject   REQUIRED QUIET)
 find_package(GLIB2     REQUIRED QUIET)
@@ -66,6 +67,37 @@ outcome::hl
 )
 
 set_project_warnings(gsttcamic4src)
+
+# helper funcion to receive the value of an arbitrary variable
+function(pkg_check_variable _pkg _name)
+  string(TOUPPER ${_pkg} _pkg_upper)
+  string(TOUPPER ${_name} _name_upper)
+  string(REPLACE "-" "_" _pkg_upper ${_pkg_upper})
+  string(REPLACE "-" "_" _name_upper ${_name_upper})
+  set(_output_name "${_pkg_upper}_${_name_upper}")
+
+  execute_process(COMMAND ${PKG_CONFIG_EXECUTABLE} --variable=${_name} ${_pkg}
+    OUTPUT_VARIABLE _pkg_result
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  message(" ${PKG_CONFIG_EXECUTABLE} --variable=${_name} ${_pkg} ==> ${_pkg_result} in ${_output_name}")
+
+  set("${_output_name}" "${_pkg_result}" CACHE STRING "pkg-config variable ${_name} of ${_pkg}" FORCE)
+endfunction()
+
+
+pkg_check_variable(gstreamer-1.0 pluginsdir)
+
+if (GSTREAMER_1.0_PLUGINSDIR)
+  message ("got pluginsdir")
+  set(TCAM_INSTALL_GST_1_0 "${GSTREAMER_1.0_PLUGINSDIR}"
+    CACHE PATH "gstreamer-1.0 module installation path")
+else()
+  message("using std path")
+  set(TCAM_INSTALL_GST_1_0 "${CMAKE_INSTALL_PREFIX}/lib/gstreamer-1.0"
+    CACHE PATH "gstreamer-1.0 module installation path")
+endif()
+
 
 install(TARGETS gsttcamic4src
   DESTINATION ${TCAM_INSTALL_GST_1_0}
