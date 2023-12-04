@@ -22,6 +22,7 @@ static const std::string property_blacklist[] = {
     "AcquisitionStart",
     "AcquisitionStop",
     "AcquisitionMode",
+    "TLParamsLocked",
     };
 
 bool is_blacklist_property(const std::string& property_name)
@@ -43,18 +44,18 @@ bool is_blacklist_property(const std::string& property_name)
 void iterate_node_children(ic4::PropCategory& category, ic4::gst::src_interface_list& interface)
 {
 
-    auto children = category.getFeatures();
+    auto children = category.features();
 
     for (auto& child : children)
     {
-        if (child.getType() == ic4::PropType::IC4_PROPTYPE_CATEGORY)
+        if (child.type() == ic4::PropType::Category)
         {
             auto tmp = child.asCategory();
             iterate_node_children(tmp, interface);
         }
         else
         {
-            if (is_blacklist_property(child.getName()))
+            if (is_blacklist_property(child.name()))
             {
                 continue;
             }
@@ -74,7 +75,7 @@ void ic4_device_state::populate_tcamprop_interface()
 {
     auto properties = grabber->devicePropertyMap();
 
-    auto root  = properties.getCategory("Root");
+    auto root  = properties.findCategory("Root");
 
     iterate_node_children(root, tcamprop_interface_);
 
@@ -87,7 +88,8 @@ bool ic4_device_state::open_device()
 
     grabber = std::make_shared<ic4::Grabber>();
 
-    auto dev_list = ic4::DeviceEnum::getAvailableVideoCaptureDevices();
+    auto dev_list = ic4::DeviceEnum::enumDevices();
+        //getAvailableVideoCaptureDevices();
     if (dev_list.empty())
     {
         GST_ERROR("No devices available");
@@ -102,13 +104,13 @@ bool ic4_device_state::open_device()
             GST_ERROR("Unable to open device");
             return false;
         }
-        serial_ = dev_list.at(0).getSerial();
+        serial_ = dev_list.at(0).serial();
     }
     else
     {
         for (auto& item : dev_list)
         {
-            if (item.getSerial() == serial_)
+            if (item.serial() == serial_)
             {
                 if (!grabber->deviceOpen(item))
                 {

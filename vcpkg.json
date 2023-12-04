@@ -1,10 +1,11 @@
 {
     "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
     "name": "tcamic4src",
+    "builtin-baseline": "49931943abe2a22dd9d91be2c4928ead56349b14",
     "version": "1.0.0",
     "dependencies": [
-        "outcome",
         "fmt",
-        "spdlog"
+        "spdlog",
+        "expected-lite"
     ]
 }

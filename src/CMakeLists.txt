@@ -43,8 +43,6 @@ target_include_directories(gsttcamic4src
 )
 
 target_link_libraries( gsttcamic4src
-PUBLIC
-outcome::hl
 
   PRIVATE
   ${GSTREAMER_LIBRARIES}

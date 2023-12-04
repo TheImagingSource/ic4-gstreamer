@@ -80,8 +80,8 @@ static GstDevice* tcam_ic4_src_device_new(GstElementFactory* factory,
 {
     GstCaps* caps = gst_caps_new_any();
 
-    std::string serial = device.getSerial();
-    std::string model = device.getModelName();
+    std::string serial = device.serial();
+    std::string model = device.modelName();
     std::string type = "ic4";
         //device.getUniqueName();
 
@@ -179,7 +179,8 @@ static void update_device_list(TcamIC4SrcDeviceProvider* self)
     {
         {
             lck.unlock();
-            auto new_list = ic4::DeviceEnum::getAvailableVideoCaptureDevices();
+            auto new_list = ic4::DeviceEnum::enumDevices();
+
             //self->state->index_.get_device_list();
             lck.lock();
 
@@ -197,14 +198,16 @@ static void update_device_list(TcamIC4SrcDeviceProvider* self)
 
 static void tcam_ic4_src_device_provider_init(TcamIC4SrcDeviceProvider *self)
 {
-  self->state = new tcamic4src::provider_state();
+    ic4::initLibrary();
 
-  self->state->factory_ =
-      gst_helper::make_ptr(gst_element_factory_find("tcamic4src"));
+    self->state = new tcamic4src::provider_state();
 
-  /* Ensure we can introspect the factory */
-  gst_object_unref(
-      gst_plugin_feature_load(GST_PLUGIN_FEATURE(self->state->factory_.get())));
+    self->state->factory_ =
+        gst_helper::make_ptr(gst_element_factory_find("tcamic4src"));
+
+    /* Ensure we can introspect the factory */
+    gst_object_unref(
+        gst_plugin_feature_load(GST_PLUGIN_FEATURE(self->state->factory_.get())));
 }
 
 static GList *tcam_ic4_src_device_provider_probe(GstDeviceProvider *provider)
@@ -223,7 +226,7 @@ static GList *tcam_ic4_src_device_provider_probe(GstDeviceProvider *provider)
     }
     else
     {
-        for (const auto& device_entry : ic4::DeviceEnum::getAvailableVideoCaptureDevices())
+        for (const auto& device_entry : ic4::DeviceEnum::enumDevices())
                  //self->state->index_.get_device_list())
         {
             auto dev = tcam_ic4_src_device_new(self->state->factory_.get(), device_entry);
@@ -243,7 +246,7 @@ tcam_ic4_src_device_provider_start(GstDeviceProvider *provider) {
 
     std::unique_lock<std::mutex> lck(self->state->mtx_);
     run_update_logic(lck, self,
-                     ic4::DeviceEnum::getAvailableVideoCaptureDevices());
+                     ic4::DeviceEnum::enumDevices());
     self->state->run_updates_ = true;
     self->state->update_thread_ = std::thread(update_device_list, self);
 

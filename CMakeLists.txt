@@ -19,6 +19,8 @@ set(IC4SRC_VERSION "${IC4SRC_VERSION_MAJOR}.${IC4SRC_VERSION_MINOR}.${IC4SRC_VER
 
 set(IC4SRC_ORIGIN "https://theimagingsource.com")
 
+include( StandardProjectSettings )
+
 include("cmake/CompilerWarnings.cmake")
 include("cmake/git-helper.cmake")
 
@@ -58,11 +60,11 @@ if (NOT DEFINED ic4_PATH)
   message (FATAL_ERROR "Define ic4_PATH. -Dic4_PATH=<..>/ic4/build/")
 endif (NOT DEFINED ic4_PATH)
 
-set(ic4_INCLUDE_PATH "${ic4_PATH}/include")
+set(ic4_INCLUDE_PATH "${ic4_PATH}/../include")
 set(ic4_LIBRARY_PATH "${ic4_PATH}/lib")
 set(ic4_LIBRARIES "${ic4_PATH}/bin/libic4core.so")
 
-find_package(outcome REQUIRED)
+# find_package(outcome REQUIRED)
 
 add_subdirectory(libs)
 add_subdirectory(src)

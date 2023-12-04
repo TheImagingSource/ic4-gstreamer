@@ -4,9 +4,12 @@
 #include "gst/gststructure.h"
 #include "gst/gstutils.h"
 #include "gst/gstvalue.h"
+#include "ic4/Properties.h"
+#include <algorithm>
 #include <cstdint>
 #include <string>
 #include <cstring>
+#include <vector>
 
 namespace {
 
@@ -344,70 +347,249 @@ GstCaps *ic4::gst::PixelFormat_to_GstCaps(const char* fmt) {
     return nullptr;
 }
 
+struct image_size
+{
+    int width;
+    int height;
+
+    bool operator<(const struct image_size& other) const
+    {
+        if (height <= other.height && width <= other.width)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    bool operator==(const image_size& other) const
+    {
+        return (height == other.height && width == other.width);
+    }
+};
+
+std::vector<image_size> get_standard_resolutions(const image_size& min,
+                                                 const image_size& max,
+                                                 const image_size& step)
+{
+    static const image_size resolutions[] = {
+        { 128, 96 },    { 320, 240 },   { 360, 280 },   { 544, 480 },   { 640, 480 },
+        { 352, 288 },   { 576, 480 },   { 720, 480 },   { 960, 720 },   { 1280, 720 },
+        { 1440, 1080 }, { 1920, 1080 }, { 1920, 1200 }, { 2048, 1152 }, { 2048, 1536 },
+        { 2560, 1440 }, { 3840, 2160 }, { 4096, 3072 }, { 7680, 4320 }, { 7680, 4800 },
+    };
+
+    std::vector<struct image_size> ret;
+    ret.reserve(std::size(resolutions));
+    for (const auto& r : resolutions)
+    {
+        if ((min < r) && (r < max) && (r.width % step.width == 0) && (r.height % step.height == 0))
+        {
+            ret.push_back(r);
+        }
+    }
+
+    return ret;
+}
+
 
 GstCaps *ic4::gst::create_caps(ic4::PropertyMap & props)
 {
-    auto p_fmt = props.getEnumeration("PixelFormat");
+    auto p_fmt = props.findEnumeration("PixelFormat");
 
-    auto p_width = props.getInteger("Width");
+    auto p_width = props.findInteger("Width");
     int64_t width_min;
     int64_t width_max;
     int64_t width_step;
+    std::vector<int64_t> width_values;
 
-    p_width.getMinimum(width_min);
-    p_width.getMaximum(width_max);
-    p_width.getIncrement(width_step);
+    if (p_width.incrementMode() == ic4::PropIncrementMode::Increment)
+    {
+        width_min = p_width.minimum();
+        width_max = p_width.maximum();
+        width_step = p_width.increment();
+    }
+    else
+    {
+        width_values = p_width.validValueSet();
+    }
 
-    auto p_height = props.getInteger("Height");
+    auto p_height = props.findInteger("Height");
     int64_t height_min;
     int64_t height_max;
     int64_t height_step;
+    std::vector<int64_t> height_values;
 
-    p_height.getMinimum(height_min);
-    p_height.getMaximum(height_max);
-    p_height.getIncrement(height_step);
+    if (p_height.incrementMode() == ic4::PropIncrementMode::Increment)
+    {
+        height_min = p_height.minimum();
+        height_max = p_height.maximum();
+        height_step = p_height.increment();
+    }
+    else
+    {
+        height_values = p_height.validValueSet();
+    }
 
-    auto p_fps = props.getFloat("AcquisitionFrameRate");
+    auto p_fps = props.findFloat("AcquisitionFrameRate");
 
     int fps_min_num;
     int fps_min_den;
     int fps_max_num;
     int fps_max_den;
 
-    double fps_min;
-    p_fps.getMinimum(fps_min);
+    std::vector<double> fps_values;
+    GValue fps = G_VALUE_INIT;
 
-    double fps_max;
-    p_fps.getMaximum(fps_max);
-    gst_util_double_to_fraction(fps_min, &fps_min_num, &fps_min_den);
-    gst_util_double_to_fraction(fps_max, &fps_max_num, &fps_max_den);
+    // all fpd cameras have ranges
+    // v4l2 usb2 cameras all have value sets
+    if (p_fps.incrementMode() != ic4::PropIncrementMode::ValueSet)
+    {
+
+        double fps_min;
+        fps_min = p_fps.minimum();
+
+        double fps_max;
+        fps_max = p_fps.maximum();
+        gst_util_double_to_fraction(fps_min, &fps_min_num, &fps_min_den);
+        gst_util_double_to_fraction(fps_max, &fps_max_num, &fps_max_den);
+    }
+    else
+    {
+        fps_values = p_fps.validValueSet();
+
+        g_value_init(&fps, GST_TYPE_LIST);
+        for (const auto& val : fps_values)
+        {
+            int fps_num;
+            int fps_den;
+            gst_util_double_to_fraction(val, &fps_num, &fps_den);
+
+            GValue v = G_VALUE_INIT;
+            g_value_init(&v, GST_TYPE_FRACTION);
+
+            gst_value_set_fraction(&v, fps_num, fps_den);
+
+            gst_value_list_append_value(&fps, &v);
+
+        }
+    }
 
     GstCaps* caps = gst_caps_new_empty();
 
-    for (const auto& f : p_fmt.getEntries())
+    // we either have both or none
+    // values sets only exist for v4l2/fpd cameras
+    assert(height_values.empty() == width_values.empty());
+
+    bool do_ranges = true;
+    if (!width_values.empty())
     {
-        auto fmt = get_entry(f.getName().c_str());
+        do_ranges = false;
+    }
+
+    for (const auto& f : p_fmt.entries())
+    {
+        auto fmt = get_entry(f.name().c_str());
+
+        if (!fmt)
+        {
+            GST_ERROR("Unable to process pfnc format %s. Skipping.", f.name().c_str());
+            continue;
+        }
 
         GstStructure* s = gst_structure_new(fmt->gst_name,
                                             "format", G_TYPE_STRING, fmt->gst_format,
                                             nullptr);
-        GValue val_width = G_VALUE_INIT;
-        g_value_init(&val_width, GST_TYPE_INT_RANGE);
-        gst_value_set_int_range_step(&val_width, width_min, width_max, width_step);
-
-        GValue val_height = G_VALUE_INIT;
-        g_value_init(&val_height, GST_TYPE_INT_RANGE);
-        gst_value_set_int_range_step(&val_height, height_min, height_max, height_step);
 
         GValue val_fps = G_VALUE_INIT;
         g_value_init(&val_fps, GST_TYPE_FRACTION_RANGE);
-        gst_value_set_fraction_range_full(&val_fps, fps_min_num, fps_min_den, fps_max_num, fps_max_den);
+        gst_value_set_fraction_range_full(
+            &val_fps, fps_min_num, fps_min_den, fps_max_num, fps_max_den);
 
-        gst_structure_take_value(s, "width", &val_width);
-        gst_structure_take_value(s, "height", &val_height);
         gst_structure_take_value(s, "framerate", &val_fps);
 
-        gst_caps_append_structure(caps, s);
+        GValue val_width = G_VALUE_INIT;
+        GValue val_height = G_VALUE_INIT;
+
+        if (do_ranges)
+        {
+            g_value_init(&val_width, GST_TYPE_INT_RANGE);
+            gst_value_set_int_range_step(&val_width, width_min, width_max, width_step);
+
+            g_value_init(&val_height, GST_TYPE_INT_RANGE);
+            ///g_value_init(&val_height, GST_TYPE_L);
+            gst_value_set_int_range_step(&val_height, height_min, height_max, height_step);
+
+
+            gst_structure_take_value(s, "width", &val_width);
+            gst_structure_take_value(s, "height", &val_height);
+
+            gst_caps_append_structure(caps, s);
+        }
+        else
+        {
+            auto min_w = std::min_element(width_values.begin(), width_values.end());
+            auto max_w = std::max_element(width_values.begin(), width_values.end());
+            auto min_h = std::min_element(height_values.begin(), height_values.end());
+            auto max_h = std::max_element(height_values.begin(), height_values.end());
+
+            image_size min_size = { (int)*min_w, (int)*min_h };
+            image_size max_size = { (int)*max_w, (int)*max_h };
+            image_size step_size = { 1, 1 };
+            auto res = get_standard_resolutions(min_size, max_size, step_size);
+
+            g_value_init(&val_width, GST_TYPE_LIST);
+            g_value_init(&val_height, GST_TYPE_LIST);
+
+            for (const auto& r : res)
+            {
+                GstStructure* s2 = gst_structure_copy(s);
+
+                GValue w = G_VALUE_INIT;
+                g_value_init(&w, G_TYPE_INT);
+                g_value_set_int(&w, r.width);
+
+                // gst_value_list_append_value(&val_width, &w);
+                // g_value_unset(&w);
+
+                GValue h = G_VALUE_INIT;
+                g_value_init(&h, G_TYPE_INT);
+                g_value_set_int(&h, r.height);
+
+                // gst_value_list_append_value(&val_height, &h);
+                // g_value_unset(&h);
+
+
+                gst_structure_take_value(s, "width", &w);
+                gst_structure_take_value(s, "height", &h);
+
+                gst_caps_append_structure(caps, s2);
+            }
+            // since not appended, must be freed
+            gst_structure_free(s);
+
+            // for (const auto& val : width_values)
+            // {
+            //     GValue v = G_VALUE_INIT;
+            //     g_value_init(&v, G_TYPE_INT);
+            //     g_value_set_int(&v, val);
+
+            //     gst_value_list_append_value(&val_width, &v);
+            //     g_value_unset(&v);
+            // }
+
+
+            // for (const auto& val : height_values)
+            // {
+            //     GValue v = G_VALUE_INIT;
+            //     g_value_init(&v, G_TYPE_INT);
+            //     g_value_set_int(&v, val);
+
+            //     gst_value_list_append_value(&val_height, &v);
+            //     g_value_unset(&v);
+            // }
+        }
+
+
     }
 
     return caps;

@@ -1,6 +1,7 @@
 
 #include "ic4_tcam_property.h"
 #include "Tcam-1.0.h"
+#include "gst/gstinfo.h"
 #include "gst_tcam_ic4_src.h"
 #include "ic4/Error.h"
 #include "ic4_device_state.h"
@@ -15,28 +16,115 @@
 
 #include "../libs/gst-helper/include/tcamprop1.0_base/tcamprop_property_interface.h"
 #include "tcamprop1.0_base/tcamprop_base.h"
+#include "tcamprop1.0_base/tcamprop_errors.h"
 #include "tcamprop1.0_base/tcamprop_property_info.h"
 
 namespace
 {
 
+tcamprop1::status ic4_error_to_std(const ic4::Error& err)
+{
+    switch (err.code())
+    {
+        case ic4::ErrorCode::NoError:
+        {
+            return tcamprop1::status::success;
+        }
+        case ic4::ErrorCode::OutOfMemory:
+        case ic4::ErrorCode::InvalidOperation:
+        case ic4::ErrorCode::Internal:
+        {}
+        case ic4::ErrorCode::LibraryNotInitialized:
+        {}
+        case ic4::ErrorCode::DriverError:
+        {}
+        case ic4::ErrorCode::InvalidParameter:
+        {}
+        case ic4::ErrorCode::ConversionNotSupported:
+        {}
+        case ic4::ErrorCode::NoData:
+        {}
+        case ic4::ErrorCode::GenICamFeatureNotFound:
+        {}
+        case ic4::ErrorCode::GenICamDeviceError:
+        {}
+        case ic4::ErrorCode::GenICamTypeMismatch:
+        {}
+        case ic4::ErrorCode::GenICamAccessDenied:
+        {}
+        case ic4::ErrorCode::GenICamNotImplemented:
+        {}
+        case ic4::ErrorCode::GenICamValueError:
+        {}
+        case ic4::ErrorCode::GenICamChunkdataNotConnected:
+        {}
+        case ic4::ErrorCode::BufferTooSmall:
+        {}
+        case ic4::ErrorCode::SinkTypeMismatch:
+        {}
+        case ic4::ErrorCode::SnapAborted:
+        {}
+        case ic4::ErrorCode::FileWriteError:
+        {}
+        case ic4::ErrorCode::FileAccessDenied:
+        {}
+        case ic4::ErrorCode::FilePathNotFound:
+        {}
+        case ic4::ErrorCode::FileReadError:
+        {}
+        case ic4::ErrorCode::DeviceInvalid:
+        {}
+        case ic4::ErrorCode::DeviceNotFound:
+        {}
+        case ic4::ErrorCode::DeviceError:
+        {}
+        case ic4::ErrorCode::Ambiguous:
+        {}
+        case ic4::ErrorCode::ParseError:
+        {}
+        case ic4::ErrorCode::Timeout:
+        {
+            //return tcamprop1::status::
+        }
+        case ic4::ErrorCode::Incomplete:
+        {}
+        case ic4::ErrorCode::SinkNotConnected:
+        {}
+        case ic4::ErrorCode::ImageTypeMismatch:
+        {}
+        case ic4::ErrorCode::SinkAlreadyAttached:
+        {}
+        case ic4::ErrorCode::SinkConnectAborted:
+        {}
+        case ic4::ErrorCode::HandlerAlreadyRegistered:
+        {}
+        case ic4::ErrorCode::HandlerNotFound:
+        {}
+        case ic4::ErrorCode::Unknown:
+        default:
+        {
+            return tcamprop1::status::unknown;
+        }
+    }
+}
+
 tcamprop1::Visibility_t vis_to_prop(ic4::PropVisibility vis)
 {
     switch (vis)
     {
-        case ic4::PropVisibility::IC4_PROPVIS_BEGINNER: ///< Beginner visibility
+        case ic4::PropVisibility::Beginner: ///< Beginner visibility
         {
             return tcamprop1::Visibility_t::Beginner;
         }
-        case ic4::PropVisibility::IC4_PROPVIS_EXPERT: ///< Expert visibility
+        case ic4::PropVisibility::Expert: ///< Expert visibility
         {
             return tcamprop1::Visibility_t::Expert;
         }
-        case ic4::PropVisibility::IC4_PROPVIS_GURU: ///< Guru visibility
+        case ic4::PropVisibility::Guru: ///< Guru visibility
         {
             return tcamprop1::Visibility_t::Guru;
         }
-        case ic4::PropVisibility::IC4_PROPVIS_INVISIBLE:
+        case ic4::PropVisibility::Invisible:
         {
             return tcamprop1::Visibility_t::Invisible;
         } ///< Invisible
@@ -47,22 +135,22 @@ TcamPropertyVisibility visibility_to_tcamprop(ic4::PropVisibility vis)
 {
     switch (vis)
     {
-        case ic4::PropVisibility::IC4_PROPVIS_BEGINNER: ///< Beginner visibility
+        case ic4::PropVisibility::Beginner:
         {
             return TcamPropertyVisibility::TCAM_PROPERTY_VISIBILITY_BEGINNER;
         }
-        case ic4::PropVisibility::IC4_PROPVIS_EXPERT: ///< Expert visibility
+        case ic4::PropVisibility::Expert:
         {
             return TcamPropertyVisibility::TCAM_PROPERTY_VISIBILITY_EXPERT;
         }
-        case ic4::PropVisibility::IC4_PROPVIS_GURU: ///< Guru visibility
+        case ic4::PropVisibility::Guru:
         {
             return TcamPropertyVisibility::TCAM_PROPERTY_VISIBILITY_GURU;
         }
-        case ic4::PropVisibility::IC4_PROPVIS_INVISIBLE:
+        case ic4::PropVisibility::Invisible:
         {
             return TcamPropertyVisibility::TCAM_PROPERTY_VISIBILITY_INVISIBLE;
-        } ///< Invisible
+        }
     }
 }
 
@@ -76,9 +164,9 @@ template <class TBase> struct TcamPropertyBase : TBase
     TcamPropertyBase(ic4::Property& prop)
         : m_prop(prop)
     {
-        m_name = m_prop.getName();
-        m_display_name = m_prop.getDisplayName();
-        m_description = m_prop.getDescription();
+        m_name = m_prop.name();
+        m_display_name = m_prop.displayName();
+        m_description = m_prop.description();
     }
 
     ic4::Property m_prop;
@@ -98,7 +186,7 @@ template <class TBase> struct TcamPropertyBase : TBase
 
         tcamprop1::prop_static_info info = {};
 
-        info.visibility = vis_to_prop(m_prop.getVisibility());
+        info.visibility = vis_to_prop(m_prop.visibility());
         info.name = m_name;
         info.display_name = m_display_name;
         info.description = m_description;
@@ -133,7 +221,7 @@ struct TcamPropertyInteger : TcamPropertyBase<tcamprop1::property_interface_inte
     {
         auto tmp = m_prop.asInteger();
 
-        m_unit = tmp.getUnit();
+        m_unit = tmp.unit();
     }
 
     std::string m_unit;
@@ -145,9 +233,9 @@ struct TcamPropertyInteger : TcamPropertyBase<tcamprop1::property_interface_inte
 
         tcamprop1::prop_range_integer ret = {};
 
-        tmp.getMinimum(ret.min);
-        tmp.getMaximum(ret.max);
-        tmp.getIncrement(ret.stp);
+        ret.min = tmp.minimum();
+        ret.max = tmp.maximum();
+        ret.stp = tmp.increment();
 
         return ret;
     }
@@ -156,18 +244,25 @@ struct TcamPropertyInteger : TcamPropertyBase<tcamprop1::property_interface_inte
     {
         auto tmp = m_prop.asInteger();
 
-        int64_t ret;
-
-        tmp.getDefault(ret);
-        return ret;
+        //int64_t ret = tmp.getDefault();
+        //return ret;
+        return 0;
     }
 
     auto get_property_value(uint32_t /*flags*/) -> outcome::result<int64_t> final
     {
         auto tmp = m_prop.asInteger();
 
-        int64_t ret;
-        tmp.getValue(ret);
+        ic4::Error err;
+        int64_t ret = tmp.getValue(err);
+        if (err.isError())
+        {
+            return ic4_error_to_std(err);
+        }
+        else
+        {
+            GST_INFO("%s is value %ld", m_name.c_str(), ret);
+        }
 
         return ret;
     }
@@ -193,49 +288,51 @@ struct TcamPropertyInteger : TcamPropertyBase<tcamprop1::property_interface_inte
         auto ret = tmp.setValue(value, err);
         if (ret)
         {
-//            return tcam::status::Success;
+            return tcamprop1::status::success;
+            //tcam::status::Success;
         }
         //return err.getVal().;
         // TODO: error handling
-        //return ret.error();
+        //return err;//. .error();
+        return ic4_error_to_std(err);
     }
 
     auto get_representation() const noexcept -> tcamprop1::IntRepresentation_t final
     {
         auto tmp = m_prop.asInteger();
 
-        auto ic4_rep = tmp.getRepresentation();
+        auto ic4_rep = tmp.representation();
 
         auto int_rep_to_tcamprop = [] (ic4::PropIntRepresentation rep)
             -> tcamprop1::IntRepresentation_t
         {
             switch (rep)
             {
-                case ic4::PropIntRepresentation::IC4_PROPINTREP_BOOLEAN:
+                case ic4::PropIntRepresentation::Boolean:
                 {
                     return tcamprop1::IntRepresentation_t::Boolean;
                 }
-                case ic4::PropIntRepresentation::IC4_PROPINTREP_HEXNUMBER:
+                case ic4::PropIntRepresentation::HexNumber:
                 {
                     return tcamprop1::IntRepresentation_t::HexNumber;
                 }
-                case ic4::PropIntRepresentation::IC4_PROPINTREP_IPV4ADDRESS:
+                case ic4::PropIntRepresentation::IPV4Address:
                 {
                     return tcamprop1::IntRepresentation_t::IPV4Address;
                 }
-                case ic4::PropIntRepresentation::IC4_PROPINTREP_LOGARITHMIC:
+                case ic4::PropIntRepresentation::Logarithmic:
                 {
                     return tcamprop1::IntRepresentation_t::Logarithmic;
                 }
-                case ic4::PropIntRepresentation::IC4_PROPINTREP_LINEAR:
+                case ic4::PropIntRepresentation::Linear:
                 {
                     return tcamprop1::IntRepresentation_t::Linear;
                 }
-                case ic4::PropIntRepresentation::IC4_PROPINTREP_MACADDRESS:
+                case ic4::PropIntRepresentation::MACAddress:
                 {
                     return tcamprop1::IntRepresentation_t::MACAddress;
                 }
-                case ic4::PropIntRepresentation::IC4_PROPINTREP_PURENUMBER:
+                case ic4::PropIntRepresentation::PureNumber:
                 {
                     return tcamprop1::IntRepresentation_t::PureNumber;
                 }
@@ -259,7 +356,7 @@ struct TcamPropertyFloat : TcamPropertyBase<tcamprop1::property_interface_float>
     {
         auto tmp = m_prop.asFloat();
 
-        m_unit = tmp.getUnit();
+        m_unit = tmp.unit();
     }
 
     std::string m_unit;
@@ -271,29 +368,39 @@ struct TcamPropertyFloat : TcamPropertyBase<tcamprop1::property_interface_float>
 
         tcamprop1::prop_range_float ret = {};
 
-        tmp.getMinimum(ret.min);
-        tmp.getMaximum(ret.max);
-        tmp.getIncrement(ret.stp);
+        ret.min = tmp.minimum();
+        ret.max = tmp.maximum();
+        ret.stp = tmp.increment();
 
         return ret;
     }
 
     auto get_property_default(uint32_t /* flags = 0 */) -> outcome::result<double> final
     {
-        auto tmp = m_prop.asFloat();
+        return 0.0;
+        // auto tmp = m_prop.asFloat();
 
-        double ret;
+        // double ret;
 
-        tmp.getDefault(ret);
-        return ret;
+        // tmp.getDefault(ret);
+        // return ret;
     }
 
     auto get_property_value(uint32_t /*flags*/) -> outcome::result<double> final
     {
         auto tmp = m_prop.asFloat();
 
-        double ret;
-        tmp.getValue(ret);
+        ic4::Error err;
+        double ret = tmp.getValue(err);
+        if (err.isError())
+        {
+            GST_ERROR("%s - %f - %s", m_name.c_str(), ret, err.message().c_str());
+        }
+        else
+        {
+
+            GST_ERROR("got float value %s -> %f", m_name.c_str(), ret);
+        }
 
         return ret;
     }
@@ -305,32 +412,38 @@ struct TcamPropertyFloat : TcamPropertyBase<tcamprop1::property_interface_float>
         auto ret = tmp.setValue(value, err);
         if (ret)
         {
+            return tcamprop1::status::success;
             //            return tcam::status::Success;
+        }
+        else
+        {
+            GST_ERROR("%s", err.message().c_str());
         }
         //return err.getVal().;
         // TODO: error handling
+        return ic4_error_to_std(err);
     }
 
     auto get_representation() const noexcept -> tcamprop1::FloatRepresentation_t final
     {
         auto tmp = m_prop.asFloat();
 
-        auto ic4_rep = tmp.getRepresentation();
+        auto ic4_rep = tmp.representation();
 
         auto float_rep_to_tcamprop =
             [](ic4::PropFloatRepresentation rep) -> tcamprop1::FloatRepresentation_t
         {
             switch (rep)
             {
-                case ic4::PropFloatRepresentation::IC4_PROPFLOATREP_LINEAR:
+                case ic4::PropFloatRepresentation::Linear:
                 {
                     return tcamprop1::FloatRepresentation_t::Linear;
                 }
-                case ic4::PropFloatRepresentation::IC4_PROPFLOATREP_LOGARITHMIC:
+                case ic4::PropFloatRepresentation::Logarithmic:
                 {
                     return tcamprop1::FloatRepresentation_t::Logarithmic;
                 }
-                case ic4::PropFloatRepresentation::IC4_PROPFLOATREP_PURENUMBER:
+                case ic4::PropFloatRepresentation::PureNumber:
                 {
                     return tcamprop1::FloatRepresentation_t::PureNumber;
                 }
@@ -358,19 +471,19 @@ struct TcamPropertyBoolean : TcamPropertyBase<tcamprop1::property_interface_bool
 
     auto get_property_default(uint32_t /* flags = 0 */) -> outcome::result<bool> final
     {
-        auto tmp = m_prop.asBoolean();
+        return false;
+        // auto tmp = m_prop.asBoolean();
 
-        bool ret;
-        tmp.getDefault(ret);
-        return ret;
+        // bool ret;
+        // tmp.getDefault(ret);
+        // return ret;
     }
 
     auto get_property_value(uint32_t /*flags*/) -> outcome::result<bool> final
     {
         auto tmp = m_prop.asBoolean();
 
-        bool val;
-        tmp.getValue(val);
+        bool val = tmp.getValue();
         return val;
     }
 
@@ -378,7 +491,8 @@ struct TcamPropertyBoolean : TcamPropertyBase<tcamprop1::property_interface_bool
     {
         auto tmp = m_prop.asBoolean();
 
-        tmp.setValue(value);
+        ic4::Error err;
+        auto ret = tmp.setValue(value, err);
 
         // if (property::is_locked(m_prop.get_flags()))
         // {
@@ -387,11 +501,13 @@ struct TcamPropertyBoolean : TcamPropertyBase<tcamprop1::property_interface_bool
 
         // auto ret = tmp->set_value(value);
 
-        // if (ret)
-        // {
-        //     return tcam::status::Success;
-        // }
-        // return ret.error();
+        if (ret)
+        {
+            return tcamprop1::status::success;
+        }
+
+        GST_ERROR("Error while setting Bool %s: %s", m_prop.name().c_str(), err.message());
+        return ic4_error_to_std(err);
     }
 };
 
@@ -402,10 +518,10 @@ struct TcamPropertyEnumeration : TcamPropertyBase<tcamprop1::property_interface_
         : TcamPropertyBase { prop }
     {
         auto tmp = m_prop.asEnumeration();
-        auto entries = tmp.getEntries();
+        auto entries = tmp.entries();
         if (!entries.empty())
         {
-            m_default = entries.at(0).getName();
+            m_default = entries.at(0).name();
         }
     }
 
@@ -415,12 +531,12 @@ struct TcamPropertyEnumeration : TcamPropertyBase<tcamprop1::property_interface_
         -> outcome::result<tcamprop1::prop_range_enumeration> final
     {
         auto tmp = m_prop.asEnumeration();
-        auto entries = tmp.getEntries();
+        auto entries = tmp.entries();
 
         std::vector<std::string> vals;
         for (const auto& e : entries)
         {
-            vals.push_back(e.getName());
+            vals.push_back(e.name());
         }
 
         return tcamprop1::prop_range_enumeration { vals };
@@ -430,7 +546,7 @@ struct TcamPropertyEnumeration : TcamPropertyBase<tcamprop1::property_interface_
     {
         auto tmp = m_prop.asEnumeration();
 
-        auto entries = tmp.getEntries();
+        auto entries = tmp.entries();
 
         if (entries.empty())
         {
@@ -449,24 +565,26 @@ struct TcamPropertyEnumeration : TcamPropertyBase<tcamprop1::property_interface_
     {
         auto tmp = m_prop.asEnumeration();
 
-        auto entry = tmp.getSelectedEntry();
-        return entry.getName();
+        auto entry = tmp.selectedEntry();
+        return entry.name();
     }
 
     auto set_property_value(std::string_view value, uint32_t /*flags*/) -> std::error_code final
     {
 
         auto tmp = m_prop.asEnumeration();
-
-        auto entries = tmp.getEntries();
+        ic4::Error err;
+        auto entries = tmp.entries();
         for (const auto& e : entries)
         {
-            if (value ==  e.getName())
+            if (value ==  e.name())
             {
-                // TODO: error handling
-                tmp.selectEntry(e);
+                tmp.selectEntry(e, err);
+                break;
             }
         }
+
+        return ic4_error_to_std(err);
     }
 };
 
@@ -498,8 +616,8 @@ struct TcamPropertyString : TcamPropertyBase<tcamprop1::property_interface_strin
     auto get_property_value(uint32_t /*flags*/) -> outcome::result<std::string> final
     {
         auto tmp = m_prop.asString();
-        std::string ret;
-        tmp.getValue(ret);
+        ic4::Error err;
+        std::string ret = tmp.getValue(err);
         return ret;
     }
 
@@ -507,7 +625,16 @@ struct TcamPropertyString : TcamPropertyBase<tcamprop1::property_interface_strin
     {
         auto tmp = m_prop.asString();
 
-        tmp.setValue(std::string(value));
+        ic4::Error err;
+
+        auto ret = tmp.setValue(std::string(value), err);
+
+        if (ret)
+        {
+            return tcamprop1::status::success;
+        }
+        //return  err.code();
+        //return ret.Code;
     }
 };
 
@@ -518,37 +645,37 @@ auto ic4::gst::make_wrapper_instance(
     ic4::Property& prop)
     -> std::unique_ptr<tcamprop1::property_interface>
 {
-    switch (prop.getType())
+    switch (prop.type())
     {
-        case ic4::PropType::IC4_PROPTYPE_INTEGER:
+        case ic4::PropType::Integer:
         {
             return std::make_unique<ic4::gst::TcamPropertyInteger>(prop);
         }
-        case ic4::PropType::IC4_PROPTYPE_FLOAT:
+        case ic4::PropType::Float:
         {
             return std::make_unique<ic4::gst::TcamPropertyFloat>(prop);
         }
-        case ic4::PropType::IC4_PROPTYPE_BOOLEAN:
+        case ic4::PropType::Boolean:
         {
             return std::make_unique<ic4::gst::TcamPropertyBoolean>(prop);
         }
-        case ic4::PropType::IC4_PROPTYPE_ENUMERATION:
+        case ic4::PropType::Enumeration:
         {
             return std::make_unique<ic4::gst::TcamPropertyEnumeration>(prop);
         }
-        case ic4::PropType::IC4_PROPTYPE_COMMAND:
+        case ic4::PropType::Command:
         {
             return std::make_unique<ic4::gst::TcamPropertyCommand>(prop);
         }
-        case ic4::PropType::IC4_PROPTYPE_STRING:
+        case ic4::PropType::String:
         {
             return std::make_unique<ic4::gst::TcamPropertyString>(prop);
         }
-        case ic4::PropType::IC4_PROPTYPE_CATEGORY:
-        case ic4::PropType::IC4_PROPTYPE_ENUMENTRY:
-        case ic4::PropType::IC4_PROPTYPE_REGISTER:
-        case ic4::PropType::IC4_PROPTYPE_PORT:
-        case ic4::PropType::IC4_PROPTYPE_INVALID:
+        case ic4::PropType::Category:
+        case ic4::PropType::EnumEntry:
+        case ic4::PropType::Register:
+        case ic4::PropType::Port:
+        case ic4::PropType::Invalid:
         {
             return nullptr;
         }

@@ -2,7 +2,7 @@
 #include "gst/gstmemory.h"
 #include "gst/gststructure.h"
 #include "ic4/Error.h"
-#include "ic4/Frame.h"
+#include "ic4/ImageBuffer.h"
 #include "ic4/InitLibrary.h"
 #include "ic4_gst_conversions.h"
 #include "ic4src_gst_device_provider.h"
@@ -12,7 +12,7 @@
 #include "gst/gstinfo.h"
 #include "gst/gstpad.h"
 #include "ic4/DeviceEnum.h"
-#include "ic4/FrameType.h"
+#include "ic4/ImageType.h"
 #include "ic4/Grabber.h"
 #include "ic4/QueueSink.h"
 #include <memory>
@@ -97,10 +97,9 @@ static void ic4_src_open_camera(GstTcamIC4Src *self)
         // let EOS handle this. gstreamer will call stop for us
     };
 
-    self->device->dev_lost_token_ = self->device->grabber->eventRegisterDeviceLost(lost_cb);
+    self->device->dev_lost_token_ = self->device->grabber->eventAddDeviceLost(lost_cb);
 
     g_signal_emit(G_OBJECT(self), gst_tcamic4src_signals[SIGNAL_DEVICE_OPEN], 0);
-
 }
 
 
@@ -353,8 +352,6 @@ static GstCaps *gst_tcam_ic4_src_get_caps(GstBaseSrc *src, GstCaps *filter
 
   auto caps = self->device->get_caps();
 
-  //  GST_ERROR("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Generated caps: \n%s", gst_caps_to_string(caps));
-
   return caps;
 }
 
@@ -381,10 +378,10 @@ static gboolean gst_tcam_ic4_src_set_caps(GstBaseSrc *src, GstCaps *caps)
 
     const char* fmt = ic4::gst::caps_to_PixelFormat(*caps);
 
-    p.setEnumerationEntry("PixelFormat", fmt);
-    p.setIntegerValue("Width", width);
-    p.setIntegerValue("Height", height);
-    p.setFloatValue("AcquisitionFrameRate", fps);
+    p.setValue("PixelFormat", fmt);
+    p.setValue("Width", width);
+    p.setValue("Height", height);
+    p.setValue("AcquisitionFrameRate", fps);
 
     ic4::QueueSinkListener& listener = *self->device->listener.get();
 
@@ -469,11 +466,12 @@ gst_tcam_ic4_src_change_state(GstElement *element, GstStateChange change)
 
 struct destroy_transfer {
     GstTcamIC4Src* self;
-    std::shared_ptr<ic4::Frame> frame;
+    std::shared_ptr<ic4::ImageBuffer> frame;
 };
 
 
-static void buffer_destroy(gpointer data) {
+static void buffer_destroy(gpointer data)
+{
 
 
     destroy_transfer* trans = static_cast<destroy_transfer*>(data);
@@ -484,10 +482,9 @@ static void buffer_destroy(gpointer data) {
 }
 
 
-static GstFlowReturn
-gst_tcam_ic4_src_create(GstPushSrc *push_src, GstBuffer **buffer) {
+static GstFlowReturn gst_tcam_ic4_src_create(GstPushSrc* push_src, GstBuffer** buffer)
+{
 
-    // TODO: add streamStats
     //GST_INFO("create func");
 
     GstTcamIC4Src *self = GST_TCAM_IC4_SRC(push_src);
@@ -506,11 +503,11 @@ get_buf:
     }
 
     ic4::Error err;
-    auto frame = self->device->sink->popOutputQueueBuffer(err);
+    auto frame = self->device->sink->popOutputBuffer(err);
 
     if (!frame)
     {
-        GST_ERROR("Unable to retrieve buffer: %s", err.toString().c_str());
+        GST_ERROR("Unable to retrieve buffer: %s", err.message().c_str());
 
         if (cnt >= cnt_max)
         {
@@ -528,17 +525,20 @@ get_buf:
 
     //GST_ERROR("????????? %d", frame->getPitch());
 
-    auto type = frame->getFrameType();
+    auto type = frame->imageType();
 
-    GstBuffer *new_buf = gst_buffer_new_wrapped_full(
-        static_cast<GstMemoryFlags>(GST_MEMORY_FLAG_READONLY), frame->getPtr(),
-        type.buffer_size(),
-        0,
-        type.height() * type.width(),
-        trans, buffer_destroy);
+    GstBuffer* new_buf =
+        gst_buffer_new_wrapped_full(static_cast<GstMemoryFlags>(GST_MEMORY_FLAG_READONLY),
+                                    frame->ptr(),
+                                    frame->bufferSize(),
+                                    0,
+                                    frame->bufferSize(),
+                                    trans,
+                                    buffer_destroy);
 
-    ic4::Frame::MetaData meta_data;
-    if (frame->getMetaData(meta_data))
+
+    ic4::ImageBuffer::MetaData meta_data = frame->metaData(err);
+    if (err.isSuccess())
     {
         GstStructure* struc = gst_structure_new_empty("TcamStatistics");
 
@@ -683,7 +683,7 @@ static void gst_tcam_ic4_src_init(GstTcamIC4Src *self) {
     gst_base_src_set_live(GST_BASE_SRC(self), TRUE);
     gst_base_src_set_format(GST_BASE_SRC(self), GST_FORMAT_TIME);
 
-    ic4::InitLibrary();
+    ic4::initLibrary();
 
     self->device = new ic4_device_state();
 
@@ -702,7 +702,7 @@ static void gst_tcam_ic4_src_finalize(GObject *object)
         self->device = nullptr;
     }
 
-    ic4::ExitLibrary();
+    ic4::exitLibrary();
 }
 
 static void gst_tcam_ic4_src_class_init(GstTcamIC4SrcClass * klass) {

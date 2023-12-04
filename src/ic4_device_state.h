@@ -133,7 +133,7 @@ private:
 struct sink_listener : public ic4::QueueSinkListener
 {
 
-    bool sinkConnected(ic4::QueueSink& sink, const ic4::FrameTypeInfo& frameType)
+    bool sinkConnected(ic4::QueueSink& sink, const ic4::ImageType& frameType)
     {
         (void)sink;
         (void)frameType;

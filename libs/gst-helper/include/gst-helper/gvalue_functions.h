@@ -1,9 +1,10 @@
 #pragma once
 
+#include <cstdint>
 #include <optional>
+#include <string>
 #include <string_view>
 #include <type_traits>
-#include <string>
 
 #include "gvalue_helper.h"
 
@@ -33,7 +34,7 @@ namespace gvalue
     template<> struct from_gtype<G_TYPE_POINTER > { using type = void*; };
 
     /** Helper for the type mapping of from_gtype.
-     * 
+     *
      */
     template<GType T>
     using from_gtype_t = typename from_gtype<T>::type;
@@ -160,4 +161,3 @@ namespace gvalue
     }
 
 }
-

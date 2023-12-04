@@ -30,8 +30,6 @@ if( ${gst-helper-libs-standalone} )
     add_subdirectory( libs )
 endif()
 
-find_package(outcome CONFIG REQUIRED)
-
 add_subdirectory( src )
 
 if( ${gst-helper-libs-standalone} )
