@@ -56,15 +56,12 @@ set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 set( CMAKE_POSITION_INDEPENDENT_CODE ON )
 
-if (NOT DEFINED ic4_PATH)
-  message (FATAL_ERROR "Define ic4_PATH. -Dic4_PATH=<..>/ic4/build/")
-endif (NOT DEFINED ic4_PATH)
 
-set(ic4_INCLUDE_PATH "${ic4_PATH}/../include")
-set(ic4_LIBRARY_PATH "${ic4_PATH}/lib")
-set(ic4_LIBRARIES "${ic4_PATH}/bin/libic4core.so")
+find_package(ic4 REQUIRED)
 
-# find_package(outcome REQUIRED)
+set(ic4_INCLUDE_PATH "${IC4_INCLUDE_PATH}")
+set(ic4_LIBRARY_PATH "")
+set(ic4_LIBRARIES "${IC4_LIBRARIES}")
 
 add_subdirectory(libs)
 add_subdirectory(src)
@@ -119,6 +116,7 @@ set(CPACK_DEBIAN_PACKAGE_VERSION "${IC4SRC_VERSION}.${GIT_COMMIT_COUNT}")
 set(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
 
 set(CPACK_DEBIAN_BIN_PACKAGE_PRIORITY "optional")
+set(CPACK_DEBIAN_DEBUGINFO_PACKAGE "On")
 
 include(package-name)
 
