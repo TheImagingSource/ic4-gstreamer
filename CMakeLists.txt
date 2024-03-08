@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 #Name your project here
-project(tcamic4src)
+project(tcamic4src LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -38,8 +38,13 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${IC4SRC_BINARY_DIR}/lib)
 
 if( ${GIT_REPO_PRESENT} )
   message(STATUS "IC4SRC_VERSION: ${IC4SRC_VERSION}, Git: commit#=${GIT_COMMIT_COUNT}, branch=${GIT_BRANCH} hash=${GIT_COMMIT_HASH}" )
+
+  set(IC4SRC_VERSION_FULL "${IC4SRC_VERSION}.${GIT_COMMIT_COUNT}" CACHE STRING "Full version number")
+
 else()
   message(STATUS "IC4SRC_VERSION: ${IC4SRC_VERSION}, Git: No repo found" )
+
+  set(IC4SRC_VERSION_FULL "${IC4SRC_VERSION}" CACHE STRING "Full version number")
 endif()
 
 # All option for configuration come from here
