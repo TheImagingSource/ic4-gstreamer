@@ -524,23 +524,22 @@ struct TcamPropertyEnumeration : TcamPropertyBase<tcamprop1::property_interface_
         : TcamPropertyBase { prop }
     {
         auto tmp = m_prop.asEnumeration();
-        auto entries = tmp.entries();
-        if (!entries.empty())
+        m_entries = tmp.entries();
+        if (!m_entries.empty())
         {
-            m_default = entries.at(0).name();
+            m_default = m_entries.at(0).name();
         }
     }
 
     std::string m_default;
+    std::string m_value;
+    std::vector<ic4::PropEnumEntry> m_entries;
 
     auto get_property_range(uint32_t /* flags = 0 */)
         -> outcome::result<tcamprop1::prop_range_enumeration> final
     {
-        auto tmp = m_prop.asEnumeration();
-        auto entries = tmp.entries();
-
         std::vector<std::string> vals;
-        for (const auto& e : entries)
+        for (const auto& e : m_entries)
         {
             vals.push_back(e.name());
         }
@@ -550,21 +549,7 @@ struct TcamPropertyEnumeration : TcamPropertyBase<tcamprop1::property_interface_
 
     auto get_property_default(uint32_t /*flags = 0 */) -> outcome::result<std::string_view> final
     {
-        auto tmp = m_prop.asEnumeration();
-
-        auto entries = tmp.entries();
-
-        if (entries.empty())
-        {
-            return nullptr;
-        }
-
         return m_default;
-        //tmp.
-        //m_prop.get
-        // auto tmp = static_cast<tcam::property::IPropertyEnum*>(m_prop.get());
-
-        // return tmp->get_default();
     }
 
     auto get_property_value(uint32_t /*flags*/) -> outcome::result<std::string_view> final
@@ -572,7 +557,10 @@ struct TcamPropertyEnumeration : TcamPropertyBase<tcamprop1::property_interface_
         auto tmp = m_prop.asEnumeration();
 
         auto entry = tmp.selectedEntry();
-        return entry.name();
+
+        m_value = entry.name();
+
+        return m_value;
     }
 
     auto set_property_value(std::string_view value, uint32_t /*flags*/) -> std::error_code final
