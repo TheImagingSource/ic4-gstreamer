@@ -129,6 +129,7 @@ tcamprop1::Visibility_t vis_to_prop(ic4::PropVisibility vis)
             return tcamprop1::Visibility_t::Invisible;
         } ///< Invisible
     }
+    return tcamprop1::Visibility_t::Beginner;
 }
 
 TcamPropertyVisibility visibility_to_tcamprop(ic4::PropVisibility vis)
@@ -152,6 +153,8 @@ TcamPropertyVisibility visibility_to_tcamprop(ic4::PropVisibility vis)
             return TcamPropertyVisibility::TCAM_PROPERTY_VISIBILITY_INVISIBLE;
         }
     }
+    return TcamPropertyVisibility::TCAM_PROPERTY_VISIBILITY_BEGINNER;
+
 }
 
 } //namespace
@@ -337,6 +340,7 @@ struct TcamPropertyInteger : TcamPropertyBase<tcamprop1::property_interface_inte
                     return tcamprop1::IntRepresentation_t::PureNumber;
                 }
             }
+            return tcamprop1::IntRepresentation_t::Linear;
         };
 
         return int_rep_to_tcamprop(ic4_rep);
@@ -449,6 +453,8 @@ struct TcamPropertyFloat : TcamPropertyBase<tcamprop1::property_interface_float>
                 }
 
             }
+            return tcamprop1::FloatRepresentation_t::Linear;
+
         };
 
         return float_rep_to_tcamprop(ic4_rep);
@@ -506,7 +512,7 @@ struct TcamPropertyBoolean : TcamPropertyBase<tcamprop1::property_interface_bool
             return tcamprop1::status::success;
         }
 
-        GST_ERROR("Error while setting Bool %s: %s", m_prop.name().c_str(), err.message());
+        GST_ERROR("Error while setting Bool %s: %s", m_prop.name().c_str(), err.message().c_str());
         return ic4_error_to_std(err);
     }
 };
@@ -601,6 +607,9 @@ struct TcamPropertyCommand : TcamPropertyBase<tcamprop1::property_interface_comm
         auto tmp = m_prop.asCommand();
 
         tmp.execute();
+
+        return tcamprop1::status::success;
+
     }
 };
 
@@ -633,6 +642,8 @@ struct TcamPropertyString : TcamPropertyBase<tcamprop1::property_interface_strin
         {
             return tcamprop1::status::success;
         }
+
+        return ic4_error_to_std(err);
         //return  err.code();
         //return ret.Code;
     }
