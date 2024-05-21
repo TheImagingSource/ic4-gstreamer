@@ -38,8 +38,6 @@ target_include_directories(gsttcamic4src
    ${GLIB2_INCLUDE_DIR}
    ${GObject_INCLUDE_DIR}
 
-   ${ic4_INCLUDE_PATH}
-
 )
 
 target_link_libraries( gsttcamic4src
@@ -53,8 +51,7 @@ target_link_libraries( gsttcamic4src
   ${GObject_LIBRARIES}
   ${INTROSPECTION_LIBS}
 
-  ${ic4_LIBRARIES}
-
+  ic4::core
   tcam::gst-helper
   tcam::tcam-property
   tcam::tcamgststatistics
