@@ -318,6 +318,28 @@ const prop_static_info_float lst::TonemappingIntensity = make_Float(
     "Adjusts the intensity of the tonemapping algorithm."
 );
 
+
+const prop_static_info_enumeration lst::ColorTransformationSelector = make_Enumeration(
+    "ColorTransformationSelector",
+    "Color Transformation Control",
+    "Color Transformation Selector",
+    ""
+);
+
+const prop_static_info_enumeration lst::ColorTransformationValueSelector = make_Enumeration(
+    "ColorTransformationValueSelector",
+    "Color Transformation Control",
+    "Color Transformation Value Selector",
+    ""
+);
+
+const prop_static_info_float lst::ColorTransformationValue = make_Float(
+    "ColorTransformationValue",
+    "Color Transformation Control",
+    "Color Transformation Value",
+    ""
+);
+
 const prop_static_info_boolean lst::ColorTransformationEnable = make_Boolean(
     "ColorTransformationEnable",
     "Color Correction", "Color Transformation Enable",
@@ -702,3 +724,105 @@ const prop_static_info_boolean lst::ShowInfoOverlay = make_Boolean(
     "Show Info Overlay",
     "Show an overlay containing stream information for the first few seconds after stream start."
 );
+
+const prop_static_info_boolean lst::ShowOverlay = make_Boolean(
+     "ShowOverlay",
+     "Software Transform Control",
+     "Show Overlay",
+     "Show debug overlay in stream."
+);
+
+
+const prop_static_info_boolean lst::ChunkModeActive = make_Boolean(
+    "ChunkModeActive",
+    "Chunk Data Control",
+    "Chunk Mode Active",
+    ""
+);
+
+const prop_static_info_enumeration lst::ChunkSelector = make_Enumeration(
+    "ChunkSelector",
+    "Chunk Data Control",
+    "Chunk Selector",
+    ""
+);
+
+const prop_static_info_boolean lst::ChunkEnable = make_Boolean(
+    "ChunkEnable",
+    "Chunk Data Control",
+    "Chunk Enable",
+    ""
+);
+
+
+
+const prop_static_info_integer lst::WidthMax = make_Integer(
+    "WidthMax",
+    "Image Format Control", "Width Max",
+    "Effective width of the sensor in pixels.", {}, IntRepresentation_t::PureNumber, Visibility_t::Expert, Access_t::RO
+);
+
+const prop_static_info_integer lst::HeightMax = make_Integer(
+    "HeightMax",
+    "Image Format Control", "Height Max",
+    "Effective height of the sensor in pixels.", {}, IntRepresentation_t::PureNumber, Visibility_t::Expert, Access_t::RO
+);
+
+
+const prop_static_info_boolean lst::ToneMappingEnable = make_Boolean(
+                                                                     "ToneMappingEnable",
+                                                                     "Tone Mapping Control",
+                                                                     "Tone Mapping Enable",
+                                                                     ""
+                                                                     );
+
+const prop_static_info_float lst::ToneMappingIntensity = make_Float(
+                                                                     "ToneMappingIntensity",
+                                                                     "Tone Mapping Control",
+                                                                     "Tone Mapping Intensity",
+                                                                     ""
+                                                                     );
+
+const prop_static_info_float lst::ToneMappingGlobalBrightness = make_Float(
+                                                                     "ToneMappingGlobalBrightness",
+                                                                     "Tone Mapping Control",
+                                                                     "Tone Mapping Global Brightness",
+                                                                     ""
+                                                                     );
+
+const prop_static_info_enumeration lst::DeviceType = make_Enumeration(
+                                                                      "DeviceType", "Device Control", "Device Type", "");
+const prop_static_info_float lst::DeviceTemperature = make_Float("DeviceTemperature", "Device Control", "Temperature", "");
+const prop_static_info_enumeration lst::DeviceTemperatureSelector = make_Enumeration("DeviceTemperatureSelector", "Device Control", "Temperature Selector", "");
+const prop_static_info_integer lst::TimestampLatchValue = make_Integer("TimestampLatchValue", "Device Control", "Timestamp Latch Value", "");
+const prop_static_info_command lst::TimestampLatch = make_Command("TimestampLatch", "Device Control", "Timestamp Latch", "");
+const prop_static_info_command lst::TimestampReset = make_Command("TimestampReset", "Device Control", "Timestamp Reset", "");
+const prop_static_info_enumeration lst::DeviceScanType = make_Enumeration("DeviceScanType", "Device Control", "Device Scan Type", "");
+const prop_static_info_string lst::DeviceVendorName = make_String("DeviceVendorName", "Device Control", "Vendor Name", "");
+const prop_static_info_string lst::DeviceModelName = make_String("DeviceModelName", "Device Control", "Model Name", "");
+const prop_static_info_string lst::DeviceFirmwareVersion = make_String("DeviceFirmwareVersion", "Device Control", "Firmware Version", "");
+const prop_static_info_string lst::DeviceSerialNumber = make_String("DeviceSerialNumber", "Device Control", "Serial Number", "");
+const prop_static_info_string lst::DeviceUserID = make_String("DeviceUserID", "Device Control", "User ID", "");
+const prop_static_info_integer lst::DeviceSFNCVersionMajor = make_Integer("DeviceSFNCVersionMajor", "Device Control", "SFNC Version Major", "");
+const prop_static_info_integer lst::DeviceSFNCVersionMinor = make_Integer("DeviceSFNCVersionMinor", "Device Control", "SFNC Version Minor", "");
+const prop_static_info_integer lst::DeviceSFNCVersionSubMinor = make_Integer("DeviceSFNCVersionSubMinor", "Device Control", "SFNC Version Sub Minor", "");
+const prop_static_info_enumeration lst::DeviceTLType = make_Enumeration("DeviceTLType", "Device Control", "TL Type", "");
+const prop_static_info_integer lst::DeviceTLVersionMajor = make_Integer("DeviceTLVersionMajor", "Device Control", "TL Version Major", "");
+const prop_static_info_integer lst::DeviceTLVersionMinor = make_Integer("DeviceTLVersionMinor", "Device Control", "TL Version Minor", "");
+const prop_static_info_integer lst::DeviceTLVersionSubMinor = make_Integer("DeviceTLVersionSubMinor", "Device Control", "TL Version Sub Minor", "");
+const prop_static_info_command lst::DeviceReset = make_Command("DeviceReset", "Device Control", "Device Reset", "");
+
+const prop_static_info_enumeration lst::UserSetSelector = make_Enumeration("UserSetSelector", "User Set Control", "User Set Selector", "");
+const prop_static_info_command lst::UserSetLoad = make_Command("UserSetLoad", "User Set Control", "User Set Load", "");
+const prop_static_info_command lst::UserSetSave = make_Command("UserSetSave", "User Set Control", "User Set Save", "");
+const prop_static_info_enumeration lst::UserSetDefault = make_Enumeration("UserSetDefault", "User Set Control", "User Set Default", "");
+
+const prop_static_info_integer lst::TestPendingAck = make_Integer("TestPendingAck", "Test Control", "Test Pending Ack", "");
+
+const prop_static_info_enumeration lst::BalanceRatioSelector = make_Enumeration("BalanceRatioSelector", "Analog Control", "Balance Ratio Selector", "");
+const prop_static_info_float lst::BalanceRatio = make_Float("BalanceRatio", "Analog Control", "Balance Ratio", "");
+
+const prop_static_info_integer lst::DecimationVertical = make_Integer("DecimationVertical", "Image Format Control", "DecimationVertical", "");
+const prop_static_info_integer lst::DecimationHorizontal = make_Integer("DecimationHorizontal", "Image Format Control", "DecimationHorizontal", "");
+
+const prop_static_info_boolean lst::SoftwareTransformEnable = make_Boolean("SoftwareTransformEnable", "Software Transform Control", "SoftwareTransformEnable", "");

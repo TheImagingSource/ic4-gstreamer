@@ -100,6 +100,14 @@ namespace tcamprop1::prop_list
     extern const prop_static_info_float TonemappingGlobalBrightness;
     extern const prop_static_info_float TonemappingIntensity;
 
+    extern const prop_static_info_boolean ToneMappingEnable;
+    extern const prop_static_info_float ToneMappingGlobalBrightness;
+    extern const prop_static_info_float ToneMappingIntensity;
+
+    extern const prop_static_info_enumeration ColorTransformationSelector;
+    extern const prop_static_info_enumeration ColorTransformationValueSelector;
+    extern const prop_static_info_float ColorTransformationValue;
+
     extern const prop_static_info_boolean ColorTransformationEnable;
     extern const prop_static_info_float ColorTransformation_Value_Gain00;
     extern const prop_static_info_float ColorTransformation_Value_Gain01;
@@ -114,6 +122,10 @@ namespace tcamprop1::prop_list
     // GenICam standard property
     extern const prop_static_info_integer SensorWidth;
     extern const prop_static_info_integer SensorHeight;
+
+    // GenICam standard property
+    extern const prop_static_info_integer WidthMax;
+    extern const prop_static_info_integer HeightMax;
 
     // strobe stuff
     constexpr const std::array<std::string_view, 2> StrobePolarity_enum_entries = { "ActiveHigh", "ActiveLow" };
@@ -178,6 +190,49 @@ namespace tcamprop1::prop_list
 
     extern const prop_static_info_boolean ExpandOutputRange;
     extern const prop_static_info_boolean ShowInfoOverlay;
+    extern const prop_static_info_boolean ShowOverlay;
+
+    extern const prop_static_info_boolean ChunkModeActive;
+    extern const prop_static_info_enumeration ChunkSelector;
+    extern const prop_static_info_boolean ChunkEnable;
+
+    extern const prop_static_info_enumeration DeviceType;
+    extern const prop_static_info_float DeviceTemperature;
+    extern const prop_static_info_enumeration DeviceTemperatureSelector;
+    extern const prop_static_info_integer TimestampLatchValue;
+    extern const prop_static_info_command TimestampLatch;
+    extern const prop_static_info_command TimestampReset;
+    extern const prop_static_info_enumeration DeviceScanType;
+    extern const prop_static_info_string DeviceVendorName;
+    extern const prop_static_info_string DeviceModelName;
+    extern const prop_static_info_string DeviceFirmwareVersion;
+    extern const prop_static_info_string DeviceSerialNumber;
+    extern const prop_static_info_string DeviceUserID;
+    extern const prop_static_info_integer DeviceSFNCVersionMajor;
+    extern const prop_static_info_integer DeviceSFNCVersionMinor;
+    extern const prop_static_info_integer DeviceSFNCVersionSubMinor;
+    extern const prop_static_info_enumeration DeviceTLType;
+    extern const prop_static_info_integer DeviceTLVersionMajor;
+    extern const prop_static_info_integer DeviceTLVersionMinor;
+    extern const prop_static_info_integer DeviceTLVersionSubMinor;
+    extern const prop_static_info_command DeviceReset;
+
+    extern const prop_static_info_command UserSetLoad;
+    extern const prop_static_info_command UserSetSave;
+    extern const prop_static_info_enumeration UserSetSelector;
+    extern const prop_static_info_enumeration UserSetDefault;
+
+    extern const prop_static_info_integer TestPendingAck;
+
+
+    extern const prop_static_info_enumeration BalanceRatioSelector;
+    extern const prop_static_info_float BalanceRatio;
+
+    extern const prop_static_info_integer DecimationVertical;
+    extern const prop_static_info_integer DecimationHorizontal;
+
+    extern const prop_static_info_boolean SoftwareTransformEnable;
+
 
 /* Disable these, because this is a device-specific property, and should always come out of the GenICam document of the device itself.
     extern const prop_static_info_integer ActionQueueSize;

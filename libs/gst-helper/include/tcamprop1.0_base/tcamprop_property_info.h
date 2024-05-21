@@ -36,6 +36,11 @@ namespace tcamprop1
         static const constexpr prop_type property_type = prop_type::Command;
     };
 
+    struct prop_static_info_string : prop_static_info
+    {
+        static const constexpr prop_type property_type = prop_type::String;
+    };
+
     namespace prop_list
     {
         constexpr prop_static_info_float                make_Float( std::string_view name, std::string_view category, std::string_view display_name, std::string_view description,
@@ -61,6 +66,10 @@ namespace tcamprop1
             return { name, category, display_name, description, vis, access };
         }
         static constexpr prop_static_info_command       make_Command( std::string_view name, std::string_view category, std::string_view display_name, std::string_view description,
+                                                                      Visibility_t vis = Visibility_t::Beginner, Access_t access = Access_t::RW ) noexcept {
+            return { name, category, display_name, description, vis, access };
+        }
+        static constexpr prop_static_info_string       make_String( std::string_view name, std::string_view category, std::string_view display_name, std::string_view description,
                                                                       Visibility_t vis = Visibility_t::Beginner, Access_t access = Access_t::RW ) noexcept {
             return { name, category, display_name, description, vis, access };
         }

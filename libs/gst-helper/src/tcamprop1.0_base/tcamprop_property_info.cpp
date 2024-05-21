@@ -75,6 +75,14 @@ static const constexpr tcamprop1::prop_static_info_find_result static_prop_list[
     to_( lst::TonemappingEnable ),
     to_( lst::TonemappingGlobalBrightness ),
     to_( lst::TonemappingIntensity ),
+    to_( lst::ToneMappingEnable ),
+    to_( lst::ToneMappingGlobalBrightness ),
+    to_( lst::ToneMappingIntensity ),
+
+    to_( lst::ColorTransformationSelector ),
+    to_( lst::ColorTransformationValueSelector ),
+    to_( lst::ColorTransformationValue ),
+
     to_( lst::ColorTransformationEnable ),
     to_( lst::ColorTransformation_Value_Gain00 ),
     to_( lst::ColorTransformation_Value_Gain01 ),
@@ -138,9 +146,54 @@ static const constexpr tcamprop1::prop_static_info_find_result static_prop_list[
 
     to_( lst::ExpandOutputRange ),
     to_( lst::ShowInfoOverlay ),
+    to_( lst::ShowOverlay ),
+
+
+    to_( lst::ChunkModeActive ),
+    to_( lst::ChunkSelector ),
+    to_( lst::ChunkEnable ),
 
     to_( lst::SensorWidth ),
     to_( lst::SensorHeight ),
+
+    to_( lst::WidthMax ),
+    to_( lst::HeightMax ),
+
+
+    to_( lst::DeviceType ),
+    to_( lst::DeviceTemperature ),
+    to_( lst::DeviceTemperatureSelector ),
+    to_( lst::TimestampLatchValue ),
+    to_( lst::TimestampLatch ),
+    to_( lst::TimestampReset ),
+    to_( lst::DeviceScanType ),
+    to_( lst::DeviceVendorName ),
+    to_( lst::DeviceModelName ),
+    to_( lst::DeviceFirmwareVersion ),
+    to_( lst::DeviceSerialNumber ),
+    to_( lst::DeviceUserID ),
+    to_( lst::DeviceSFNCVersionMajor ),
+    to_( lst::DeviceSFNCVersionMinor ),
+    to_( lst::DeviceSFNCVersionSubMinor ),
+    to_( lst::DeviceTLType ),
+    to_( lst::DeviceTLVersionMajor ),
+    to_( lst::DeviceTLVersionMinor ),
+    to_( lst::DeviceTLVersionSubMinor ),
+    to_( lst::DeviceReset ),
+
+    to_( lst::UserSetSelector ),
+    to_( lst::UserSetLoad ),
+    to_( lst::UserSetSave ),
+    to_( lst::UserSetDefault ),
+
+    to_( lst::TestPendingAck ),
+
+
+    to_( lst::BalanceRatioSelector ),
+    to_( lst::BalanceRatio ),
+    to_( lst::DecimationVertical ),
+    to_( lst::DecimationHorizontal ),
+    to_( lst::SoftwareTransformEnable ),
 
 #if 0
     to_( lst::test ),

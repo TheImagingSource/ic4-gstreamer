@@ -33,7 +33,9 @@ struct TcamPropHelperEnumeration
     template<class T>
     static const char*    get_range_entry( T& self_ref, outcome::result<std::string_view>&& op_result,  GError** err )
     {
-        if( op_result.has_error() ) {
+
+        if( op_result.has_error() )
+        {
             fill_GError( op_result.error(), err );
             return nullptr;
         }
@@ -42,18 +44,23 @@ struct TcamPropHelperEnumeration
 
         {
             std::lock_guard lck{ self_ref.parent.enum_range_cache_mutex_ };
-            if( !self_ref.parent.enum_range_cache_ ) {
-                if( auto range_opt = self_ref->get_property_range(); range_opt.has_error() ) {
+            if( !self_ref.parent.enum_range_cache_ )
+            {
+                if( auto range_opt = self_ref->get_property_range(); range_opt.has_error() )
+                {
                     fill_GError( range_opt.error(), err );
                     return nullptr;
-                } else {
+                }
+                else
+                {
                     self_ref.parent.enum_range_cache_ = range_opt.value();
                 }
             }
         }
 
         int index = self_ref.parent.enum_range_cache_.value().get_index_of( entry );
-        if( index < 0 ) {
+        if( index < 0 )
+        {
             fill_GError( err, tcamprop1::status::enumeration_property_list_error );
             return nullptr;
         }
