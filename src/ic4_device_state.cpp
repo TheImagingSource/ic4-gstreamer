@@ -55,7 +55,7 @@ void iterate_node_children(ic4::PropCategory& category, ic4::gst::src_interface_
         }
         else
         {
-            if (is_blacklist_property(child.name()))
+            if (is_blacklist_property(child.name()) || child.visibility() == ic4::PropVisibility::Invisible)
             {
                 continue;
             }
