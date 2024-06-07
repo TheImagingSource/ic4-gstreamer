@@ -23,7 +23,6 @@ gst-launch-1.0 -v tcamic4src serial=40210174
 
 ### Open
 
-- GstTcamStatistics
 - documentation
 - support for formats other than bayer/mono
 - caps support for resolution sets (not implemented in ic4)
@@ -36,6 +35,7 @@ gst-launch-1.0 -v tcamic4src serial=40210174
 - Basic caps handling
 - Basic property handling
 - Device lost
+- GstTcamStatistics
 
 ## License
 
