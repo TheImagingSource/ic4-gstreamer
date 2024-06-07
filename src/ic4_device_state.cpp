@@ -16,6 +16,8 @@ struct blacklist_entry
 static const std::string property_blacklist[] = {
     "Width",
     "Height",
+    "BinningHorizontal",
+    "BinningVertical",
     "PixelFormat",
     "AcquisitionFrameRate",
     "PayloadSize",
