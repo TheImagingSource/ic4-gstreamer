@@ -1,0 +1,84 @@
+{
+    "version": 6,
+    "configurePresets": [
+        {
+            "name": "Linux",
+            "hidden": true,
+            "description": "Target Linux system.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "installDir": "${sourceDir}/out/install/${presetName}",
+            "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+            "condition": {
+                "type": "notEquals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "linux-debug",
+            "displayName": "Linux Debug",
+            "inherits": "Linux",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "linux-release",
+            "displayName": "Linux Release",
+            "inherits": "Linux",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "linux-debug",
+            "displayName": "Debug",
+            "configurePreset": "linux-debug",
+            "configuration": "Debug"
+        },
+        {
+            "name": "linux-release",
+            "displayName": "Release",
+            "configurePreset": "linux-release",
+            "configuration": "RelWithDebInfo"
+        }
+    ],
+    "packagePresets": [
+        {
+            "name": "package-linux",
+            "configurePreset": "linux-release",
+            "packageDirectory": "$env{PROJECT_PACKAGE_OUTPUT_PATH}",
+            "generators": [
+                "DEB"
+            ],
+            "condition": {
+                "type": "notEquals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "package-linux",
+            "displayName": "Package Linux",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "linux-release"
+                },
+                {
+                    "type": "build",
+                    "name": "linux-release"
+                },
+                {
+                    "type": "package",
+                    "name": "package-linux"
+                }
+            ]
+        }
+    ]
+}
