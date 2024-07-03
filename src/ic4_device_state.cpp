@@ -61,7 +61,7 @@ void iterate_node_children(ic4::PropCategory& category, ic4::gst::src_interface_
             {
                 continue;
             }
-            auto prop = ic4::gst::make_wrapper_instance(child);
+            auto prop = ic4::gst::make_wrapper_instance(child, category.name());
 
             if (prop)
             {

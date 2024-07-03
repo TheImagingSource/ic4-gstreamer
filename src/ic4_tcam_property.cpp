@@ -13,6 +13,8 @@
 #include <outcome/result.hpp>
 #include <system_error>
 #include <vector>
+#include <string>
+#include <string_view>
 
 #include "../libs/gst-helper/include/tcamprop1.0_base/tcamprop_property_interface.h"
 #include "tcamprop1.0_base/tcamprop_base.h"
@@ -164,12 +166,13 @@ namespace ic4::gst
 
 template <class TBase> struct TcamPropertyBase : TBase
 {
-    TcamPropertyBase(ic4::Property& prop)
+    TcamPropertyBase(ic4::Property& prop, const std::string& category)
         : m_prop(prop)
     {
         m_name = m_prop.name();
         m_display_name = m_prop.displayName();
         m_description = m_prop.description();
+        m_category = category;
     }
 
     ic4::Property m_prop;
@@ -177,6 +180,7 @@ template <class TBase> struct TcamPropertyBase : TBase
     std::string m_name;
     std::string m_display_name;
     std::string m_description;
+    std::string m_category;
 
     auto get_property_name() const noexcept -> std::string_view final
     {
@@ -194,11 +198,11 @@ template <class TBase> struct TcamPropertyBase : TBase
         info.display_name = m_display_name;
         info.description = m_description;
 
-        auto static_info = tcamprop1::find_prop_static_info(m_name);
-        if (static_info.info_ptr)
+        if (!m_category.empty())
         {
-            info.iccategory = static_info.info_ptr->iccategory;
+            info.iccategory = m_category;
         }
+
         return info;
     }
 
@@ -219,8 +223,8 @@ template <class TBase> struct TcamPropertyBase : TBase
 
 struct TcamPropertyInteger : TcamPropertyBase<tcamprop1::property_interface_integer>
 {
-    TcamPropertyInteger(ic4::Property& prop)
-        : TcamPropertyBase { prop }
+    TcamPropertyInteger(ic4::Property& prop, const std::string& category)
+        : TcamPropertyBase { prop, category }
     {
         auto tmp = m_prop.asInteger();
 
@@ -355,8 +359,8 @@ struct TcamPropertyInteger : TcamPropertyBase<tcamprop1::property_interface_inte
 
 struct TcamPropertyFloat : TcamPropertyBase<tcamprop1::property_interface_float>
 {
-    TcamPropertyFloat(ic4::Property& prop)
-        : TcamPropertyBase { prop }
+    TcamPropertyFloat(ic4::Property& prop, const std::string& category)
+        : TcamPropertyBase { prop, category }
     {
         auto tmp = m_prop.asFloat();
 
@@ -470,10 +474,9 @@ struct TcamPropertyFloat : TcamPropertyBase<tcamprop1::property_interface_float>
 
 struct TcamPropertyBoolean : TcamPropertyBase<tcamprop1::property_interface_boolean>
 {
-    TcamPropertyBoolean(ic4::Property& prop)
-        : TcamPropertyBase { prop }
-    {
-    }
+    TcamPropertyBoolean(ic4::Property& prop, const std::string& category)
+        : TcamPropertyBase { prop, category }
+    {}
 
     auto get_property_default(uint32_t /* flags = 0 */) -> outcome::result<bool> final
     {
@@ -520,8 +523,9 @@ struct TcamPropertyBoolean : TcamPropertyBase<tcamprop1::property_interface_bool
 
 struct TcamPropertyEnumeration : TcamPropertyBase<tcamprop1::property_interface_enumeration>
 {
-    TcamPropertyEnumeration(ic4::Property& prop)
-        : TcamPropertyBase { prop }
+
+    TcamPropertyEnumeration(ic4::Property& prop, const std::string& category)
+        : TcamPropertyBase { prop, category }
     {
         auto tmp = m_prop.asEnumeration();
         m_entries = tmp.entries();
@@ -585,8 +589,8 @@ struct TcamPropertyEnumeration : TcamPropertyBase<tcamprop1::property_interface_
 
 struct TcamPropertyCommand : TcamPropertyBase<tcamprop1::property_interface_command>
 {
-    TcamPropertyCommand(ic4::Property& prop)
-        : TcamPropertyBase { prop }
+    TcamPropertyCommand(ic4::Property& prop, const std::string& category)
+        : TcamPropertyBase { prop, category }
     {
     }
 
@@ -604,10 +608,9 @@ struct TcamPropertyCommand : TcamPropertyBase<tcamprop1::property_interface_comm
 
 struct TcamPropertyString : TcamPropertyBase<tcamprop1::property_interface_string>
 {
-    TcamPropertyString(ic4::Property& prop)
-        : TcamPropertyBase { prop }
-    {
-    }
+    TcamPropertyString(ic4::Property& prop, const std::string& category)
+        : TcamPropertyBase { prop, category }
+    {}
 
 
     auto get_property_value(uint32_t /*flags*/) -> outcome::result<std::string> final
@@ -640,35 +643,34 @@ struct TcamPropertyString : TcamPropertyBase<tcamprop1::property_interface_strin
 } // namespace ic4::gst
 
 
-auto ic4::gst::make_wrapper_instance(
-    ic4::Property& prop)
+auto ic4::gst::make_wrapper_instance(ic4::Property& prop, const std::string& category)
     -> std::unique_ptr<tcamprop1::property_interface>
 {
     switch (prop.type())
     {
         case ic4::PropType::Integer:
         {
-            return std::make_unique<ic4::gst::TcamPropertyInteger>(prop);
+            return std::make_unique<ic4::gst::TcamPropertyInteger>(prop, category);
         }
         case ic4::PropType::Float:
         {
-            return std::make_unique<ic4::gst::TcamPropertyFloat>(prop);
+            return std::make_unique<ic4::gst::TcamPropertyFloat>(prop, category);
         }
         case ic4::PropType::Boolean:
         {
-            return std::make_unique<ic4::gst::TcamPropertyBoolean>(prop);
+            return std::make_unique<ic4::gst::TcamPropertyBoolean>(prop, category);
         }
         case ic4::PropType::Enumeration:
         {
-            return std::make_unique<ic4::gst::TcamPropertyEnumeration>(prop);
+            return std::make_unique<ic4::gst::TcamPropertyEnumeration>(prop, category);
         }
         case ic4::PropType::Command:
         {
-            return std::make_unique<ic4::gst::TcamPropertyCommand>(prop);
+            return std::make_unique<ic4::gst::TcamPropertyCommand>(prop, category);
         }
         case ic4::PropType::String:
         {
-            return std::make_unique<ic4::gst::TcamPropertyString>(prop);
+            return std::make_unique<ic4::gst::TcamPropertyString>(prop, category);
         }
         case ic4::PropType::Category:
         case ic4::PropType::EnumEntry:
