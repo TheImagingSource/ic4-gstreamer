@@ -189,8 +189,6 @@ template <class TBase> struct TcamPropertyBase : TBase
 
     auto get_property_info() const noexcept -> tcamprop1::prop_static_info final
     {
-        //return m_prop.get_static_info();
-
         tcamprop1::prop_static_info info = {};
 
         info.visibility = vis_to_prop(m_prop.visibility());
@@ -215,7 +213,7 @@ template <class TBase> struct TcamPropertyBase : TBase
         ret.is_locked = m_prop.isLocked();
         ret.is_available = m_prop.isAvailable();
         ret.is_name_hidden = false;
-        //flags & tcam::property::PropertyFlags::Hidden;
+
         return ret;
     }
 };
@@ -251,8 +249,6 @@ struct TcamPropertyInteger : TcamPropertyBase<tcamprop1::property_interface_inte
     {
         auto tmp = m_prop.asInteger();
 
-        //int64_t ret = tmp.getDefault();
-        //return ret;
         return 0;
     }
 
@@ -275,32 +271,15 @@ struct TcamPropertyInteger : TcamPropertyBase<tcamprop1::property_interface_inte
     }
     auto set_property_value(int64_t value, uint32_t /*flags*/) -> std::error_code final
     {
-        // auto tmp = static_cast<tcam::property::IPropertyInteger*>(m_prop.get());
-
-        // if (property::is_locked(m_prop.get_flags()))
-        // {
-        //     return tcam::status::PropertyNotWriteable;
-        // }
-
-        // auto ret = tmp->set_value(value);
-        // if (ret)
-        // {
-        //     return tcam::status::Success;
-        // }
-        // return ret.error();
-
-
         auto tmp = m_prop.asInteger();
         ic4::Error err;
         auto ret = tmp.setValue(value, err);
+
         if (ret)
         {
             return tcamprop1::status::success;
-            //tcam::status::Success;
         }
-        //return err.getVal().;
-        // TODO: error handling
-        //return err;//. .error();
+
         return ic4_error_to_std(err);
     }
 
@@ -386,12 +365,6 @@ struct TcamPropertyFloat : TcamPropertyBase<tcamprop1::property_interface_float>
     auto get_property_default(uint32_t /* flags = 0 */) -> outcome::result<double> final
     {
         return 0.0;
-        // auto tmp = m_prop.asFloat();
-
-        // double ret;
-
-        // tmp.getDefault(ret);
-        // return ret;
     }
 
     auto get_property_value(uint32_t /*flags*/) -> outcome::result<double> final
@@ -421,14 +394,12 @@ struct TcamPropertyFloat : TcamPropertyBase<tcamprop1::property_interface_float>
         if (ret)
         {
             return tcamprop1::status::success;
-            //            return tcam::status::Success;
         }
         else
         {
             GST_ERROR("%s", err.message().c_str());
         }
-        //return err.getVal().;
-        // TODO: error handling
+
         return ic4_error_to_std(err);
     }
 
@@ -481,11 +452,6 @@ struct TcamPropertyBoolean : TcamPropertyBase<tcamprop1::property_interface_bool
     auto get_property_default(uint32_t /* flags = 0 */) -> outcome::result<bool> final
     {
         return false;
-        // auto tmp = m_prop.asBoolean();
-
-        // bool ret;
-        // tmp.getDefault(ret);
-        // return ret;
     }
 
     auto get_property_value(uint32_t /*flags*/) -> outcome::result<bool> final
@@ -502,13 +468,6 @@ struct TcamPropertyBoolean : TcamPropertyBase<tcamprop1::property_interface_bool
 
         ic4::Error err;
         auto ret = tmp.setValue(value, err);
-
-        // if (property::is_locked(m_prop.get_flags()))
-        // {
-        //     return tcam::status::PropertyNotWriteable;
-        // }
-
-        // auto ret = tmp->set_value(value);
 
         if (ret)
         {
