@@ -112,7 +112,7 @@ set(CPACK_PACKAGE_VERSION_MAJOR "${IC4SRC_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${IC4SRC_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${IC4SRC_VERSION_PATCH}")
 
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgstreamer1.0-0 >= 1.8.0, tcam-property >= 1.1.0, ic4 >= 1.1.0")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgstreamer1.0-0 (>= 1.8.0), tiscamera-tcamproperty (>= 1.1.0), ic4 (>= 1.1.0)")
 
 git_commit_count(GIT_COMMIT_COUNT)
 
