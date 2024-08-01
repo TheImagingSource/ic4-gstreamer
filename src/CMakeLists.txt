@@ -56,6 +56,9 @@ target_link_libraries( gsttcamic4src
   tcam::tcam-property
   tcam::tcamgststatistics
   tcamprop1::provider_gobject
+
+  -static-libstdc++
+  -static-libgcc
 )
 
 set_project_warnings(gsttcamic4src)
