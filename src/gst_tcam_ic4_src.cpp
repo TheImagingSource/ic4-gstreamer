@@ -47,6 +47,7 @@ enum {
 enum {
     PROP_0,
     PROP_SERIAL,
+    PROP_DEVICE_TYPE,
 };
 
 static guint gst_tcamic4src_signals[SIGNAL_LAST] = {
@@ -161,7 +162,7 @@ static GstCaps* gst_tcam_ic4_src_fixate_caps(GstBaseSrc* bsrc, GstCaps* caps)
 
 static gboolean gst_tcam_ic4_src_negotiate(GstBaseSrc* basesrc)
 {
-    GstTcamIC4Src* self = GST_TCAM_IC4_SRC(basesrc);
+    // GstTcamIC4Src* self = GST_TCAM_IC4_SRC(basesrc);
 
     /* first see what is possible on our source pad */
     GstCaps *thiscaps = gst_pad_query_caps(GST_BASE_SRC_PAD(basesrc), NULL);
@@ -758,7 +759,11 @@ static void gst_tcam_ic4_src_get_property(
             g_value_set_string(value, self->device->get_serial().c_str());
             break;
         }
-
+        case PROP_DEVICE_TYPE:
+        {
+            g_value_set_string(value, "ic4");
+            break;
+        }
         default: {
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
             break;
@@ -811,12 +816,12 @@ static void gst_tcam_ic4_src_class_init(GstTcamIC4SrcClass * klass) {
                             static_cast<GParamFlags>(G_PARAM_READWRITE |
                                                      G_PARAM_STATIC_STRINGS)));
 
-    // g_object_class_install_property(
-    //     gobject_class, PROP_DEVICE_TYPE,
-    //     g_param_spec_string("type", "Camera type", "type/backend of the camera",
-    //                         "auto",
-    //                         static_cast<GParamFlags>(G_PARAM_READWRITE |
-    //                                                  G_PARAM_STATIC_STRINGS)));
+    g_object_class_install_property(
+        gobject_class, PROP_DEVICE_TYPE,
+        g_param_spec_string("type", "Camera type", "type/backend of the camera",
+                            "ic4",
+                            static_cast<GParamFlags>(G_PARAM_READABLE |
+                                                     G_PARAM_STATIC_STRINGS)));
 
     // g_object_class_install_property(
     //     gobject_class, PROP_CAMERA_BUFFERS,
