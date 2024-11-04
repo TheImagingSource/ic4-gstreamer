@@ -12,6 +12,8 @@ gst-launch-1.0 -v tcamic4src serial=40210174
 - vcpkg
 - gstreamer-1.0
 - g++/clang
+- sphinx
+- tcam-properties
 
 ## Building
 
@@ -23,7 +25,7 @@ gst-launch-1.0 -v tcamic4src serial=40210174
 
 - documentation
 - support for formats other than bayer/mono
-- caps support for resolution sets (not implemented in ic4)
+- caps support for resolution sets (waiting for v4l2 gentl provider implementation)
 
 ### Done
 
