@@ -15,9 +15,7 @@ gst-launch-1.0 -v tcamic4src serial=40210174
 
 ## Building
 
-    mkdir build
-    cmake -DCMAKE_TOOLCHAIN_FILE=<path to>/vcpkg.cmake ..
-    make -j
+    cmake --workflow --preset package-linux
 
 ## TODO:
 
@@ -40,3 +38,4 @@ gst-launch-1.0 -v tcamic4src serial=40210174
 ## License
 
 To be determined.
+
