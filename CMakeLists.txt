@@ -61,8 +61,9 @@ set( CMAKE_CXX_STANDARD 20 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 set( CMAKE_POSITION_INDEPENDENT_CODE ON )
 
+set(CMAKE_INSTALL_PREFIX "/usr")
 
-set(IC4SRC_INSTALL_DOC "/usr/share/theimagingsource/tcamic4src/doc/")
+set(IC4SRC_INSTALL_DOC "${CMAKE_INSTALL_PREFIX}/share/theimagingsource/tcamic4src/doc/")
 
 
 find_package(ic4 REQUIRED)

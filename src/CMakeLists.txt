@@ -75,7 +75,7 @@ function(pkg_check_variable _pkg _name)
     OUTPUT_VARIABLE _pkg_result
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-  message(" ${PKG_CONFIG_EXECUTABLE} --variable=${_name} ${_pkg} ==> ${_pkg_result} in ${_output_name}")
+  # message(" ${PKG_CONFIG_EXECUTABLE} --variable=${_name} ${_pkg} ==> ${_pkg_result} in ${_output_name}")
 
   set("${_output_name}" "${_pkg_result}" CACHE STRING "pkg-config variable ${_name} of ${_pkg}" FORCE)
 endfunction()
@@ -84,11 +84,11 @@ endfunction()
 pkg_check_variable(gstreamer-1.0 pluginsdir)
 
 if (GSTREAMER_1.0_PLUGINSDIR)
-  message ("got pluginsdir")
+  # message ("got pluginsdir")
   set(TCAM_INSTALL_GST_1_0 "${GSTREAMER_1.0_PLUGINSDIR}"
     CACHE PATH "gstreamer-1.0 module installation path")
 else()
-  message("using std path")
+  # message("using std path")
   set(TCAM_INSTALL_GST_1_0 "${CMAKE_INSTALL_PREFIX}/lib/gstreamer-1.0"
     CACHE PATH "gstreamer-1.0 module installation path")
 endif()
