@@ -62,14 +62,19 @@ set( CMAKE_CXX_STANDARD_REQUIRED ON )
 set( CMAKE_POSITION_INDEPENDENT_CODE ON )
 
 
+set(IC4SRC_INSTALL_DOC "/usr/share/theimagingsource/tcamic4src/doc/")
+
+
 find_package(ic4 REQUIRED)
 
 set(ic4_INCLUDE_PATH "${IC4_INCLUDE_PATH}")
 set(ic4_LIBRARY_PATH "")
 set(ic4_LIBRARIES "${IC4_LIBRARIES}")
 
+
 add_subdirectory(libs)
 add_subdirectory(src)
+add_subdirectory(doc)
 
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
