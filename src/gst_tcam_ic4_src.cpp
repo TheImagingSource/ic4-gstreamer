@@ -61,7 +61,7 @@ static void ic4_src_open_camera(GstTcamIC4Src *self)
 {
     self->device->open_device();
 
-    auto lost_cb = [self] (Grabber& g)
+    auto lost_cb = [self] (Grabber& )
     {
         if (!self->device->is_streaming())
         {
@@ -181,12 +181,14 @@ static gboolean gst_tcam_ic4_src_negotiate(GstBaseSrc* basesrc)
     gboolean result = FALSE;
 
     GstCaps* peercaps = gst_pad_peer_query_caps(GST_BASE_SRC_PAD(basesrc), nullptr);
-    GST_DEBUG_OBJECT(basesrc, "caps of peer: %s", gst_caps_to_string(peercaps));
+
+    // GST_DEBUG_OBJECT(basesrc, "caps of peer: %s", gst_caps_to_string(peercaps));
+    // GST_DEBUG_OBJECT(basesrc, "caps of src: %s", gst_caps_to_string(thiscaps));
 
     if (!gst_caps_is_empty(peercaps) && !gst_caps_is_any(peercaps))
     {
         GstCaps* tmp = gst_caps_intersect_full(thiscaps, peercaps, GST_CAPS_INTERSECT_FIRST);
-
+        //GST_DEBUG("tmp intersect: %" GST_PTR_FORMAT, static_cast<void*>(tmp));
         GstCaps* icaps = NULL;
 
         int caps_count = static_cast<int>(gst_caps_get_size(tmp));
@@ -205,7 +207,7 @@ static gboolean gst_tcam_ic4_src_negotiate(GstBaseSrc* basesrc)
                 continue;
             }
 
-            //GST_DEBUG("peer: %" GST_PTR_FORMAT, static_cast<void*>(ipcaps));
+            GST_DEBUG("peer: %" GST_PTR_FORMAT, static_cast<void*>(ipcaps));
 
             icaps = gst_caps_intersect_full(thiscaps, ipcaps, GST_CAPS_INTERSECT_FIRST);
             gst_caps_unref(ipcaps);
@@ -218,7 +220,7 @@ static gboolean gst_tcam_ic4_src_negotiate(GstBaseSrc* basesrc)
             icaps = NULL;
         }
 
-        //GST_DEBUG("intersect: %" GST_PTR_FORMAT, static_cast<void*>(icaps));
+        // GST_DEBUG("intersect: %" GST_PTR_FORMAT, static_cast<void*>(icaps));
 
         if (icaps)
         {
@@ -327,7 +329,7 @@ static gboolean gst_tcam_ic4_src_negotiate(GstBaseSrc* basesrc)
         if (!gst_caps_is_empty(caps))
         {
             caps = gst_tcam_ic4_src_fixate_caps(basesrc, caps);
-            GST_DEBUG_OBJECT(self, "fixated to: %" GST_PTR_FORMAT, static_cast<void*>(caps));
+            //GST_DEBUG_OBJECT(self, "fixated to: %" GST_PTR_FORMAT, static_cast<void*>(caps));
 
             if (gst_caps_is_any(caps))
             {
@@ -361,6 +363,8 @@ static gboolean gst_tcam_ic4_src_set_caps(GstBaseSrc *src, GstCaps *caps)
 
     GstStructure* struc = gst_caps_get_structure(caps, 0);
 
+    GST_INFO("set_caps: %s", gst_structure_to_string(struc));
+
     int width;
     int height;
 
@@ -378,14 +382,97 @@ static gboolean gst_tcam_ic4_src_set_caps(GstBaseSrc *src, GstCaps *caps)
 
     const char* fmt = ic4::gst::caps_to_PixelFormat(*caps);
 
-    p.setValue("PixelFormat", fmt);
+    
     p.setValue("Width", width);
     p.setValue("Height", height);
     p.setValue("AcquisitionFrameRate", fps);
 
+    if (gst_structure_has_field(struc, "binning"))
+    {
+        std::string field_value = gst_structure_get_string(struc, "binning");
+
+        uint32_t to_fill_horizontal;
+        uint32_t to_fill_vertical;
+
+        const std::string delimiter = "x";
+        std::string token_horizontal = field_value.substr(0, field_value.find(delimiter));
+        std::string token_vertical = field_value.substr(field_value.find(delimiter) + 1);
+
+        try
+        {
+            to_fill_horizontal = std::atoi(token_horizontal.c_str());
+            to_fill_vertical = std::atoi(token_vertical.c_str());
+        }
+        catch (const std::exception& e)
+        {
+            GST_ERROR("Error while handling binning string '%s'", field_value.c_str());
+            to_fill_horizontal = 1;
+            to_fill_vertical = 1;
+        }
+        p.setValue("BinningHorizontal", to_fill_horizontal);
+        p.setValue("BinningVertical", to_fill_vertical);
+    }
+    else
+    {
+        // ensure we are always in a defined state
+        p.setValue("BinningHorizontal", 1);
+        p.setValue("BinningVertical", 1);
+    }
+
+
     ic4::QueueSinkListener& listener = *self->device->listener.get();
 
-    self->device->sink = ic4::QueueSink::create(listener);
+    PixelFormat sink_format = p.getValueInt64(ic4::PropId::PixelFormat);
+
+    const char* dev_fmt = gst_structure_get_string(struc, "device-format");
+
+    if (dev_fmt)
+    {
+        std::string name = ic4::gst::format_string_to_PixelFormat(dev_fmt);
+        
+        GST_INFO("Setting device-caps to %s", name.c_str());
+
+        sink_format = ic4::PixelFormat::BGRa8;
+
+
+        //
+        // iterate over device formats to ensure
+        // the given caps::device-format is valid
+        // 
+        auto p_fmt = p.findEnumeration("PixelFormat");
+
+        bool is_valid = false;
+
+        for (const auto& f : p_fmt.entries())
+        {
+            if (f.name() == name)
+            {
+                GST_INFO("device format will be %s", f.name().c_str());
+                p.setValue("PixelFormat", name);        
+                is_valid = true;
+
+                break;
+            }
+        }
+        if (!is_valid)
+        {
+            GST_ERROR("Given device-caps are not supported by the device! \"%s\"", dev_fmt);
+            return false;
+        }
+
+    }
+    else
+    {
+        p.setValue("PixelFormat", fmt);
+        GST_WARNING("No device-format given");
+        sink_format = p.getValueInt64(ic4::PropId::PixelFormat);
+    }
+
+    GST_INFO("IC4 conversion from %d to %d", 
+             (int32_t)p.getValueInt64(ic4::PropId::PixelFormat), 
+             (int32_t)sink_format);
+
+    self->device->sink = ic4::QueueSink::create(listener, sink_format);
 
     self->device->grabber->streamSetup(self->device->sink);
 
@@ -525,7 +612,7 @@ get_buf:
 
     //GST_ERROR("????????? %d", frame->getPitch());
 
-    auto type = frame->imageType();
+    //auto type = frame->imageType();
 
     GstBuffer* new_buf =
         gst_buffer_new_wrapped_full(static_cast<GstMemoryFlags>(GST_MEMORY_FLAG_READONLY),
