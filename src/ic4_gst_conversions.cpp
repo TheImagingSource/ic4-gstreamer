@@ -1,15 +1,18 @@
 
 #include "ic4_gst_conversions.h"
-#include "gst/gstcaps.h"
-#include "gst/gststructure.h"
-#include "gst/gstutils.h"
-#include "gst/gstvalue.h"
 #include "ic4/Properties.h"
+#include "gst/gst.h"
 #include <algorithm>
 #include <cstdint>
 #include <string>
 #include <cstring>
 #include <vector>
+#include <format>
+
+// make gstreamer logging work
+
+GST_DEBUG_CATEGORY_EXTERN(tcam_ic4_src_debug);
+#define GST_CAT_DEFAULT tcam_ic4_src_debug
 
 namespace {
 
@@ -20,56 +23,58 @@ struct gst_pfnc {
 };
 
 static const gst_pfnc format_list[] = {
-    { "Mono1p", "video/x-raw", "Mono1p" },
-    { "Mono2p", "video/x-raw", "Mono2p" },
-    { "Mono4p", "video/x-raw", "Mono4p" },
-    { "Mono8", "video/x-raw", "GRAY8" },
-    { "Mono8s", "video/x-raw", "Mono8s" },
-    { "Mono10", "video/x-raw", "Mono10" },
+    { "Mono1p",  "video/x-raw", "Mono1p" },
+    { "Mono2p",  "video/x-raw", "Mono2p" },
+    { "Mono4p",  "video/x-raw", "Mono4p" },
+    { "Mono8",   "video/x-raw", "GRAY8" },
+    { "Mono8s",  "video/x-raw", "Mono8s" },
+    { "Mono10",  "video/x-raw", "Mono10" },
     { "Mono10p", "video/x-raw", "Mono10p" },
-    { "Mono12", "video/x-raw", "Mono12" },
+    { "Mono12",  "video/x-raw", "Mono12" },
     { "Mono12p", "video/x-raw", "Mono12p" },
-    { "Mono14", "video/x-raw", "Mono14" },
+    { "Mono14",  "video/x-raw", "Mono14" },
     { "Mono14p", "video/x-raw", "Mono14p" },
-    { "Mono16", "video/x-raw", "GRAY16_LE" },
+    { "Mono16",  "video/x-raw", "GRAY16_LE" },
     //{ "BayerBG4p", "video/x-bayer", "BayerBG4p" },
-    { "BayerBG8", "video/x-bayer", "bggr" },
-    { "BayerBG10", "video/x-bayer", "bggr10" },
+    { "BayerBG8",   "video/x-bayer", "bggr" },
+    { "BayerBG10",  "video/x-bayer", "bggr10" },
     { "BayerBG10p", "video/x-bayer", "bggr10p" },
-    { "BayerBG12", "video/x-bayer", "bggr12" },
+    { "BayerBG12",  "video/x-bayer", "bggr12" },
     { "BayerBG12p", "video/x-bayer", "bggr12p" },
-    { "BayerBG14", "video/x-bayer", "bggr14" },
+    { "BayerBG14",  "video/x-bayer", "bggr14" },
     { "BayerBG14p", "video/x-bayer", "bggr14p" },
-    { "BayerBG16", "video/x-bayer", "bggr16" },
+    { "BayerBG16",  "video/x-bayer", "bggr16" },
     //{ "BayerGB4p", "video/x-bayer", "gbrg4p" },
-    { "BayerGB8", "video/x-bayer", "gbrg" },
-    { "BayerGB10", "video/x-bayer", "gbrg10" },
+    { "BayerGB8",   "video/x-bayer", "gbrg" },
+    { "BayerGB10",  "video/x-bayer", "gbrg10" },
     { "BayerGB10p", "video/x-bayer", "gbrg10p" },
-    { "BayerGB12", "video/x-bayer", "gbrg12" },
+    { "BayerGB12",  "video/x-bayer", "gbrg12" },
     { "BayerGB12p", "video/x-bayer", "gbrg12p" },
-    { "BayerGB14", "video/x-bayer", "gbrg14" },
+    { "BayerGB14",  "video/x-bayer", "gbrg14" },
     { "BayerGB14p", "video/x-bayer", "gbrg14p" },
-    { "BayerGB16", "video/x-bayer", "gbrg16" },
+    { "BayerGB16",  "video/x-bayer", "gbrg16" },
     //{ "BayerGR4p", "video/x-bayer", "grbg4p" },
-    { "BayerGR8", "video/x-bayer", "grbg" },
-    { "BayerGR10", "video/x-bayer", "grbg10" },
+    { "BayerGR8",   "video/x-bayer", "grbg" },
+    { "BayerGR10",  "video/x-bayer", "grbg10" },
     { "BayerGR10p", "video/x-bayer", "grbg10p" },
-    { "BayerGR12", "video/x-bayer", "grbg12" },
+    { "BayerGR12",  "video/x-bayer", "grbg12" },
     { "BayerGR12p", "video/x-bayer", "grbg12p" },
-    { "BayerGR14", "video/x-bayer", "grbg14" },
+    { "BayerGR14",  "video/x-bayer", "grbg14" },
     { "BayerGR14p", "video/x-bayer", "grbg14p" },
-    { "BayerGR16", "video/x-bayer", "grbg16" },
+    { "BayerGR16",  "video/x-bayer", "grbg16" },
     //{ "BayerRG4p", "video/x-bayer", "rggb4p" },
-    { "BayerRG8", "video/x-bayer", "rggb" },
-    { "BayerRG10", "video/x-bayer", "rggb10" },
+    { "BayerRG8",   "video/x-bayer", "rggb" },
+    { "BayerRG10",  "video/x-bayer", "rggb10" },
     { "BayerRG10p", "video/x-bayer", "rggb10p" },
-    { "BayerRG12", "video/x-bayer", "rggb12" },
+    { "BayerRG12",  "video/x-bayer", "rggb12" },
     { "BayerRG12p", "video/x-bayer", "rggb12p" },
-    { "BayerRG14", "video/x-bayer", "rggb14" },
+    { "BayerRG14",  "video/x-bayer", "rggb14" },
     { "BayerRG14p", "video/x-bayer", "rggb14p" },
-    { "BayerRG16", "video/x-bayer", "rggb16" },
-    { "RGBa8", "video/x-raw", "RGBx" },
+    { "BayerRG16",  "video/x-bayer", "rggb16" },
 
+    { "BGR8",   "video/x-raw", "BGR"},
+    { "BGRa8",  "video/x-raw", "BGRx" },
+    { "BGRa16", "video/x-raw", "BGRA16_LE" },
     // the following are either not supported
     // or not tested
 
@@ -307,6 +312,36 @@ const gst_pfnc* get_entry(const char* pfnc_str)
 } // namespace
 
 
+const char* ic4::gst::PixelFormat_to_gst_format_string(const char* pixel_format)
+{
+
+    for (const auto& e : format_list)
+    {
+        if (strcmp(pixel_format, e.pfnc_str) == 0)
+        {
+            return e.gst_format;
+        }
+    }
+
+    return nullptr;
+}
+
+
+const char* ic4::gst::format_string_to_PixelFormat(const char* format_str)
+{
+
+    for (const auto& e : format_list)
+    {
+        if (strcmp(format_str, e.gst_format) == 0)
+        {
+            return e.pfnc_str;
+        }
+    }
+
+    return nullptr;
+}
+
+
 const char* ic4::gst::caps_to_PixelFormat(const GstCaps& caps)
 {
 
@@ -398,6 +433,24 @@ std::vector<image_size> get_standard_resolutions(const image_size& min,
 
 GstCaps *ic4::gst::create_caps(ic4::PropertyMap & props)
 {
+
+    auto p_bin_x = props.findInteger("BinningHorizontal");
+    auto p_bin_y = props.findInteger("BinningVertical");
+    bool has_binning = p_bin_x.is_valid();
+    std::vector<std::string> gst_binning_entries;
+    
+    if (p_bin_x.is_valid())
+    {
+
+
+    }
+    else
+    {
+        gst_binning_entries.push_back("1x1");
+        GST_INFO("No binning");
+    }
+
+    
     auto p_fmt = props.findEnumeration("PixelFormat");
 
     auto p_width = props.findInteger("Width");
@@ -478,6 +531,50 @@ GstCaps *ic4::gst::create_caps(ic4::PropertyMap & props)
         }
     }
 
+    //GValue binning = G_VALUE_INIT;
+
+    if (has_binning)
+    {
+        const auto& bin_x = p_bin_x.asInteger();
+        auto entries = bin_x.validValueSet();
+
+        // not a valueSet; determine via range
+        if (entries.empty())
+        {
+            for (int i = bin_x.minimum(); i <= bin_x.maximum(); i++)
+            {
+                // TODO: does a camera exist with 8x binning
+                if (i == 3)
+                {
+                    continue;
+                }
+
+                entries.push_back(i);
+            }
+
+        }
+
+        for (const auto& e: entries)
+        {
+            gst_binning_entries.push_back(std::format("{}x{}", e, e));
+        }
+
+        // //gst_value_array_init(&binning, gst_binning_entries.size());
+        // gst_value_list_init(&binning, gst_binning_entries.size());
+
+        // // transform entries into something gstreamer can use
+        // for (const auto& e: gst_binning_entries)
+        // {
+        //     GValue entry = G_VALUE_INIT;
+        //     g_value_init(&entry, G_TYPE_STRING);
+        //     g_value_set_string(&entry, e.c_str());
+
+        //     gst_value_list_append_value(&binning, &entry);
+        //     //gst_value_array_append_value(&binning, &entry);
+        // }
+
+    }
+
     GstCaps* caps = gst_caps_new_empty();
 
     // we either have both or none
@@ -490,47 +587,169 @@ GstCaps *ic4::gst::create_caps(ic4::PropertyMap & props)
         do_ranges = false;
     }
 
+    p_fmt.entries();
+
+    std::vector<std::string> natural_formats;
+
     for (const auto& f : p_fmt.entries())
     {
-        auto fmt = get_entry(f.name().c_str());
+        auto gst_f = PixelFormat_to_gst_format_string(f.name().c_str());
+        if (gst_f)
+        {
+            natural_formats.push_back(gst_f);
+        }
+    }
+
+    std::vector<std::string> fmt_names;
+    fmt_names.reserve(p_fmt.entries().size());
+    for (const auto& f : p_fmt.entries())
+    {
+        fmt_names.push_back(f.name());
+    }
+
+    auto add_to_caps = [&](GstCaps* caps, const std::vector<std::string>& fmt_names, bool add_device_format=false)
+    {
+
+    for (const auto& f : fmt_names)
+    {
+        auto fmt = get_entry(f.c_str());
 
         if (!fmt)
         {
-            GST_ERROR("Unable to process pfnc format %s. Skipping.", f.name().c_str());
+            GST_ERROR("Unable to process pfnc format %s. Skipping.", f.c_str());
             continue;
         }
 
-        GstStructure* s = gst_structure_new(fmt->gst_name,
+        GstStructure* struc_base = gst_structure_new(fmt->gst_name,
                                             "format", G_TYPE_STRING, fmt->gst_format,
                                             nullptr);
+
+        // 
+        // device-format
+        //
+
+        if (add_device_format)
+        {
+            GValue format_list = G_VALUE_INIT;
+            g_value_init(&format_list, GST_TYPE_LIST);
+
+            for (const auto& e : natural_formats)
+            {
+                GValue entry = G_VALUE_INIT;
+                g_value_init(&entry, G_TYPE_STRING);
+
+                g_value_set_string(&entry, e.c_str());
+
+                gst_value_list_append_value(&format_list, &entry);
+
+            }
+
+            gst_structure_set_value(struc_base, "device-format", &format_list);
+
+        }
+
+        // 
+        // fps
+        //
 
         GValue val_fps = G_VALUE_INIT;
         g_value_init(&val_fps, GST_TYPE_FRACTION_RANGE);
         gst_value_set_fraction_range_full(
             &val_fps, fps_min_num, fps_min_den, fps_max_num, fps_max_den);
 
-        gst_structure_take_value(s, "framerate", &val_fps);
+        gst_structure_take_value(struc_base, "framerate", &val_fps);
 
-        GValue val_width = G_VALUE_INIT;
-        GValue val_height = G_VALUE_INIT;
+        //
+        // width / height
+        //
 
-        if (do_ranges)
+        // helper function
+        // adding resolutions needs to be done multiple times for binning
+        auto add_res_range = [caps, struc_base] (int width_min, int width_max, int width_step,
+                                                int height_min, int height_max, int height_step, 
+                                                int binning)
         {
+            GstStructure* s = gst_structure_copy(struc_base);
+            GValue val_width = G_VALUE_INIT;
+            GValue val_height = G_VALUE_INIT;
+
+            int w_max = width_max / binning;
+            int h_max = height_max / binning;
+
             g_value_init(&val_width, GST_TYPE_INT_RANGE);
-            gst_value_set_int_range_step(&val_width, width_min, width_max, width_step);
+            gst_value_set_int_range_step(&val_width, width_min, w_max, width_step);
 
             g_value_init(&val_height, GST_TYPE_INT_RANGE);
-            ///g_value_init(&val_height, GST_TYPE_L);
-            gst_value_set_int_range_step(&val_height, height_min, height_max, height_step);
+            gst_value_set_int_range_step(&val_height, height_min, h_max, height_step);
 
 
             gst_structure_take_value(s, "width", &val_width);
             gst_structure_take_value(s, "height", &val_height);
 
+            // caps now owns s
             gst_caps_append_structure(caps, s);
+
+        };
+
+        //
+        // binning
+        //
+
+        for (const auto& binning : gst_binning_entries)
+        {
+            // no binning is equal to 1x1
+            // in that case leave it at that
+            if (binning != "1x1")
+            {
+                GValue b = G_VALUE_INIT;
+                g_value_init(&b, G_TYPE_STRING);
+                g_value_set_string(&b, binning.c_str());
+                gst_structure_set_value(struc_base, "binning", &b);
+            }
+
+            if (do_ranges)
+            {
+                int b = 1;
+                if (binning == "2x2")
+                {
+                    b = 2;
+                }
+                else if (binning == "4x4")
+                {
+                    b = 4;
+                }
+
+                add_res_range(width_min, width_max, width_step,
+                              height_min, height_max, height_step,
+                              b);
+            }
+            else
+            {
+                // TODO: implement; requires v4l2 provider
+            }
+
+        }
+
+        if (do_ranges)
+        {
+
+            // g_value_init(&val_width, GST_TYPE_INT_RANGE);
+            // gst_value_set_int_range_step(&val_width, width_min, width_max, width_step);
+
+            // g_value_init(&val_height, GST_TYPE_INT_RANGE);
+            // ///g_value_init(&val_height, GST_TYPE_L);
+            // gst_value_set_int_range_step(&val_height, height_min, height_max, height_step);
+
+
+            // gst_structure_take_value(struc_base, "width", &val_width);
+            // gst_structure_take_value(struc_base, "height", &val_height);
+
+            // gst_caps_append_structure(caps, struc_base);
         }
         else
         {
+            GST_ERROR("TODO: Binning not correctly implemented");
+
             auto min_w = std::min_element(width_values.begin(), width_values.end());
             auto max_w = std::max_element(width_values.begin(), width_values.end());
             auto min_h = std::min_element(height_values.begin(), height_values.end());
@@ -541,12 +760,14 @@ GstCaps *ic4::gst::create_caps(ic4::PropertyMap & props)
             image_size step_size = { 1, 1 };
             auto res = get_standard_resolutions(min_size, max_size, step_size);
 
+            GValue val_width = G_VALUE_INIT;
+            GValue val_height = G_VALUE_INIT;
             g_value_init(&val_width, GST_TYPE_LIST);
             g_value_init(&val_height, GST_TYPE_LIST);
 
             for (const auto& r : res)
             {
-                GstStructure* s2 = gst_structure_copy(s);
+                GstStructure* s2 = gst_structure_copy(struc_base);
 
                 GValue w = G_VALUE_INIT;
                 g_value_init(&w, G_TYPE_INT);
@@ -563,38 +784,41 @@ GstCaps *ic4::gst::create_caps(ic4::PropertyMap & props)
                 // g_value_unset(&h);
 
 
-                gst_structure_take_value(s, "width", &w);
-                gst_structure_take_value(s, "height", &h);
+                gst_structure_take_value(struc_base, "width", &w);
+                gst_structure_take_value(struc_base, "height", &h);
 
                 gst_caps_append_structure(caps, s2);
             }
             // since not appended, must be freed
-            gst_structure_free(s);
+            gst_structure_free(struc_base);
 
-            // for (const auto& val : width_values)
-            // {
-            //     GValue v = G_VALUE_INIT;
-            //     g_value_init(&v, G_TYPE_INT);
-            //     g_value_set_int(&v, val);
-
-            //     gst_value_list_append_value(&val_width, &v);
-            //     g_value_unset(&v);
-            // }
-
-
-            // for (const auto& val : height_values)
-            // {
-            //     GValue v = G_VALUE_INIT;
-            //     g_value_init(&v, G_TYPE_INT);
-            //     g_value_set_int(&v, val);
-
-            //     gst_value_list_append_value(&val_height, &v);
-            //     g_value_unset(&v);
-            // }
         }
 
 
     }
+
+
+    };
+
+    add_to_caps(caps, fmt_names);
+
+    std::vector<std::string> artificial_fmt;
+
+    if (std::find(fmt_names.begin(), fmt_names.end(), "BGR8") == fmt_names.end())
+    {
+        artificial_fmt.push_back("BGR8");
+    }
+
+    if (std::find(fmt_names.begin(), fmt_names.end(), "BGRa8") == fmt_names.end())
+    {
+        artificial_fmt.push_back("BGRa8");
+    }
+    if (std::find(fmt_names.begin(), fmt_names.end(), "BGRa16") == fmt_names.end())
+    {
+        artificial_fmt.push_back("BGRa16");
+    }
+
+    add_to_caps(caps, artificial_fmt, true);
 
     return caps;
 }
