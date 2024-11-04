@@ -210,7 +210,10 @@ template <class TBase> struct TcamPropertyBase : TBase
         //auto flags = m_prop.get_flags();
         tcamprop1::prop_state ret = {};
         ret.is_implemented = true;
-        ret.is_locked = m_prop.isLocked();
+        // tcam-property has no real concept of read-only
+        // always lock read-only properties
+        ret.is_locked = m_prop.isLocked() || m_prop.isReadOnly();
+
         ret.is_available = m_prop.isAvailable();
         ret.is_name_hidden = false;
 
