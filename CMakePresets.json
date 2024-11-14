@@ -46,6 +46,19 @@
             "configuration": "RelWithDebInfo"
         }
     ],
+    "testPresets": [
+        {
+            "name": "linux",
+            "displayName": "linux-test",
+            "configurePreset": "linux-release",
+            "output": {
+                "outputOnFailure": true
+            },
+            "execution": {
+                "timeout": 3000
+            }
+        }
+    ],
     "packagePresets": [
         {
             "name": "package-linux",
