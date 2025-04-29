@@ -65,6 +65,8 @@ set(CMAKE_INSTALL_PREFIX "/usr")
 
 set(IC4SRC_INSTALL_DOC "${CMAKE_INSTALL_PREFIX}/share/theimagingsource/tcamic4src/doc/")
 
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/doc/documentation.md
+   DESTINATION "${IC4SRC_INSTALL_DOC}")
 
 find_package(ic4 REQUIRED)
 
@@ -75,7 +77,6 @@ set(ic4_LIBRARIES "${IC4_LIBRARIES}")
 
 add_subdirectory(libs)
 add_subdirectory(src)
-add_subdirectory(doc)
 
 include(CTest)
 add_subdirectory(test)
