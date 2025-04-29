@@ -23,25 +23,7 @@ gst-launch-1.0 tcamic4src serial=28710095 ! video/x-raw,format=BGRx,device-forma
 
 ## Building
 
-    cmake --workflow --preset package-linux
-
-## TODO:
-
-### Open
-
-- documentation
-- support for formats other than bayer/mono
-- caps support for resolution sets (waiting for v4l2 gentl provider implementation)
-
-### Done
-
-- packaging
-- GstDevice Handling
-- Basic Image retrieval
-- Basic caps handling
-- Basic property handling
-- Device lost
-- GstTcamStatistics
+cmake --workflow --preset package-linux
 
 ## License
 
