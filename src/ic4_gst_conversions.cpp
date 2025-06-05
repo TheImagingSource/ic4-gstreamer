@@ -748,7 +748,7 @@ GstCaps *ic4::gst::create_caps(ic4::PropertyMap & props)
         }
         else
         {
-            GST_ERROR("TODO: Binning not correctly implemented");
+            GST_INFO("Binning not correctly implemented and thus missing");
 
             auto min_w = std::min_element(width_values.begin(), width_values.end());
             auto max_w = std::max_element(width_values.begin(), width_values.end());
@@ -759,6 +759,16 @@ GstCaps *ic4::gst::create_caps(ic4::PropertyMap & props)
             image_size max_size = { (int)*max_w, (int)*max_h };
             image_size step_size = { 1, 1 };
             auto res = get_standard_resolutions(min_size, max_size, step_size);
+
+            if (std::find(res.begin(), res.end(), min_size) == res.end())
+            {
+                res.insert(res.begin(), min_size);
+            }
+
+            if (std::find(res.begin(), res.end(), max_size) == res.end())
+            {
+                res.insert(res.begin(), max_size);
+            }
 
             GValue val_width = G_VALUE_INIT;
             GValue val_height = G_VALUE_INIT;
