@@ -171,6 +171,10 @@ static gboolean gst_tcam_ic4_src_negotiate(GstBaseSrc* basesrc)
     if (gst_caps_is_empty(thiscaps) || gst_caps_is_any(thiscaps))
     {
         GST_DEBUG_OBJECT(basesrc, "no negotiation needed");
+        if (gst_caps_is_empty(thiscaps))
+        {
+            GST_DEBUG_OBJECT(basesrc, "Our caps are EMPTY. This should not happen");
+        }
         if (thiscaps)
         {
             gst_caps_unref(thiscaps);
@@ -183,8 +187,8 @@ static gboolean gst_tcam_ic4_src_negotiate(GstBaseSrc* basesrc)
 
     GstCaps* peercaps = gst_pad_peer_query_caps(GST_BASE_SRC_PAD(basesrc), nullptr);
 
-    // GST_DEBUG_OBJECT(basesrc, "caps of peer: %s", gst_caps_to_string(peercaps));
-    // GST_DEBUG_OBJECT(basesrc, "caps of src: %s", gst_caps_to_string(thiscaps));
+    GST_DEBUG_OBJECT(basesrc, "caps of peer: %s", gst_caps_to_string(peercaps));
+    GST_DEBUG_OBJECT(basesrc, "caps of src: %s", gst_caps_to_string(thiscaps));
 
     if (!gst_caps_is_empty(peercaps) && !gst_caps_is_any(peercaps))
     {
@@ -221,7 +225,7 @@ static gboolean gst_tcam_ic4_src_negotiate(GstBaseSrc* basesrc)
             icaps = NULL;
         }
 
-        // GST_DEBUG("intersect: %" GST_PTR_FORMAT, static_cast<void*>(icaps));
+        GST_DEBUG("intersect: %" GST_PTR_FORMAT, static_cast<void*>(icaps));
 
         if (icaps)
         {
@@ -355,6 +359,8 @@ static GstCaps *gst_tcam_ic4_src_get_caps(GstBaseSrc *src, GstCaps *filter
 
   auto caps = self->device->get_caps();
 
+  GST_DEBUG("Returning device caps: %s", gst_caps_to_string(caps));
+  
   return caps;
 }
 
