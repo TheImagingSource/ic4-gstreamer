@@ -75,6 +75,29 @@ static const gst_pfnc format_list[] = {
     { "BGR8",   "video/x-raw", "BGR"},
     { "BGRa8",  "video/x-raw", "BGRx" },
     { "BGRa16", "video/x-raw", "BGRA16_LE" },
+// YUV422_8 	YUV 4:2:2 8-bit.
+// YCbCr422_8 	YCbCr 4:2:2 8-bit.
+// {"YCbCr411_8_CbYYCrYY", "video/x-raw", "IYU1"} //	YCbCr 4:1:1 8-bit (CbYYCrYY)
+// YCbCr411_8 	YCbCr 4:1:1 8-bit (YYCbYYCr)
+//     { "", "video/x-raw", "I420"},
+//     { "", "video/x-raw", "YV12"},
+
+    ////// dutils
+
+    //{ img::fourcc::YUY2,                    "video/x-raw", "YUY2", },
+        { "YCbCr422_8_CbYCrY",                    "video/x-raw",  "UYVY", },
+        //{ img::fourcc::YCbCr411_8_CbYYCrYY,     "video/x-raw", "IYU1", },
+
+        { "YCbCr420_8_YY_CrCb_Semiplanar", "video/x-raw", "NV12", },
+        // { img::fourcc::YV12,                    "video/x-raw", "YV12", },
+
+        // { PfncFormat::YCbCr422_8_CbYCrY,                    fourcc::UYVY },
+        // { PfncFormat::YCbCr8_CbYCr,                         fourcc::IYU2 },
+        // { PfncFormat::YCbCr420_8_YY_CrCb_Semiplanar,        fourcc::NV12 },
+
+
+    //////
+
     // the following are either not supported
     // or not tested
 
@@ -827,6 +850,21 @@ GstCaps *ic4::gst::create_caps(ic4::PropertyMap & props)
     {
         artificial_fmt.push_back("BGRa16");
     }
+
+    if (std::find(fmt_names.begin(), fmt_names.end(), "Mono8") == fmt_names.end())
+    {
+        artificial_fmt.push_back("Mono8");
+    }
+
+    if (std::find(fmt_names.begin(), fmt_names.end(), "YCbCr422_8_CbYCrY") == fmt_names.end())
+    {
+        artificial_fmt.push_back("YCbCr422_8_CbYCrY");
+    }
+    if (std::find(fmt_names.begin(), fmt_names.end(), "YCbCr420_8_YY_CrCb_Semiplanar") == fmt_names.end())
+    {
+        artificial_fmt.push_back("YCbCr420_8_YY_CrCb_Semiplanar");
+    }
+
 
     add_to_caps(caps, artificial_fmt, true);
 
