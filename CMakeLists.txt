@@ -19,6 +19,39 @@ set(IC4SRC_VERSION "${IC4SRC_VERSION_MAJOR}.${IC4SRC_VERSION_MINOR}.${IC4SRC_VER
 
 set(IC4SRC_ORIGIN "https://theimagingsource.com")
 
+### installation paths
+
+
+set(CMAKE_INSTALL_PREFIX "/usr")
+
+set(IC4SRC_INSTALL_BIN "${CMAKE_INSTALL_PREFIX}/bin"
+  CACHE PATH "Executable installation directory." FORCE)
+set(IC4SRC_INSTALL_DATA "${CMAKE_INSTALL_PREFIX}/share/theimagingsource/tcamic4src/"
+  CACHE PATH "Data prefix.")
+
+set(IC4SRC_INSTALL_DOC "${CMAKE_INSTALL_PREFIX}/share/theimagingsource/tcamic4src/doc/"
+  CACHE PATH "Documentation installation directory.")
+set(IC4SRC_INSTALL_LICENCE_DIR "${IC4SRC_INSTALL_DATA}/copyright/"
+  CACHE PATH "Licence installation directory.")
+
+include(pkg_check_variable)
+
+
+
+pkg_check_variable(gstreamer-1.0 pluginsdir)
+
+if (GSTREAMER_1.0_PLUGINSDIR)
+  # message ("got pluginsdir")
+  set(IC4SRC_INSTALL_GST_1_0 "${GSTREAMER_1.0_PLUGINSDIR}"
+    CACHE PATH "gstreamer-1.0 module installation path")
+else()
+  # message("using std path")
+  set(IC4SRC_INSTALL_GST_1_0 "${CMAKE_INSTALL_PREFIX}/lib/gstreamer-1.0"
+    CACHE PATH "gstreamer-1.0 module installation path")
+endif()
+
+### end paths
+
 include( StandardProjectSettings )
 
 include("cmake/CompilerWarnings.cmake")
@@ -61,9 +94,6 @@ set( CMAKE_CXX_STANDARD 20 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 set( CMAKE_POSITION_INDEPENDENT_CODE ON )
 
-set(CMAKE_INSTALL_PREFIX "/usr")
-
-set(IC4SRC_INSTALL_DOC "${CMAKE_INSTALL_PREFIX}/share/theimagingsource/tcamic4src/doc/")
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/doc/documentation.md
    DESTINATION "${IC4SRC_INSTALL_DOC}")
