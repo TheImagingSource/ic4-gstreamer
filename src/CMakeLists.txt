@@ -1,3 +1,8 @@
+
+
+add_subdirectory(ic4-gstreamer-helper)
+
+
 find_package(PkgConfig REQUIRED QUIET)
 
 find_package(GObject   REQUIRED QUIET)
