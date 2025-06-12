@@ -22,6 +22,9 @@ PRIVATE
 	${GSTREAMER_LIBRARIES}
 	${GSTREAMER_BASE_LIBRARIES}
 	${GSTREAMER_VIDEO_LIBRARIES}
+
+    -static-libstdc++
+    -static-libgcc
 )
 
 install(TARGETS ic4-gst-helper
