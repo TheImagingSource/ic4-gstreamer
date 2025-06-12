@@ -15,7 +15,7 @@
  */
 
 #include <gst/gst.h>
-#include <format>
+#include <fmt/core.h>
 #include <iostream>
 
 #include "print_caps.h"
@@ -35,21 +35,17 @@ static void print_devices(size_t /*t*/)
 
     if (dev_count > 0)
     {
-        std::cout << std::format("{:20} {}", "Model", "Serial" ) << std::endl;
+        fmt::print("{:20} {}", "Model", "Serial");
 
         for (GList* dev = devices; dev; dev = dev->next)
         {
             GstStructure* struc = gst_device_get_properties(GST_DEVICE(dev->data));
-
-            std::cout << std::format("{:20} {}",
-                                     gst_structure_get_string(struc, "model"),
-                                     gst_structure_get_string(struc, "serial")
-                                     )
-                      << std::endl;
+            fmt::print("{:20} {}",
+                       gst_structure_get_string(struc, "model"),
+                       gst_structure_get_string(struc, "serial"));
         }
 
     }
-    else
     {
         std::cout << "No devices found." << std::endl;
     }
