@@ -7,7 +7,7 @@
 #include <string>
 #include <cstring>
 #include <vector>
-#include <format>
+#include <fmt/format.h>
 
 // make gstreamer logging work
 
@@ -579,7 +579,7 @@ GstCaps *ic4::gst::create_caps(ic4::PropertyMap & props)
 
         for (const auto& e: entries)
         {
-            gst_binning_entries.push_back(std::format("{}x{}", e, e));
+            gst_binning_entries.push_back(fmt::format("{}x{}", e, e));
         }
 
         // //gst_value_array_init(&binning, gst_binning_entries.size());

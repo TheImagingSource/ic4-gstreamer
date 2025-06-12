@@ -10,6 +10,7 @@ find_package(GLIB2     REQUIRED QUIET)
 find_package(GObjectIntrospection REQUIRED QUIET)
 
 find_package(GStreamer REQUIRED QUIET)
+find_package(fmt REQUIRED QUIET)
 
 
 add_library(gsttcamic4src SHARED
@@ -57,6 +58,7 @@ target_link_libraries( gsttcamic4src
   ${INTROSPECTION_LIBS}
 
   ic4::core
+  fmt::fmt
   tcam::gst-helper
   tcam::tcam-property
   tcam::tcamgststatistics

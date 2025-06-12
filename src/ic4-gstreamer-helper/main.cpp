@@ -15,11 +15,11 @@
  */
 
 #include <gst/gst.h>
-#include <fmt/core.h>
 #include <iostream>
 
 #include "print_caps.h"
 
+#include <fmt/format.h>
 #include <CLI/CLI.hpp>
 
 

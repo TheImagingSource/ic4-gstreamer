@@ -1,7 +1,7 @@
 
 find_package( GStreamer REQUIRED QUIET )
 find_package( CLI11 REQUIRED QUIET )
-find_package( fmt REQUIRED QUIET )
+find_package( fmt REQUIRED )
 
 add_executable(ic4-gst-helper
   main.cpp
