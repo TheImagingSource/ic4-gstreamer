@@ -116,3 +116,32 @@ bool ic4::gst::helper::ElementStateGuard::set_state(GstState state)
     }
     return false;
 }
+
+
+
+
+bool ic4::gst::helper::block_until_state_change_done (GstElement* pipeline)
+{
+    while (TRUE)
+    {
+        GstState state;
+        GstState pending;
+
+        // wait 0.1 seconds for something to happen
+        GstStateChangeReturn ret = gst_element_get_state(pipeline, &state, &pending, 100000000);
+
+        if (ret == GST_STATE_CHANGE_SUCCESS || ret == GST_STATE_CHANGE_NO_PREROLL)
+        {
+            return TRUE;
+        }
+        else if (ret == GST_STATE_CHANGE_FAILURE)
+        {
+            // printf("Failed to change state %s %s %s\n",
+            //        gst_element_state_change_return_get_name(ret),
+            //        gst_element_state_get_name(state),
+            //        gst_element_state_get_name(pending));
+
+            return FALSE;
+        }
+    }
+}

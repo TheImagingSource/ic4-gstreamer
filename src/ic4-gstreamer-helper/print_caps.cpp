@@ -151,6 +151,14 @@ void ic4::gst::helper::list_gstreamer_1_0_formats (const std::string& serial)
 
     gst_element_set_state(source, GST_STATE_READY);
 
+
+    if (!block_until_state_change_done(source))
+    {
+        std::cout << "Unable to open device. Is someone using the camera?" << std::endl;
+        gst_object_unref(source);
+        return;
+    }
+
     GstPad* pad = gst_element_get_static_pad(source, "src");
 
     GstCaps* caps = gst_pad_query_caps(pad, NULL);

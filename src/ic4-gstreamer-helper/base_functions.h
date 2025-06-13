@@ -44,4 +44,7 @@ namespace ic4::gst::helper
         GstElement& p_element;
     };
 
+    bool block_until_state_change_done (GstElement* pipeline);
+
+
 } // namespace ic4::gst::helper
