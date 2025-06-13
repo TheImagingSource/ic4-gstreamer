@@ -58,9 +58,12 @@ static GstStaticPadTemplate tcam_ic4_src_template = GST_STATIC_PAD_TEMPLATE(
     "src", GST_PAD_SRC, GST_PAD_ALWAYS, GST_STATIC_CAPS("ANY"));
 
 
-static void ic4_src_open_camera(GstTcamIC4Src *self)
+static bool ic4_src_open_camera(GstTcamIC4Src *self)
 {
-    self->device->open_device();
+    if (!self->device->open_device())
+    {
+        return false;
+    }
 
     auto lost_cb = [self] (Grabber& )
     {
@@ -101,6 +104,8 @@ static void ic4_src_open_camera(GstTcamIC4Src *self)
     self->device->dev_lost_token_ = self->device->grabber->eventAddDeviceLost(lost_cb);
 
     g_signal_emit(G_OBJECT(self), gst_tcamic4src_signals[SIGNAL_DEVICE_OPEN], 0);
+
+    return true;
 }
 
 
@@ -497,8 +502,11 @@ gst_tcam_ic4_src_change_state(GstElement *element, GstStateChange change)
     {
         case GST_STATE_CHANGE_NULL_TO_READY:
         {
-            //GST_INFO("null->ready");
-            ic4_src_open_camera(self);
+            if (!ic4_src_open_camera(self))
+            {
+                GST_ERROR("Unable to open requested device.");
+                return GST_STATE_CHANGE_FAILURE;
+            }
             break;
         }
         case GST_STATE_CHANGE_READY_TO_PAUSED: {
