@@ -1,4 +1,5 @@
 
+#include "glib-object.h"
 #include "gst/gstmemory.h"
 #include "gst/gststructure.h"
 #include "ic4/Error.h"
@@ -48,6 +49,7 @@ enum {
     PROP_0,
     PROP_SERIAL,
     PROP_DEVICE_TYPE,
+    PROP_DEVICE_PROP,
 };
 
 static guint gst_tcamic4src_signals[SIGNAL_LAST] = {
@@ -754,7 +756,13 @@ static void gst_tcam_ic4_src_set_property(GObject *object, guint prop_id,
                               // }
             }
             break;
-          }
+        }
+        case PROP_DEVICE_PROP:
+        {
+            std::string string_value = g_value_get_string(value);
+            self->device->set_properties_from_string(string_value);
+            break;
+        }
         default: {
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
             break;
@@ -836,6 +844,13 @@ static void gst_tcam_ic4_src_class_init(GstTcamIC4SrcClass * klass) {
                             "ic4",
                             static_cast<GParamFlags>(G_PARAM_READABLE |
                                                      G_PARAM_STATIC_STRINGS)));
+
+    g_object_class_install_property(gobject_class,
+                                    PROP_DEVICE_PROP,
+                                    g_param_spec_string("prop", "Camera properties", "properties of the camera",
+                                    NULL,
+                                    static_cast<GParamFlags>(G_PARAM_WRITABLE |
+                                                             G_PARAM_STATIC_STRINGS)));
 
     // g_object_class_install_property(
     //     gobject_class, PROP_CAMERA_BUFFERS,

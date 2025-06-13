@@ -4,6 +4,7 @@
 #include "ic4/Properties.h"
 #include "ic4_tcam_property.h"
 #include <algorithm>
+#include <ic4/Error.h>
 
 namespace
 {
@@ -130,6 +131,72 @@ bool ic4_device_state::open_device()
 
     GST_INFO("Opened device with serial: %s", serial_.c_str());
 
+    if (!set_property_cache_.empty())
+    {
+        if (!set_properties_from_string(set_property_cache_))
+        {
+            GST_ERROR("Setting properties caused an error. Some properties may not be set.");
+        }
+    }
+
     return true;
+
+}
+
+
+bool ic4_device_state::set_properties_from_string(const std::string &str)
+{
+    if (!grabber)
+    {
+        GST_INFO("storing string for when camera is open");
+        set_property_cache_ = str;
+        return true;
+    }
+
+
+    auto split = [](const std::string s, std::string delimiter) -> std::vector<std::string>
+        {
+            size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+            std::string token;
+            std::vector<std::string> res;
+
+            while ((pos_end = s.find(delimiter, pos_start)) != std::string::npos) {
+                token = s.substr (pos_start, pos_end - pos_start);
+                pos_start = pos_end + delim_len;
+                res.push_back (token);
+            }
+
+            res.push_back (s.substr (pos_start));
+            return res;
+        };
+
+    auto properties_to_set = split(str, " ");
+    auto props = grabber->devicePropertyMap();
+
+    for (const auto& p : properties_to_set)
+    {
+        auto property_and_value = split(p, "=");
+
+        if (property_and_value.size() != 2)
+        {
+            // TODO: error logging
+            return false;
+        }
+
+        auto property_name = property_and_value.at(0);
+        auto property_value_str = property_and_value.at(1);
+
+        ic4::Error err;
+        GST_ERROR("Setting %s to %s", property_name.c_str(), property_value_str.c_str());;
+
+        if (!props.setValue(property_name, property_value_str, err))
+        {
+            // TODO: error logging err.message()
+            return false;
+        }
+    }
+
+    return true;
+
 
 }

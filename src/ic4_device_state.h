@@ -74,6 +74,8 @@ struct ic4_device_state
 
     std::string serial_;
 
+    std::string set_property_cache_;
+
     std::string get_serial()
     {
         return serial_;
@@ -102,6 +104,7 @@ struct ic4_device_state
 
     bool open_device();
 
+    bool set_properties_from_string(const std::string& str);
     bool is_streaming()
     {
         return streaming_;
