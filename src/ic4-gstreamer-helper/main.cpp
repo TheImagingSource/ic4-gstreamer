@@ -35,17 +35,18 @@ static void print_devices(size_t /*t*/)
 
     if (dev_count > 0)
     {
-        fmt::print("{:20} {}", "Model", "Serial");
+        fmt::print("{:20} {}\n", "Model", "Serial");
 
         for (GList* dev = devices; dev; dev = dev->next)
         {
             GstStructure* struc = gst_device_get_properties(GST_DEVICE(dev->data));
-            fmt::print("{:20} {}",
+            fmt::print("{:20} {}\n",
                        gst_structure_get_string(struc, "model"),
                        gst_structure_get_string(struc, "serial"));
         }
 
     }
+    else
     {
         std::cout << "No devices found." << std::endl;
     }
