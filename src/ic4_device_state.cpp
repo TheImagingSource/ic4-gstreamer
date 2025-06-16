@@ -92,7 +92,7 @@ bool ic4_device_state::open_device()
     grabber = std::make_shared<ic4::Grabber>();
 
     auto dev_list = ic4::DeviceEnum::enumDevices();
-        //getAvailableVideoCaptureDevices();
+
     if (dev_list.empty())
     {
         GST_ERROR("No devices available");
@@ -152,7 +152,6 @@ bool ic4_device_state::set_properties_from_string(const std::string &str)
         set_property_cache_ = str;
         return true;
     }
-
 
     auto split = [](const std::string s, std::string delimiter) -> std::vector<std::string>
         {

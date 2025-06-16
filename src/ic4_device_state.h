@@ -58,9 +58,6 @@ struct sink_listener;
 
 struct ic4_device_state
 {
-
-    ///ic4::VideoCaptureDeviceItem
-
     std::shared_ptr<ic4::Grabber> grabber;
 
     std::shared_ptr<ic4::QueueSink> sink;

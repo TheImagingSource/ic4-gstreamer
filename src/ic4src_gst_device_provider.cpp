@@ -16,11 +16,6 @@
 
 #include "ic4src_gst_device_provider.h"
 
-// #include "../../DeviceIndex.h"
-// #include "../../logging.h"
-// #include "../../utils.h"
-// #include "DeviceEnum.h"
-
 #include "gst/gstinfo.h"
 #include "ic4/DeviceEnum.h"
 #include "ic4src_gst_device.h"
@@ -59,7 +54,7 @@ struct device
 
 } // namespace
 
-namespace tcamic4src
+namespace ic4::gst::src
 {
 
 struct provider_state
@@ -74,7 +69,7 @@ struct provider_state
     std::thread update_thread_;
 };
 
-} // namespace tcammainsrc
+} // namespace ic4::gst::src
 
 static GstDevice* tcam_ic4_src_device_new(GstElementFactory* factory,
                                           const ic4::DeviceInfo& device)

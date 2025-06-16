@@ -16,7 +16,7 @@
 
 #include <gst/gst.h>
 
-namespace tcamic4src
+namespace ic4::gst::src
 {
     struct provider_state;
 }
@@ -40,7 +40,7 @@ struct _TcamIC4SrcDeviceProvider
 {
     GstDeviceProvider parent;
 
-    tcamic4src::provider_state* state;
+    ic4::gst::src::provider_state* state;
 };
 
 
