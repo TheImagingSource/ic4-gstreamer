@@ -68,6 +68,11 @@ target_link_libraries( gsttcamic4src
   -static-libgcc
 )
 
+target_compile_definitions(gsttcamic4src PRIVATE -DIC4SRC_VERSION="${IC4SRC_VERSION}")
+
+set_property(TARGET gsttcamic4src PROPERTY VERSION "${IC4SRC_VERSION}")
+set_property(TARGET gsttcamic4src PROPERTY SOVERSION "${IC4SRC_VERSION}")
+
 set_project_warnings(gsttcamic4src)
 
 

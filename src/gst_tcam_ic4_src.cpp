@@ -942,9 +942,9 @@ static gboolean plugin_init(GstPlugin *plugin) {
 }
 
 #ifndef PACKAGE
-#define PACKAGE "tcam"
+#define PACKAGE "ic4src"
 #endif
 
 GST_PLUGIN_DEFINE(GST_VERSION_MAJOR, GST_VERSION_MINOR, tcamic4src,
-                  "TCam IC4 Video Source", plugin_init, "1.0.0", "Proprietary",
+                  "Tcam IC4 Video Source", plugin_init, IC4SRC_VERSION, "Proprietary",
                   "tcamic4src", "theimagingsource.com")
