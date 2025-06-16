@@ -409,6 +409,54 @@ GstCaps *ic4::gst::PixelFormat_to_GstCaps(const char* fmt) {
     return nullptr;
 }
 
+
+bool format_is_bayer(const std::string &format)
+{
+  static const std::vector<std::string> bayer_formats = {
+    "BayerRG8",
+    "BayerGR8",
+    "BayerGB8",
+    "BayerBG8",
+    "BayerRG10",
+    "BayerGR10",
+    "BayerGB10",
+    "BayerBG10",
+    "BayerRG12",
+    "BayerGR12",
+    "BayerGB12",
+    "BayerBG12",
+    "BayerRG14",
+    "BayerGR14",
+    "BayerGB14",
+    "BayerBG14",
+    "BayerRG16",
+    "BayerGR16",
+    "BayerGB16",
+    "BayerBG16",
+  };
+
+    auto res = std::find(bayer_formats.begin(),
+                         bayer_formats.end(),
+                         format);
+
+    return res != bayer_formats.end();
+}
+
+
+bool format_is_mono(const std::string &format)
+{
+    static const std::vector<std::string> mono_formats = {
+        "Mono8",
+        "Mono16",
+    };
+
+    auto res = std::find(mono_formats.begin(), mono_formats.end(), format);
+
+    return res != mono_formats.end();
+
+}
+
+
 struct image_size
 {
     int width;
@@ -454,7 +502,7 @@ std::vector<image_size> get_standard_resolutions(const image_size& min,
 }
 
 
-GstCaps *ic4::gst::create_caps(ic4::PropertyMap & props)
+GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
 {
 
     auto p_bin_x = props.findInteger("BinningHorizontal");
@@ -554,8 +602,6 @@ GstCaps *ic4::gst::create_caps(ic4::PropertyMap & props)
         }
     }
 
-    //GValue binning = G_VALUE_INIT;
-
     if (has_binning)
     {
         const auto& bin_x = p_bin_x.asInteger();
@@ -611,24 +657,57 @@ GstCaps *ic4::gst::create_caps(ic4::PropertyMap & props)
     }
 
     p_fmt.entries();
-
-    std::vector<std::string> natural_formats;
-
-    for (const auto& f : p_fmt.entries())
-    {
-        auto gst_f = PixelFormat_to_gst_format_string(f.name().c_str());
-        if (gst_f)
-        {
-            natural_formats.push_back(gst_f);
-        }
-    }
-
     std::vector<std::string> fmt_names;
     fmt_names.reserve(p_fmt.entries().size());
     for (const auto& f : p_fmt.entries())
     {
         fmt_names.push_back(f.name());
     }
+
+    auto sort_fmt_names = [] (std::vector<std::string>& fmt_names) -> std::vector<std::string>
+    {
+
+        std::vector<std::string> bayer;
+        std::vector<std::string> mono;
+        std::vector<std::string> rest;
+
+        for (const auto& fmt: fmt_names)
+        {
+            if (format_is_bayer(fmt))
+            {
+                bayer.push_back(fmt);
+            }
+            else if (format_is_mono(fmt))
+            {
+                mono.push_back(fmt);
+            }
+            else
+            {
+                rest.push_back(fmt);
+            }
+        }
+
+        std::vector<std::string> res;
+        res.reserve(fmt_names.size());
+        res.insert(res.end(), bayer.begin(), bayer.end());
+        res.insert(res.end(), mono.begin(), mono.end());
+        res.insert(res.end(), rest.begin(), rest.end());
+        return res;
+    };
+
+    fmt_names = sort_fmt_names(fmt_names);
+
+    std::vector<std::string> natural_formats;
+
+    for (const auto& f : fmt_names)
+    {
+        auto gst_f = PixelFormat_to_gst_format_string(f.c_str());
+        if (gst_f)
+        {
+            natural_formats.push_back(gst_f);
+        }
+    }
+
 
     auto add_to_caps = [&](GstCaps* caps, const std::vector<std::string>& fmt_names, bool add_device_format=false)
     {
