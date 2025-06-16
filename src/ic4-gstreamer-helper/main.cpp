@@ -27,7 +27,7 @@ static void print_devices(size_t /*t*/)
 {
     auto monitor = gst_device_monitor_new();
 
-    gst_device_monitor_add_filter(monitor, "Video/Source/tcam", NULL);
+    gst_device_monitor_add_filter(monitor, "Video/Source/tcam/ic4", NULL);
 
     GList* devices = gst_device_monitor_get_devices(monitor);
 
