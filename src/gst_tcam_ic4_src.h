@@ -34,6 +34,8 @@ struct _GstTcamIC4SrcClass {
   GstPushSrcClass parent_class;
 };
 
+GST_DEBUG_CATEGORY_EXTERN(tcam_ic4_src_debug);
+
 GType gst_tcam_ic4_src_get_type(void);
 
 G_END_DECLS

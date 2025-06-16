@@ -175,16 +175,16 @@ static gboolean gst_tcam_ic4_src_negotiate(GstBaseSrc* basesrc)
     GstCaps* src_caps = gst_pad_query_caps(GST_BASE_SRC_PAD(basesrc), NULL);
 
     // nothing or anything is allowed, we're done
-    if (gst_caps_is_empty(thiscaps) || gst_caps_is_any(thiscaps))
+    if (gst_caps_is_empty(src_caps) || gst_caps_is_any(src_caps))
     {
         GST_DEBUG_OBJECT(basesrc, "no negotiation needed");
-        if (gst_caps_is_empty(thiscaps))
+        if (gst_caps_is_empty(src_caps))
         {
             GST_DEBUG_OBJECT(basesrc, "Our caps are EMPTY. This should not happen");
         }
-        if (thiscaps)
+        if (src_caps)
         {
-            gst_caps_unref(thiscaps);
+            gst_caps_unref(src_caps);
         }
         return TRUE;
     }
@@ -195,13 +195,13 @@ static gboolean gst_tcam_ic4_src_negotiate(GstBaseSrc* basesrc)
     GstCaps* peercaps = gst_pad_peer_query_caps(GST_BASE_SRC_PAD(basesrc), nullptr);
 
     GST_DEBUG_OBJECT(basesrc, "caps of peer: %s", gst_caps_to_string(peercaps));
-    GST_DEBUG_OBJECT(basesrc, "caps of src: %s", gst_caps_to_string(thiscaps));
+    GST_DEBUG_OBJECT(basesrc, "caps of src: %s", gst_caps_to_string(src_caps));
 
     if (!gst_caps_is_empty(peercaps) && !gst_caps_is_any(peercaps))
     {
-        GstCaps* tmp = gst_caps_intersect_full(thiscaps, peercaps, GST_CAPS_INTERSECT_FIRST);
+        GstCaps* tmp = gst_caps_intersect_full(src_caps, peercaps, GST_CAPS_INTERSECT_FIRST);
         //GST_DEBUG("tmp intersect: %" GST_PTR_FORMAT, static_cast<void*>(tmp));
-        GstCaps* icaps = NULL;
+        GstCaps* icaps = nullptr;
 
         int caps_count = static_cast<int>(gst_caps_get_size(tmp));
 
@@ -221,7 +221,8 @@ static gboolean gst_tcam_ic4_src_negotiate(GstBaseSrc* basesrc)
 
             GST_DEBUG("peer: %" GST_PTR_FORMAT, static_cast<void*>(ipcaps));
 
-            icaps = gst_caps_intersect_full(thiscaps, ipcaps, GST_CAPS_INTERSECT_FIRST);
+            //icaps = gst_caps_intersect(src_caps, ipcaps);
+            icaps = gst_caps_intersect_full(src_caps, ipcaps, GST_CAPS_INTERSECT_FIRST);
             gst_caps_unref(ipcaps);
 
             if (icaps && !gst_caps_is_empty(icaps))
@@ -229,7 +230,7 @@ static gboolean gst_tcam_ic4_src_negotiate(GstBaseSrc* basesrc)
                 break;
             }
             gst_caps_unref(icaps);
-            icaps = NULL;
+            icaps = nullptr;
         }
 
         GST_DEBUG("intersect: %" GST_PTR_FORMAT, static_cast<void*>(icaps));
@@ -320,12 +321,12 @@ static gboolean gst_tcam_ic4_src_negotiate(GstBaseSrc* basesrc)
         }
         gst_caps_unref(tmp);
 
-        gst_caps_unref(thiscaps);
+        gst_caps_unref(src_caps);
     }
     else
     {
         /* no peer or peer have ANY caps, work with our own caps then */
-        caps = thiscaps;
+        caps = src_caps;
     }
 
     if (peercaps)
@@ -397,8 +398,13 @@ static gboolean gst_tcam_ic4_src_set_caps(GstBaseSrc *src, GstCaps *caps)
 
     auto p = self->device->grabber->devicePropertyMap();
 
-    const char* fmt = ic4::gst::caps_to_PixelFormat(*caps);
+    const ic4::PixelFormat fmt = ic4::gst::caps_to_PixelFormat(*caps);
 
+    if (fmt == ic4::PixelFormat::Invalid)
+    {
+        GST_ERROR("Given gst caps can not be associated with ic4 format descriptions!");
+        return FALSE;
+    }
     
     p.setValue("Width", width);
     p.setValue("Height", height);
@@ -439,18 +445,15 @@ static gboolean gst_tcam_ic4_src_set_caps(GstBaseSrc *src, GstCaps *caps)
 
     ic4::QueueSinkListener& listener = *self->device->listener.get();
 
-    PixelFormat sink_format = p.getValueInt64(ic4::PropId::PixelFormat);
+    PixelFormat sink_format = fmt;
 
-    const char* dev_fmt = gst_structure_get_string(struc, "device-format");
+    const char* dev_fmt_str = gst_structure_get_string(struc, "device-format");
 
-    if (dev_fmt)
+    if (dev_fmt_str)
     {
-        std::string name = ic4::gst::format_string_to_PixelFormat(dev_fmt);
+        auto name = ic4::gst::format_string_to_PixelFormat(dev_fmt_str);
         
-        GST_INFO("Setting device-caps to %s", name.c_str());
-
-        sink_format = ic4::PixelFormat::BGRa8;
-
+        GST_INFO("Setting device-caps to %s", name);
 
         //
         // iterate over device formats to ensure
@@ -473,21 +476,19 @@ static gboolean gst_tcam_ic4_src_set_caps(GstBaseSrc *src, GstCaps *caps)
         }
         if (!is_valid)
         {
-            GST_ERROR("Given device-caps are not supported by the device! \"%s\"", dev_fmt);
+            GST_ERROR("Given device-caps are not supported by the device! \"%s\"", dev_fmt_str);
             return false;
         }
 
     }
     else
     {
-        p.setValue("PixelFormat", fmt);
-        GST_WARNING("No device-format given");
-        sink_format = p.getValueInt64(ic4::PropId::PixelFormat);
+        GST_INFO("No device-format given.");
     }
 
-    GST_INFO("IC4 conversion from %d to %d", 
-             (int32_t)p.getValueInt64(ic4::PropId::PixelFormat), 
-             (int32_t)sink_format);
+    GST_INFO("IC4 conversion from %s to %s",
+             ic4::to_string(ic4::PixelFormat((int32_t)p.getValueInt64(ic4::PropId::PixelFormat))).c_str(),
+             ic4::to_string(sink_format).c_str());
 
     self->device->sink = ic4::QueueSink::create(listener, sink_format);
 
@@ -899,7 +900,7 @@ static void gst_tcam_ic4_src_class_init(GstTcamIC4SrcClass *klass)
                             "tcam interface");
 
     gst_element_class_set_static_metadata(
-        element_class, "Tcam Video Source", "Source/Video", "Tcam based source",
+        element_class, "IC4 Video Source", "Source/Video", "IC4 based source",
         "The Imaging Source <support@theimagingsource.com>");
 
     gst_element_class_add_pad_template(

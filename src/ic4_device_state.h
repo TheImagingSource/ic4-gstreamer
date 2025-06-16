@@ -111,7 +111,7 @@ struct ic4_device_state
     {
         if (!is_open())
         {
-            GST_WARNING("==== Device not open");
+            GST_WARNING("No device opened.");
             return nullptr;
         }
         auto props = grabber->devicePropertyMap();

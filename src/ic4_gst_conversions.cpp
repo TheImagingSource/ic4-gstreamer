@@ -4,77 +4,53 @@
 #include "gst/gst.h"
 #include <algorithm>
 #include <cstdint>
+#include <ic4/ImageType.h>
 #include <string>
 #include <cstring>
 #include <vector>
 #include <fmt/format.h>
 
+#include "gst_tcam_ic4_src.h"
+
 // make gstreamer logging work
 
-GST_DEBUG_CATEGORY_EXTERN(tcam_ic4_src_debug);
+//GST_DEBUG_CATEGORY_EXTERN(tcam_ic4_src_debug);
 #define GST_CAT_DEFAULT tcam_ic4_src_debug
 
 namespace {
 
 struct gst_pfnc {
+    ic4::PixelFormat ic4_fmt;
     const char* pfnc_str;
     const char* gst_name;
     const char* gst_format;
 };
 
 static const gst_pfnc format_list[] = {
-    { "Mono1p",  "video/x-raw", "Mono1p" },
-    { "Mono2p",  "video/x-raw", "Mono2p" },
-    { "Mono4p",  "video/x-raw", "Mono4p" },
-    { "Mono8",   "video/x-raw", "GRAY8" },
-    { "Mono8s",  "video/x-raw", "Mono8s" },
-    { "Mono10",  "video/x-raw", "Mono10" },
-    { "Mono10p", "video/x-raw", "Mono10p" },
-    { "Mono12",  "video/x-raw", "Mono12" },
-    { "Mono12p", "video/x-raw", "Mono12p" },
-    { "Mono14",  "video/x-raw", "Mono14" },
-    { "Mono14p", "video/x-raw", "Mono14p" },
-    { "Mono16",  "video/x-raw", "GRAY16_LE" },
-    //{ "BayerBG4p", "video/x-bayer", "BayerBG4p" },
-    { "BayerBG8",   "video/x-bayer", "bggr" },
-    { "BayerBG10",  "video/x-bayer", "bggr10" },
-    { "BayerBG10p", "video/x-bayer", "bggr10p" },
-    { "BayerBG12",  "video/x-bayer", "bggr12" },
-    { "BayerBG12p", "video/x-bayer", "bggr12p" },
-    { "BayerBG14",  "video/x-bayer", "bggr14" },
-    { "BayerBG14p", "video/x-bayer", "bggr14p" },
-    { "BayerBG16",  "video/x-bayer", "bggr16" },
-    //{ "BayerGB4p", "video/x-bayer", "gbrg4p" },
-    { "BayerGB8",   "video/x-bayer", "gbrg" },
-    { "BayerGB10",  "video/x-bayer", "gbrg10" },
-    { "BayerGB10p", "video/x-bayer", "gbrg10p" },
-    { "BayerGB12",  "video/x-bayer", "gbrg12" },
-    { "BayerGB12p", "video/x-bayer", "gbrg12p" },
-    { "BayerGB14",  "video/x-bayer", "gbrg14" },
-    { "BayerGB14p", "video/x-bayer", "gbrg14p" },
-    { "BayerGB16",  "video/x-bayer", "gbrg16" },
-    //{ "BayerGR4p", "video/x-bayer", "grbg4p" },
-    { "BayerGR8",   "video/x-bayer", "grbg" },
-    { "BayerGR10",  "video/x-bayer", "grbg10" },
-    { "BayerGR10p", "video/x-bayer", "grbg10p" },
-    { "BayerGR12",  "video/x-bayer", "grbg12" },
-    { "BayerGR12p", "video/x-bayer", "grbg12p" },
-    { "BayerGR14",  "video/x-bayer", "grbg14" },
-    { "BayerGR14p", "video/x-bayer", "grbg14p" },
-    { "BayerGR16",  "video/x-bayer", "grbg16" },
-    //{ "BayerRG4p", "video/x-bayer", "rggb4p" },
-    { "BayerRG8",   "video/x-bayer", "rggb" },
-    { "BayerRG10",  "video/x-bayer", "rggb10" },
-    { "BayerRG10p", "video/x-bayer", "rggb10p" },
-    { "BayerRG12",  "video/x-bayer", "rggb12" },
-    { "BayerRG12p", "video/x-bayer", "rggb12p" },
-    { "BayerRG14",  "video/x-bayer", "rggb14" },
-    { "BayerRG14p", "video/x-bayer", "rggb14p" },
-    { "BayerRG16",  "video/x-bayer", "rggb16" },
+    { ic4::PixelFormat::Mono8, "Mono8",   "video/x-raw", "GRAY8" },
+    { ic4::PixelFormat::Mono10p, "Mono10p", "video/x-raw", "Mono10p" },
+    { ic4::PixelFormat::Mono12p, "Mono12p", "video/x-raw", "Mono12p" },
+    { ic4::PixelFormat::Mono16, "Mono16",  "video/x-raw", "GRAY16_LE" },
+    { ic4::PixelFormat::BayerBG8, "BayerBG8",   "video/x-bayer", "bggr" },
+    { ic4::PixelFormat::BayerBG10p, "BayerBG10p", "video/x-bayer", "bggr10p" },
+    { ic4::PixelFormat::BayerBG12p, "BayerBG12p", "video/x-bayer", "bggr12p" },
+    { ic4::PixelFormat::BayerBG16, "BayerBG16",  "video/x-bayer", "bggr16" },
+    { ic4::PixelFormat::BayerGB8, "BayerGB8",   "video/x-bayer", "gbrg" },
+    { ic4::PixelFormat::BayerGB10p, "BayerGB10p", "video/x-bayer", "gbrg10p" },
+    { ic4::PixelFormat::BayerGB12p, "BayerGB12p", "video/x-bayer", "gbrg12p" },
+    { ic4::PixelFormat::BayerGB16, "BayerGB16",  "video/x-bayer", "gbrg16" },
+    { ic4::PixelFormat::BayerGR8, "BayerGR8",   "video/x-bayer", "grbg" },
+    { ic4::PixelFormat::BayerGR10p, "BayerGR10p", "video/x-bayer", "grbg10p" },
+    { ic4::PixelFormat::BayerGR12p, "BayerGR12p", "video/x-bayer", "grbg12p" },
+    { ic4::PixelFormat::BayerGR16, "BayerGR16",  "video/x-bayer", "grbg16" },
+    { ic4::PixelFormat::BayerRG8, "BayerRG8",   "video/x-bayer", "rggb" },
+    { ic4::PixelFormat::BayerRG10p, "BayerRG10p", "video/x-bayer", "rggb10p" },
+    { ic4::PixelFormat::BayerRG12p, "BayerRG12p", "video/x-bayer", "rggb12p" },
+    { ic4::PixelFormat::BayerRG16, "BayerRG16",  "video/x-bayer", "rggb16" },
 
-    { "BGR8",   "video/x-raw", "BGR"},
-    { "BGRa8",  "video/x-raw", "BGRx" },
-    { "BGRa16", "video/x-raw", "BGRA16_LE" },
+    { ic4::PixelFormat::BGR8, "BGR8",   "video/x-raw", "BGR"},
+    { ic4::PixelFormat::BGRa8, "BGRa8",  "video/x-raw", "BGRx" },
+    { ic4::PixelFormat::BGRa16, "BGRa16", "video/x-raw", "BGRA16_LE" },
 // YUV422_8 	YUV 4:2:2 8-bit.
 // YCbCr422_8 	YCbCr 4:2:2 8-bit.
 // {"YCbCr411_8_CbYYCrYY", "video/x-raw", "IYU1"} //	YCbCr 4:1:1 8-bit (CbYYCrYY)
@@ -85,10 +61,11 @@ static const gst_pfnc format_list[] = {
     ////// dutils
 
     //{ img::fourcc::YUY2,                    "video/x-raw", "YUY2", },
-        { "YCbCr422_8_CbYCrY",                    "video/x-raw",  "UYVY", },
+    { ic4::PixelFormat::YCbCr422_8, "YCbCr422_8_CbYCrY",                    "video/x-raw",  "UYVY", },
         //{ img::fourcc::YCbCr411_8_CbYYCrYY,     "video/x-raw", "IYU1", },
 
-        { "YCbCr420_8_YY_CrCb_Semiplanar", "video/x-raw", "NV12", },
+    //{ ic4::PixelFormat::YCbCr420_, "YCbCr420_8_YY_CrCb_Semiplanar", "video/x-raw", "NV12", },
+    { ic4::PixelFormat::YCbCr411_8_CbYYCrYY, "YCbCr420_8_YY_CrCb_Semiplanar", "video/x-raw", "NV12", },
         // { img::fourcc::YV12,                    "video/x-raw", "YV12", },
 
         // { PfncFormat::YCbCr422_8_CbYCrY,                    fourcc::UYVY },
@@ -365,12 +342,12 @@ const char* ic4::gst::format_string_to_PixelFormat(const char* format_str)
 }
 
 
-const char* ic4::gst::caps_to_PixelFormat(const GstCaps& caps)
+ic4::PixelFormat ic4::gst::caps_to_PixelFormat(const GstCaps& caps)
 {
 
     if (!gst_caps_is_fixed(&caps))
     {
-        return nullptr;
+        return ic4::PixelFormat::Invalid;
     }
 
     GstStructure* struc = gst_caps_get_structure(&caps, 0);
@@ -383,13 +360,11 @@ const char* ic4::gst::caps_to_PixelFormat(const GstCaps& caps)
         if (strcmp(name, e.gst_name) == 0
             && strcmp(format, e.gst_format) == 0)
         {
-            // gst_structure_free(struc);
-            return e.pfnc_str;
+            return e.ic4_fmt;
         }
     }
-    // gst_structure_free(struc);
 
-    return nullptr;
+    return ic4::PixelFormat::Invalid;
 }
 
 GstCaps *ic4::gst::PixelFormat_to_GstCaps(const char* fmt) {

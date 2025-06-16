@@ -6,6 +6,9 @@
 #include <algorithm>
 #include <ic4/Error.h>
 
+#define GST_CAT_DEFAULT tcam_ic4_src_debug
+
+
 namespace
 {
 
@@ -137,6 +140,15 @@ bool ic4_device_state::open_device()
         {
             GST_ERROR("Setting properties caused an error. Some properties may not be set.");
         }
+        else
+        {
+            GST_INFO("Applied properties");
+        }
+    }
+    else
+    {
+        GST_INFO("NO  PROPERTIES TO APPLY");
+
     }
 
     return true;
@@ -179,7 +191,7 @@ bool ic4_device_state::set_properties_from_string(const std::string &str)
 
         if (property_and_value.size() != 2)
         {
-            // TODO: error logging
+            GST_ERROR("Can not determine value for \"%s\". Use <Name>=<Value>", p.c_str());
             return false;
         }
 
@@ -187,11 +199,11 @@ bool ic4_device_state::set_properties_from_string(const std::string &str)
         auto property_value_str = property_and_value.at(1);
 
         ic4::Error err;
-        GST_ERROR("Setting %s to %s", property_name.c_str(), property_value_str.c_str());;
+        GST_DEBUG("Setting %s to %s", property_name.c_str(), property_value_str.c_str());;
 
         if (!props.setValue(property_name, property_value_str, err))
         {
-            // TODO: error logging err.message()
+            GST_ERROR("Error while setting %s to %s: %s", property_name.c_str(), property_value_str.c_str(), err.message().c_str());
             return false;
         }
     }
