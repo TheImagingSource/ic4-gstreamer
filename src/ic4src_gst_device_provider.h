@@ -18,7 +18,7 @@
 
 namespace tcamic4src
 {
-struct provider_state;
+    struct provider_state;
 }
 
 G_BEGIN_DECLS

@@ -43,11 +43,11 @@ G_DEFINE_TYPE(TcamIC4SrcDeviceProvider, tcam_ic4_src_device_provider, GST_TYPE_D
 
 namespace
 {
-static const char* provider_info = "Source/Video/Device/tcam";
+
+static const char* provider_info = "Source/Video/Device/tcam/ic4";
 
 struct device
 {
-    // tcam::DeviceInfo device_info; //
     ic4::DeviceInfo device_info;
     gst_helper::gst_ptr<GstDevice> gstdev;
 
@@ -61,11 +61,11 @@ struct device
 
 namespace tcamic4src
 {
+
 struct provider_state
 {
     gst_helper::gst_ptr<GstElementFactory> factory_;
 
-    // tcam::DeviceIndex index_;
     std::vector<device> known_devices_;
 
     std::condition_variable cv_;
@@ -73,6 +73,7 @@ struct provider_state
     std::atomic<bool> run_updates_;
     std::thread update_thread_;
 };
+
 } // namespace tcammainsrc
 
 static GstDevice* tcam_ic4_src_device_new(GstElementFactory* factory,
@@ -83,7 +84,6 @@ static GstDevice* tcam_ic4_src_device_new(GstElementFactory* factory,
     std::string serial = device.serial();
     std::string model = device.modelName();
     std::string type = "ic4";
-        //device.getUniqueName();
 
     std::string display_string = model + " (" + serial + "-" + type + ")";
 
@@ -173,7 +173,6 @@ static void run_update_logic(std::unique_lock<std::mutex>& /*lck*/,
 
 static void update_device_list(TcamIC4SrcDeviceProvider* self)
 {
-    //tcam::set_thread_name( "tcam_gstdevlst" );
     std::unique_lock<std::mutex> lck( self->state->mtx_ );
     while (self->state->run_updates_)
     {
@@ -181,7 +180,6 @@ static void update_device_list(TcamIC4SrcDeviceProvider* self)
             lck.unlock();
             auto new_list = ic4::DeviceEnum::enumDevices();
 
-            //self->state->index_.get_device_list();
             lck.lock();
 
             if (!self->state->run_updates_)
@@ -227,7 +225,6 @@ static GList *tcam_ic4_src_device_provider_probe(GstDeviceProvider *provider)
     else
     {
         for (const auto& device_entry : ic4::DeviceEnum::enumDevices())
-                 //self->state->index_.get_device_list())
         {
             auto dev = tcam_ic4_src_device_new(self->state->factory_.get(), device_entry);
             if (dev == nullptr)
@@ -241,8 +238,9 @@ static GList *tcam_ic4_src_device_provider_probe(GstDeviceProvider *provider)
 }
 
 static gboolean
-tcam_ic4_src_device_provider_start(GstDeviceProvider *provider) {
-    TcamIC4SrcDeviceProvider *self = TCAM_IC4_SRC_DEVICE_PROVIDER(provider);
+tcam_ic4_src_device_provider_start(GstDeviceProvider* provider)
+{
+    TcamIC4SrcDeviceProvider* self = TCAM_IC4_SRC_DEVICE_PROVIDER(provider);
 
     std::unique_lock<std::mutex> lck(self->state->mtx_);
     run_update_logic(lck, self,
@@ -250,62 +248,65 @@ tcam_ic4_src_device_provider_start(GstDeviceProvider *provider) {
     self->state->run_updates_ = true;
     self->state->update_thread_ = std::thread(update_device_list, self);
 
-  return TRUE;
+    return TRUE;
 }
 
-static void tcam_ic4_src_device_provider_stop(GstDeviceProvider *provider) {
-  TcamIC4SrcDeviceProvider *self = TCAM_IC4_SRC_DEVICE_PROVIDER(provider);
+static void tcam_ic4_src_device_provider_stop(GstDeviceProvider* provider)
+{
+    TcamIC4SrcDeviceProvider* self = TCAM_IC4_SRC_DEVICE_PROVIDER(provider);
 
-  self->state->run_updates_ = false;
-  self->state->cv_.notify_all();
-
-  self->state->update_thread_.join();
-
-  self->state->known_devices_.clear();
-}
-
-static void tcam_ic4_src_device_provider_dispose(GObject *object) {
-  TcamIC4SrcDeviceProvider *self = TCAM_IC4_SRC_DEVICE_PROVIDER(object);
-
-  if (self->state->update_thread_.joinable()) {
     self->state->run_updates_ = false;
     self->state->cv_.notify_all();
-
+    
     self->state->update_thread_.join();
+    
+    self->state->known_devices_.clear();
+}
+
+static void tcam_ic4_src_device_provider_dispose(GObject *object)
+{
+    TcamIC4SrcDeviceProvider* self = TCAM_IC4_SRC_DEVICE_PROVIDER(object);
+
+    if (self->state->update_thread_.joinable())
+    {
+        self->state->run_updates_ = false;
+        self->state->cv_.notify_all();
+
+        self->state->update_thread_.join();
     }
 
     self->state->factory_.reset();
     self->state->known_devices_.clear();
-
+    
     G_OBJECT_CLASS(tcam_ic4_src_device_provider_parent_class)->dispose(object);
 }
 
 static void tcam_ic4_src_device_provider_finalize(GObject* object)
 {
-  TcamIC4SrcDeviceProvider *self = TCAM_IC4_SRC_DEVICE_PROVIDER(object);
-  delete self->state;
-  self->state = nullptr;
-  G_OBJECT_CLASS(tcam_ic4_src_device_provider_parent_class)->finalize(object);
+    TcamIC4SrcDeviceProvider* self = TCAM_IC4_SRC_DEVICE_PROVIDER(object);
+    delete self->state;
+    self->state = nullptr;
+    G_OBJECT_CLASS(tcam_ic4_src_device_provider_parent_class)->finalize(object);
 }
 
 static void tcam_ic4_src_device_provider_class_init(TcamIC4SrcDeviceProviderClass* klass)
 {
-    GstDeviceProviderClass* dm_class = GST_DEVICE_PROVIDER_CLASS(klass);
+    GstDeviceProviderClass *dm_class = GST_DEVICE_PROVIDER_CLASS(klass);
     GObjectClass* gobject_class = G_OBJECT_CLASS(klass);
 
     gobject_class->dispose = tcam_ic4_src_device_provider_dispose;
     gobject_class->finalize = tcam_ic4_src_device_provider_finalize;
-
+    
     dm_class->probe = tcam_ic4_src_device_provider_probe;
     dm_class->start = tcam_ic4_src_device_provider_start;
     dm_class->stop = tcam_ic4_src_device_provider_stop;
 
     gst_device_provider_class_set_static_metadata(
         dm_class,
-        "TCam Device Provider",
+        "IC4 Device Provider",
         provider_info,
-        "Lists and provides tcam source devices",
+        "Lists and provides IC4 source devices",
         "The Imaging Source <support@theimagingsource.com>");
     GST_DEBUG_CATEGORY_INIT(
-        tcam_deviceprovider_debug, "tcamdeviceprovider", 0, "tcam device provider");
+        tcam_deviceprovider_debug, "ic4deviceprovider", 0, "ic4 device provider");
 }
