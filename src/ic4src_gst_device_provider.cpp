@@ -189,11 +189,11 @@ static void update_device_list(TcamIC4SrcDeviceProvider* self)
     }
 }
 
-static void tcam_ic4_src_device_provider_init(TcamIC4SrcDeviceProvider *self)
+static void tcam_ic4_src_device_provider_init(TcamIC4SrcDeviceProvider* self)
 {
     ic4::initLibrary();
 
-    self->state = new tcamic4src::provider_state();
+    self->state = new ic4::gst::src::provider_state();
 
     self->state->factory_ =
         gst_helper::make_ptr(gst_element_factory_find("tcamic4src"));
@@ -203,9 +203,9 @@ static void tcam_ic4_src_device_provider_init(TcamIC4SrcDeviceProvider *self)
         gst_plugin_feature_load(GST_PLUGIN_FEATURE(self->state->factory_.get())));
 }
 
-static GList *tcam_ic4_src_device_provider_probe(GstDeviceProvider *provider)
+static GList* tcam_ic4_src_device_provider_probe(GstDeviceProvider* provider)
 {
-    TcamIC4SrcDeviceProvider *self = TCAM_IC4_SRC_DEVICE_PROVIDER(provider);
+    TcamIC4SrcDeviceProvider* self = TCAM_IC4_SRC_DEVICE_PROVIDER(provider);
 
     std::unique_lock lck(self->state->mtx_);
 

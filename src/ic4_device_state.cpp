@@ -66,7 +66,7 @@ void iterate_node_children(ic4::PropCategory& category, ic4::gst::src_interface_
 
             if (prop)
             {
-                GST_ERROR("new prop: %s", std::string(prop->get_property_name()).c_str());
+                // GST_DEBUG("new prop: %s", std::string(prop->get_property_name()).c_str());
                 interface.tcamprop_properties.push_back(std::move(prop));
             }
         }
@@ -159,7 +159,8 @@ bool ic4_device_state::set_properties_from_string(const std::string &str)
             std::string token;
             std::vector<std::string> res;
 
-            while ((pos_end = s.find(delimiter, pos_start)) != std::string::npos) {
+            while ((pos_end = s.find(delimiter, pos_start)) != std::string::npos)
+            {
                 token = s.substr (pos_start, pos_end - pos_start);
                 pos_start = pos_end + delim_len;
                 res.push_back (token);
@@ -196,6 +197,4 @@ bool ic4_device_state::set_properties_from_string(const std::string &str)
     }
 
     return true;
-
-
 }
