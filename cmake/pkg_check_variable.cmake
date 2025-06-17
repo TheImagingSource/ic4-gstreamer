@@ -1,6 +1,9 @@
 
 # helper funcion to receive the value of an arbitrary variable
 function(pkg_check_variable _pkg _name)
+
+  find_package(PkgConfig REQUIRED QUIET)
+
   string(TOUPPER ${_pkg} _pkg_upper)
   string(TOUPPER ${_name} _name_upper)
   string(REPLACE "-" "_" _pkg_upper ${_pkg_upper})
