@@ -6,7 +6,9 @@
 #include <algorithm>
 #include <ic4/Error.h>
 
-#define GST_CAT_DEFAULT tcam_ic4_src_debug
+#include "gst_tcam_ic4_src.h"
+
+#define GST_CAT_DEFAULT ic4_src_debug
 
 
 namespace

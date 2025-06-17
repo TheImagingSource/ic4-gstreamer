@@ -129,7 +129,7 @@ void print_conversion_table(GstBaseTransform* base)
 
 void ic4::gst::helper::list_gstreamer_1_0_formats (const std::string& serial)
 {
-    GstElement* source = gst_element_factory_make("tcamic4src", "ic4-print-caps-source");
+    GstElement* source = gst_element_factory_make("ic4src", "ic4-print-caps-source");
 
     if (!source)
     {

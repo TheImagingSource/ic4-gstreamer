@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 #Name your project here
-project(tcamic4src LANGUAGES CXX)
+project(ic4src LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -26,28 +26,26 @@ set(CMAKE_INSTALL_PREFIX "/usr")
 
 set(IC4SRC_INSTALL_BIN "${CMAKE_INSTALL_PREFIX}/bin"
   CACHE PATH "Executable installation directory." FORCE)
-set(IC4SRC_INSTALL_DATA "${CMAKE_INSTALL_PREFIX}/share/theimagingsource/tcamic4src/"
+set(IC4SRC_INSTALL_DATA "${CMAKE_INSTALL_PREFIX}/share/theimagingsource/ic4src/"
   CACHE PATH "Data prefix.")
 
-set(IC4SRC_INSTALL_DOC "${CMAKE_INSTALL_PREFIX}/share/theimagingsource/tcamic4src/doc/"
+set(IC4SRC_INSTALL_DOC "${CMAKE_INSTALL_PREFIX}/share/theimagingsource/ic4src/doc/"
   CACHE PATH "Documentation installation directory.")
 set(IC4SRC_INSTALL_LICENCE_DIR "${IC4SRC_INSTALL_DATA}/copyright/"
   CACHE PATH "Licence installation directory.")
 
-include(pkg_check_variable)
-
-
+include("cmake/pkg_check_variable.cmake")
 
 pkg_check_variable(gstreamer-1.0 pluginsdir)
 
 if (GSTREAMER_1.0_PLUGINSDIR)
-  # message ("got pluginsdir")
+  message ("got pluginsdir")
   set(IC4SRC_INSTALL_GST_1_0 "${GSTREAMER_1.0_PLUGINSDIR}"
-    CACHE PATH "gstreamer-1.0 module installation path")
+    CACHE PATH "gstreamer-1.0 module installation path" FORCE)
 else()
-  # message("using std path")
+  message("using std path")
   set(IC4SRC_INSTALL_GST_1_0 "${CMAKE_INSTALL_PREFIX}/lib/gstreamer-1.0"
-    CACHE PATH "gstreamer-1.0 module installation path")
+    CACHE PATH "gstreamer-1.0 module installation path" FORCE)
 endif()
 
 ### end paths
@@ -168,7 +166,7 @@ set(CPACK_DEBIAN_DEBUGINFO_PACKAGE "ON")
 
 include(package-name)
 
-create_package_name(CPACK_DEBIAN_FILE_NAME "tcamic4src" "${IC4SRC_VERSION}")
+create_package_name(CPACK_DEBIAN_FILE_NAME "ic4src" "${IC4SRC_VERSION}")
 set(CPACK_DEBIAN_FILE_NAME "${CPACK_DEBIAN_FILE_NAME}.deb")
 
 # always last

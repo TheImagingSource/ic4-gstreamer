@@ -651,7 +651,7 @@ static auto tcamic4src_get_provider_impl_from_interface(TcamPropertyProvider* if
 {
     assert(iface != nullptr);
 
-    GstTcamIC4Src* self = GST_TCAM_IC4_SRC(iface);
+    GstIC4Src* self = GST_IC4_SRC(iface);
     assert(self != nullptr);
     assert(self->device != nullptr);
 

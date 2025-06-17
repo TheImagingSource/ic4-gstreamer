@@ -13,9 +13,7 @@
 #include "gst_tcam_ic4_src.h"
 
 // make gstreamer logging work
-
-//GST_DEBUG_CATEGORY_EXTERN(tcam_ic4_src_debug);
-#define GST_CAT_DEFAULT tcam_ic4_src_debug
+#define GST_CAT_DEFAULT ic4_src_debug
 
 namespace {
 

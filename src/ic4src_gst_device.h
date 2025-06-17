@@ -20,22 +20,24 @@
 
 G_BEGIN_DECLS
 
-#define TCAM_IC4_TYPE_DEVICE tcam_ic4_device_get_type()
-#define TCAM_IC4_DEVICE(obj)                                                   \
-  (G_TYPE_CHECK_INSTANCE_CAST((obj), TCAM_IC4_TYPE_DEVICE, TcamIC4Device))
+#define IC4_TYPE_DEVICE ic4_device_get_type()
+#define IC4_DEVICE(obj)                                                   \
+  (G_TYPE_CHECK_INSTANCE_CAST((obj), IC4_TYPE_DEVICE, IC4Device))
 
-typedef struct _TcamIC4Device TcamIC4Device;
-typedef struct _TcamIC4DeviceClass TcamIC4DeviceClass;
+typedef struct _IC4Device IC4Device;
+typedef struct _IC4DeviceClass IC4DeviceClass;
 
-struct _TcamIC4DeviceClass {
-  GstDeviceClass parent_class;
+struct _IC4DeviceClass
+{
+    GstDeviceClass parent_class;
 };
 
-struct _TcamIC4Device {
-  GstDevice parent;
-  GstElementFactory *factory;
+struct _IC4Device
+{
+    GstDevice parent;
+    GstElementFactory *factory;
 };
 
-GType tcam_ic4_device_get_type(void);
+GType ic4_device_get_type(void);
 
 G_END_DECLS

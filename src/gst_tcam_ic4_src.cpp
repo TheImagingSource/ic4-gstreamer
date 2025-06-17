@@ -1,17 +1,10 @@
 
-#include "glib-object.h"
-#include "gst/gstmemory.h"
-#include "gst/gststructure.h"
 #include "ic4/Error.h"
 #include "ic4/ImageBuffer.h"
 #include "ic4/InitLibrary.h"
 #include "ic4_gst_conversions.h"
 #include "ic4src_gst_device_provider.h"
 #include "gst_tcam_ic4_src.h"
-#include "gst/gstcaps.h"
-#include "gst/gstelement.h"
-#include "gst/gstinfo.h"
-#include "gst/gstpad.h"
 #include "ic4/DeviceEnum.h"
 #include "ic4/ImageType.h"
 #include "ic4/Grabber.h"
@@ -28,14 +21,14 @@
 
 using namespace ic4;
 
-GST_DEBUG_CATEGORY(tcam_ic4_src_debug);
-#define GST_CAT_DEFAULT tcam_ic4_src_debug
+GST_DEBUG_CATEGORY(ic4_src_debug);
+#define GST_CAT_DEFAULT ic4_src_debug
 
 
 
 
 G_DEFINE_TYPE_WITH_CODE(
-    GstTcamIC4Src, gst_tcam_ic4_src, GST_TYPE_PUSH_SRC,
+    GstIC4Src, gst_ic4_src, GST_TYPE_PUSH_SRC,
      G_IMPLEMENT_INTERFACE(TCAM_TYPE_PROPERTY_PROVIDER,
                            ic4::gst::ic4_tcam_property_init))
 
@@ -52,15 +45,15 @@ enum {
     PROP_DEVICE_PROP,
 };
 
-static guint gst_tcamic4src_signals[SIGNAL_LAST] = {
+static guint gst_ic4src_signals[SIGNAL_LAST] = {
     0,
 };
 
-static GstStaticPadTemplate tcam_ic4_src_template = GST_STATIC_PAD_TEMPLATE(
-    "src", GST_PAD_SRC, GST_PAD_ALWAYS, GST_STATIC_CAPS("ANY"));
+static GstStaticPadTemplate ic4_src_template = GST_STATIC_PAD_TEMPLATE(
+                                                                       "src", GST_PAD_SRC, GST_PAD_ALWAYS, GST_STATIC_CAPS("ANY"));
 
 
-static bool ic4_src_open_camera(GstTcamIC4Src *self)
+static bool ic4_src_open_camera(GstIC4Src *self)
 {
     if (!self->device->open_device())
     {
@@ -90,7 +83,7 @@ static bool ic4_src_open_camera(GstTcamIC4Src *self)
         // property queries, etc from appearing while everything is shutting
         // down
         g_signal_emit(G_OBJECT(self),
-                      gst_tcamic4src_signals[SIGNAL_DEVICE_CLOSE], 0);
+                      gst_ic4src_signals[SIGNAL_DEVICE_CLOSE], 0);
 
         // do not send EOS here
         // this can cause a deadlock in the tcambin state handling
@@ -105,13 +98,13 @@ static bool ic4_src_open_camera(GstTcamIC4Src *self)
 
     self->device->dev_lost_token_ = self->device->grabber->eventAddDeviceLost(lost_cb);
 
-    g_signal_emit(G_OBJECT(self), gst_tcamic4src_signals[SIGNAL_DEVICE_OPEN], 0);
+    g_signal_emit(G_OBJECT(self), gst_ic4src_signals[SIGNAL_DEVICE_OPEN], 0);
 
     return true;
 }
 
 
-static void ic4_src_close_camera(GstTcamIC4Src *self) {
+static void ic4_src_close_camera(GstIC4Src *self) {
 
     if (!self->device)
     {
@@ -125,7 +118,8 @@ static void ic4_src_close_camera(GstTcamIC4Src *self) {
 
     self->device->streaming_ = false;
 
-    g_signal_emit(G_OBJECT(self), gst_tcamic4src_signals[SIGNAL_DEVICE_CLOSE],
+    g_signal_emit(G_OBJECT(self),
+                  gst_ic4src_signals[SIGNAL_DEVICE_CLOSE],
                   0);
 
     self->device->grabber->eventRemoveDeviceLost(self->device->dev_lost_token_);
@@ -134,9 +128,9 @@ static void ic4_src_close_camera(GstTcamIC4Src *self) {
 }
 
 
-static GstCaps* gst_tcam_ic4_src_fixate_caps(GstBaseSrc* bsrc, GstCaps* caps)
+static GstCaps* gst_ic4_src_fixate_caps(GstBaseSrc* bsrc, GstCaps* caps)
 {
-    GstTcamIC4Src* self = GST_TCAM_IC4_SRC(bsrc);
+    GstIC4Src* self = GST_IC4_SRC(bsrc);
 
     GstStructure* structure = nullptr;
     gint width = 0;
@@ -163,14 +157,12 @@ static GstCaps* gst_tcam_ic4_src_fixate_caps(GstBaseSrc* bsrc, GstCaps* caps)
 
     GST_DEBUG_OBJECT(self, "Fixated caps to %s", gst_helper::to_string(*caps).c_str());
 
-    return GST_BASE_SRC_CLASS(gst_tcam_ic4_src_parent_class)->fixate(bsrc, caps);
+    return GST_BASE_SRC_CLASS(gst_ic4_src_parent_class)->fixate(bsrc, caps);
 }
 
 
-static gboolean gst_tcam_ic4_src_negotiate(GstBaseSrc* basesrc)
+static gboolean gst_ic4_src_negotiate(GstBaseSrc* basesrc)
 {
-    // GstTcamIC4Src* self = GST_TCAM_IC4_SRC(basesrc);
-
     /* first see what is possible on our source pad */
     GstCaps* src_caps = gst_pad_query_caps(GST_BASE_SRC_PAD(basesrc), NULL);
 
@@ -341,7 +333,7 @@ static gboolean gst_tcam_ic4_src_negotiate(GstBaseSrc* basesrc)
         /* now fixate */
         if (!gst_caps_is_empty(caps))
         {
-            caps = gst_tcam_ic4_src_fixate_caps(basesrc, caps);
+            caps = gst_ic4_src_fixate_caps(basesrc, caps);
             //GST_DEBUG_OBJECT(self, "fixated to: %" GST_PTR_FORMAT, static_cast<void*>(caps));
 
             if (gst_caps_is_any(caps))
@@ -362,10 +354,10 @@ static gboolean gst_tcam_ic4_src_negotiate(GstBaseSrc* basesrc)
 }
 
 
-static GstCaps* gst_tcam_ic4_src_get_caps (GstBaseSrc* src,
-                                           GstCaps* filter __attribute__((unused)))
+static GstCaps* gst_ic4_src_get_caps (GstBaseSrc* src,
+                                      GstCaps* filter __attribute__((unused)))
 {
-    GstTcamIC4Src* self = GST_TCAM_IC4_SRC(src);
+    GstIC4Src* self = GST_IC4_SRC(src);
 
     auto caps = self->device->get_caps();
 
@@ -375,9 +367,9 @@ static GstCaps* gst_tcam_ic4_src_get_caps (GstBaseSrc* src,
 }
 
 
-static gboolean gst_tcam_ic4_src_set_caps(GstBaseSrc *src, GstCaps *caps)
+static gboolean gst_ic4_src_set_caps(GstBaseSrc* src, GstCaps* caps)
 {
-    GstTcamIC4Src *self = GST_TCAM_IC4_SRC(src);
+    GstIC4Src *self = GST_IC4_SRC(src);
 
     GstStructure* struc = gst_caps_get_structure(caps, 0);
 
@@ -499,10 +491,10 @@ static gboolean gst_tcam_ic4_src_set_caps(GstBaseSrc *src, GstCaps *caps)
 
 
 static GstStateChangeReturn
-gst_tcam_ic4_src_change_state(GstElement *element, GstStateChange change)
+gst_ic4_src_change_state(GstElement* element, GstStateChange change)
 {
     GstStateChangeReturn ret = GST_STATE_CHANGE_SUCCESS;
-    GstTcamIC4Src *self = GST_TCAM_IC4_SRC(element);
+    GstIC4Src *self = GST_IC4_SRC(element);
 
     switch (change)
     {
@@ -533,7 +525,7 @@ gst_tcam_ic4_src_change_state(GstElement *element, GstStateChange change)
     }
 
     gst_element_set_locked_state(element, TRUE);
-    ret = GST_ELEMENT_CLASS(gst_tcam_ic4_src_parent_class)->change_state(element, change);
+    ret = GST_ELEMENT_CLASS(gst_ic4_src_parent_class)->change_state(element, change);
     gst_element_set_locked_state(element, FALSE);
 
     if (ret == GST_STATE_CHANGE_FAILURE)
@@ -572,30 +564,25 @@ gst_tcam_ic4_src_change_state(GstElement *element, GstStateChange change)
     return ret;
 }
 
-struct destroy_transfer {
-    GstTcamIC4Src* self;
+struct destroy_transfer
+{
+    GstIC4Src* self;
     std::shared_ptr<ic4::ImageBuffer> frame;
 };
 
 
 static void buffer_destroy(gpointer data)
 {
-
-
     destroy_transfer* trans = static_cast<destroy_transfer*>(data);
 
     delete trans;
-
-//    GST_INFO("Freed buffer");
 }
 
 
-static GstFlowReturn gst_tcam_ic4_src_create(GstPushSrc* push_src, GstBuffer** buffer)
+static GstFlowReturn gst_ic4_src_create(GstPushSrc* push_src, GstBuffer** buffer)
 {
 
-    //GST_INFO("create func");
-
-    GstTcamIC4Src *self = GST_TCAM_IC4_SRC(push_src);
+    GstIC4Src* self = GST_IC4_SRC(push_src);
 
     int cnt = 0;
     int cnt_max = 10;
@@ -630,10 +617,6 @@ get_buf:
     destroy_transfer* trans = new destroy_transfer;
     trans->self = self;
     trans->frame = frame;
-
-    //GST_ERROR("????????? %d", frame->getPitch());
-
-    //auto type = frame->imageType();
 
     GstBuffer* new_buf =
         gst_buffer_new_wrapped_full(static_cast<GstMemoryFlags>(GST_MEMORY_FLAG_READONLY),
@@ -703,23 +686,23 @@ bool is_gst_state_equal_or_less(GstElement* self, GstState state) noexcept
     return cur_state <= state;
 }
 
-static bool is_state_null(GstTcamIC4Src* self)
+static bool is_state_null(GstIC4Src* self)
 {
     return is_gst_state_equal_or_less(GST_ELEMENT(self), GST_STATE_NULL);
 }
 
-static bool is_state_ready_or_lower(GstTcamIC4Src* self)
+static bool is_state_ready_or_lower(GstIC4Src* self)
 {
     return is_gst_state_equal_or_less(GST_ELEMENT(self), GST_STATE_READY);
 }
 
 
-static void gst_tcam_ic4_src_set_property(GObject* object,
-                                          guint prop_id,
-                                          const GValue* value,
-                                          GParamSpec* pspec)
+static void gst_ic4_src_set_property(GObject* object,
+                                     guint prop_id,
+                                     const GValue* value,
+                                     GParamSpec* pspec)
 {
-    GstTcamIC4Src* self = GST_TCAM_IC4_SRC(object);
+    GstIC4Src* self = GST_IC4_SRC(object);
 
     switch (prop_id)
     {
@@ -759,12 +742,12 @@ static void gst_tcam_ic4_src_set_property(GObject* object,
     }
 }
 
-static void gst_tcam_ic4_src_get_property(GObject* object,
-                                          guint prop_id,
-                                          GValue* value,
-                                          GParamSpec* pspec)
+static void gst_ic4_src_get_property(GObject* object,
+                                     guint prop_id,
+                                     GValue* value,
+                                     GParamSpec* pspec)
 {
-    GstTcamIC4Src* self = GST_TCAM_IC4_SRC(object);
+    GstIC4Src* self = GST_IC4_SRC(object);
 
     switch (prop_id)
     {
@@ -786,7 +769,7 @@ static void gst_tcam_ic4_src_get_property(GObject* object,
     }
 }
 
-static void gst_tcam_ic4_src_init(GstTcamIC4Src* self)
+static void gst_ic4_src_init(GstIC4Src* self)
 {
     gst_base_src_set_live(GST_BASE_SRC(self), TRUE);
     gst_base_src_set_format(GST_BASE_SRC(self), GST_FORMAT_TIME);
@@ -796,10 +779,10 @@ static void gst_tcam_ic4_src_init(GstTcamIC4Src* self)
     self->device = new ic4_device_state();
 }
 
-static void gst_tcam_ic4_src_finalize(GObject *object)
+static void gst_ic4_src_finalize(GObject *object)
 {
 
-    GstTcamIC4Src* self = GST_TCAM_IC4_SRC(object);
+    GstIC4Src* self = GST_IC4_SRC(object);
 
     if (self->device)
     {
@@ -810,16 +793,16 @@ static void gst_tcam_ic4_src_finalize(GObject *object)
     ic4::exitLibrary();
 }
 
-static void gst_tcam_ic4_src_class_init(GstTcamIC4SrcClass *klass)
+static void gst_ic4_src_class_init(GstIC4SrcClass *klass)
 {
     GObjectClass* gobject_class = G_OBJECT_CLASS(klass);
     GstElementClass* element_class = GST_ELEMENT_CLASS(klass);
     GstBaseSrcClass* gstbasesrc_class = GST_BASE_SRC_CLASS(klass);
     GstPushSrcClass* gstpushsrc_class = GST_PUSH_SRC_CLASS(klass);
 
-    gobject_class->finalize = gst_tcam_ic4_src_finalize;
-    gobject_class->set_property = gst_tcam_ic4_src_set_property;
-    gobject_class->get_property = gst_tcam_ic4_src_get_property;
+    gobject_class->finalize = gst_ic4_src_finalize;
+    gobject_class->set_property = gst_ic4_src_set_property;
+    gobject_class->get_property = gst_ic4_src_get_property;
 
     g_object_class_install_property(
         gobject_class, PROP_SERIAL,
@@ -842,61 +825,14 @@ static void gst_tcam_ic4_src_class_init(GstTcamIC4SrcClass *klass)
                                     static_cast<GParamFlags>(G_PARAM_WRITABLE |
                                                              G_PARAM_STATIC_STRINGS)));
 
-    // g_object_class_install_property(
-    //     gobject_class, PROP_CAMERA_BUFFERS,
-    //     g_param_spec_int("camera-buffers", "Number of Buffers",
-    //                      "Number of buffers to use for retrieving images", 1, 256,
-    //                      GST_TCAM_MAINSRC_DEFAULT_N_BUFFERS,
-    //                      static_cast<GParamFlags>(G_PARAM_READWRITE |
-    //                                               G_PARAM_STATIC_STRINGS)));
-
-    // g_object_class_install_property(
-    //     gobject_class, PROP_IO_MODE,
-    //     g_param_spec_enum("io-mode", "IO Mode", "", GST_TYPE_TCAM_IO_MODE, 0,
-    //                       static_cast<GParamFlags>(G_PARAM_READWRITE |
-    //                                                G_PARAM_STATIC_STRINGS)));
-
-    // g_object_class_install_property(
-    //     gobject_class, PROP_NUM_BUFFERS,
-    //     g_param_spec_int(
-    //         "num-buffers", "Number of Buffers",
-    //         "Number of buffers to send before ending pipeline (-1 = unlimited)",
-    //         -1, G_MAXINT, -1,
-    //         static_cast<GParamFlags>(G_PARAM_READWRITE |
-    //                                  G_PARAM_STATIC_STRINGS)));
-    // g_object_class_install_property(
-    //     gobject_class, PROP_DROP_INCOMPLETE_BUFFER,
-    //     g_param_spec_boolean("drop-incomplete-buffer", "Drop incomplete buffers",
-    //                          "Drop buffer that are incomplete.", true,
-    //                          static_cast<GParamFlags>(G_PARAM_READWRITE |
-    //                                                   G_PARAM_STATIC_STRINGS |
-    //                                                   G_PARAM_CONSTRUCT)));
-
-    // g_object_class_install_property(
-    //     gobject_class, PROP_TCAM_PROPERTIES_GSTSTRUCT,
-    //     g_param_spec_boxed(
-    //         "tcam-properties", "Properties via GstStructure",
-    //         "In GST_STATE_NULL, sets the initial values for tcam-property 1.0 "
-    //         "properties."
-    //         "In GST_STATE_READY, sets the current properties of the device, or "
-    //         "reads the current "
-    //         "state of all properties"
-    //         "Names and types are the ones found in the tcam-property 1.0 "
-    //         "interface."
-    //         "(Usage e.g.: 'gst-launch-1.0 tcammainsrc "
-    //         "tcam-properties=tcam,ExposureAuto=Off,ExposureTime=33333 ! ...')",
-    //         GST_TYPE_STRUCTURE,
-    //         static_cast<GParamFlags>(G_PARAM_READWRITE |
-    //                                  G_PARAM_STATIC_STRINGS)));
-
-    gst_tcamic4src_signals[SIGNAL_DEVICE_OPEN] =
+    gst_ic4src_signals[SIGNAL_DEVICE_OPEN] =
         g_signal_new("device-open", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST,
                      0, nullptr, nullptr, nullptr, G_TYPE_NONE, 0, G_TYPE_NONE);
-    gst_tcamic4src_signals[SIGNAL_DEVICE_CLOSE] =
+    gst_ic4src_signals[SIGNAL_DEVICE_CLOSE] =
         g_signal_new("device-close", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST,
                      0, nullptr, nullptr, nullptr, G_TYPE_NONE, 0, G_TYPE_NONE);
 
-    GST_DEBUG_CATEGORY_INIT(tcam_ic4_src_debug, "tcamic4src", 0,
+    GST_DEBUG_CATEGORY_INIT(ic4_src_debug, "ic4src", 0,
                             "tcam interface");
 
     gst_element_class_set_static_metadata(
@@ -904,28 +840,28 @@ static void gst_tcam_ic4_src_class_init(GstTcamIC4SrcClass *klass)
         "The Imaging Source <support@theimagingsource.com>");
 
     gst_element_class_add_pad_template(
-        element_class, gst_static_pad_template_get(&tcam_ic4_src_template));
+        element_class, gst_static_pad_template_get(&ic4_src_template));
 
-    element_class->change_state = gst_tcam_ic4_src_change_state;
+    element_class->change_state = gst_ic4_src_change_state;
 
-    gstbasesrc_class->get_caps = gst_tcam_ic4_src_get_caps;
-    gstbasesrc_class->set_caps = gst_tcam_ic4_src_set_caps;
-    gstbasesrc_class->fixate = gst_tcam_ic4_src_fixate_caps;
-    gstbasesrc_class->negotiate = gst_tcam_ic4_src_negotiate;
+    gstbasesrc_class->get_caps = gst_ic4_src_get_caps;
+    gstbasesrc_class->set_caps = gst_ic4_src_set_caps;
+    gstbasesrc_class->fixate = gst_ic4_src_fixate_caps;
+    gstbasesrc_class->negotiate = gst_ic4_src_negotiate;
 
-    gstpushsrc_class->create = gst_tcam_ic4_src_create;
+    gstpushsrc_class->create = gst_ic4_src_create;
 }
 
 
 static gboolean plugin_init(GstPlugin* plugin)
 {
-    gst_device_provider_register(plugin, "tcamic4srcdeviceprovider",
+    gst_device_provider_register(plugin, "ic4srcdeviceprovider",
                                  GST_RANK_PRIMARY,
-                                 TCAM_TYPE_IC4_SRC_DEVICE_PROVIDER);
-    gst_element_register(plugin, "tcamic4src", GST_RANK_PRIMARY,
-                         GST_TYPE_TCAM_IC4_SRC);
+                                 TYPE_IC4_SRC_DEVICE_PROVIDER);
+    gst_element_register(plugin, "ic4src", GST_RANK_PRIMARY,
+                         GST_TYPE_IC4_SRC);
 
-    GST_DEBUG_CATEGORY_INIT(tcam_ic4_src_debug, "tcamic4src", 0,
+    GST_DEBUG_CATEGORY_INIT(ic4_src_debug, "ic4src", 0,
                             "tcam interface");
 
     return TRUE;
@@ -935,6 +871,6 @@ static gboolean plugin_init(GstPlugin* plugin)
 #define PACKAGE "ic4src"
 #endif
 
-GST_PLUGIN_DEFINE(GST_VERSION_MAJOR, GST_VERSION_MINOR, tcamic4src,
-                  "Tcam IC4 Video Source", plugin_init, IC4SRC_VERSION, "Proprietary",
-                  "tcamic4src", "theimagingsource.com")
+GST_PLUGIN_DEFINE(GST_VERSION_MAJOR, GST_VERSION_MINOR, ic4src,
+                  "IC4 Video Source", plugin_init, IC4SRC_VERSION, "Proprietary",
+                  "ic4src", "theimagingsource.com")

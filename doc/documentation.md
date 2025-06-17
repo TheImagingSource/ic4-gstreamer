@@ -1,10 +1,10 @@
-# TcamIC4Src
+# IC4Src
 
-The tcamic4src is a GStreamer source for effortless usage of IC4 in GStreamer.
+`ic4src` is a GStreamer source for effortless usage of IC4 in GStreamer.
 
-If you want to use tcamic4src while still using tiscamera:  
-tcamsrc automatically detects tcamic4src and integrates it.  
-To explicitely select a tcamic4src device use `<SERIAL>-ic4`.
+If you want to use ic4src while still using tiscamera:  
+tcamsrc automatically detects ic4src and integrates it.  
+To explicitely select a ic4src device use `<SERIAL>-ic4`.
 
 
 ## Dependencies
@@ -22,16 +22,17 @@ The GStreamer element requires:
 To get a full overview over the available element properties, use `gst-inspect`.
 The following is a list of custom properties. Standard Gstreamer properties are omitted.
 
-| Name        | Description                                                     | Default | Note      |
-|-------------|-----------------------------------------------------------------|---------|-----------|
-| num-buffers | Number of buffers to output before sending EOS (-1 = unlimited) | -1      |           |
-| serial      | Serial of the camera to be used. Empty opens first camera       | empty   |           |
-| type        | backend type. Used only for tiscamera compatibility.            | ic4     | read-only |
-|             |                                                                 |         |           |
+| Name        | Description                                                             | Default | Note       |
+|-------------|-------------------------------------------------------------------------|---------|------------|
+| num-buffers | Number of buffers to output before sending EOS (-1 = unlimited)         | -1      |            |
+| serial      | Serial of the camera to be used. Empty opens first camera               | empty   |            |
+| type        | backend type. Used only for tiscamera compatibility.                    | ic4     | read-only  |
+| prop        | Set IC4 properties. Syntax: prop="ExposureAuto=Off ExposureTime=1000.0" |         | write-only |
+|             |                                                                         |         |            |
 
 ## Signals
 
-tcamic4src offers the following signals:
+ic4src offers the following signals:
 
 ```
 
@@ -44,19 +45,26 @@ tcamic4src offers the following signals:
 
 ## Usage
 
-tcamic4src is compatible to the IC4 Linux predecessor `tiscamera`.
+ic4src is compatible to the IC4 Linux predecessor `tiscamera`.
 For examples on how to use the source elements you can look at the examples provided in the tiscamera repository.
 https://github.com/TheImagingSource/tiscamera/examples
 
 ### Device Listing
 
-tcamic4src implements the GstDevice API.
+To list devices on the commandline, call `ic4-gst-helper devices`.
+
+ic4src implements the GstDevice API.
 If you are unfamiliar with the API a good starting point is
 https://gstreamer.freedesktop.org/documentation/gstreamer/gstdevicemonitor.html?gi-language=c .
+
+All devices from ic4src are listed with the class filter "Source/Video/Device/tcam/ic4".
+
 
 ### Caps
 
 #### Listing caps
+
+To list caps on the commandline, call `ic4-gst-helper caps <serial>`.
 
 To see the available GStreamer caps
 
@@ -110,13 +118,13 @@ This will:
 
 ### Properties
 
-tcamic4src implemented the tcam-property interface.
+ic4src implemented the tcam-property interface.
 This is the tiscamera GObject property interface.
 
 The tcam-property documentation is part of of tiscamera and can be found here:
 https://www.theimagingsource.com/en-us/documentation/tiscamera/tcam_property.html
 
-tcamic4src passes all available properties from IC4 to this interface.
+ic4src passes all available properties from IC4 to this interface.
 The exceptions are properties that are relevant to the GStreamer caps.
 
 The following properties will not be passed through:
@@ -135,7 +143,7 @@ The following properties will not be passed through:
 
 ### Meta Data
 
-Each image buffer the tcamic4src sends has associated meta data
+Each image buffer the ic4src sends has associated meta data
 that contains multiple information concerning the buffer.
 
 The meta object contains a GstStructure which contains all information.

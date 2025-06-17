@@ -23,20 +23,20 @@ namespace ic4::gst::src
 
 G_BEGIN_DECLS
 
-#define TCAM_TYPE_IC4_SRC_DEVICE_PROVIDER tcam_ic4_src_device_provider_get_type()
-#define TCAM_IC4_SRC_DEVICE_PROVIDER(obj) \
+#define TYPE_IC4_SRC_DEVICE_PROVIDER ic4_src_device_provider_get_type()
+#define IC4_SRC_DEVICE_PROVIDER(obj) \
     (G_TYPE_CHECK_INSTANCE_CAST(          \
-        (obj), TCAM_TYPE_IC4_SRC_DEVICE_PROVIDER, TcamIC4SrcDeviceProvider))
+        (obj), TYPE_IC4_SRC_DEVICE_PROVIDER, IC4SrcDeviceProvider))
 
-typedef struct _TcamIC4SrcDeviceProvider TcamIC4SrcDeviceProvider;
-typedef struct _TcamIC4SrcDeviceProviderClass TcamIC4SrcDeviceProviderClass;
+typedef struct _IC4SrcDeviceProvider IC4SrcDeviceProvider;
+typedef struct _IC4SrcDeviceProviderClass IC4SrcDeviceProviderClass;
 
-struct _TcamIC4SrcDeviceProviderClass
+struct _IC4SrcDeviceProviderClass
 {
     GstDeviceProviderClass parent_class;
 };
 
-struct _TcamIC4SrcDeviceProvider
+struct _IC4SrcDeviceProvider
 {
     GstDeviceProvider parent;
 
@@ -44,6 +44,6 @@ struct _TcamIC4SrcDeviceProvider
 };
 
 
-GType tcam_ic4_src_device_provider_get_type(void);
+GType ic4_src_device_provider_get_type(void);
 
 G_END_DECLS

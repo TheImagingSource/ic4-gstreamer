@@ -20,30 +20,34 @@
 //#include <gst-helper/gst_gvalue_helper.h>
 #include <string>
 
-G_DEFINE_TYPE(TcamIC4Device, tcam_ic4_device, GST_TYPE_DEVICE)
 
-static void tcam_ic4_device_init(TcamIC4Device* /*self*/) {}
+G_DEFINE_TYPE(IC4Device, ic4_device, GST_TYPE_DEVICE)
 
-static void tcam_ic4_device_finalize(GObject *object)
+
+static void ic4_device_init(IC4Device* /*self*/) {}
+
+
+static void ic4_device_finalize(GObject* object)
 {
-    G_OBJECT_CLASS(tcam_ic4_device_parent_class)->finalize(object);
+    G_OBJECT_CLASS(ic4_device_parent_class)->finalize(object);
 }
 
-static void tcam_ic4_device_dispose(GObject *object)
+static void ic4_device_dispose(GObject* object)
 {
-    TcamIC4Device *self = TCAM_IC4_DEVICE(object);
+    IC4Device* self = IC4_DEVICE(object);
 
     if (self->factory)
     {
         gst_object_unref(self->factory);
         self->factory = nullptr;
     }
-    G_OBJECT_CLASS(tcam_ic4_device_parent_class)->dispose(object);
+    G_OBJECT_CLASS(ic4_device_parent_class)->dispose(object);
 }
 
-static GstElement *tcam_ic4_device_create_element(GstDevice *device,
-                                                  const gchar *name) {
-    TcamIC4Device *self = TCAM_IC4_DEVICE(device);
+static GstElement* ic4_device_create_element(GstDevice *device,
+                                             const gchar *name)
+{
+    IC4Device *self = IC4_DEVICE(device);
 
     GstElement *ret = gst_element_factory_create(self->factory, name);
     if (ret == nullptr) {
@@ -69,13 +73,13 @@ static GstElement *tcam_ic4_device_create_element(GstDevice *device,
     return ret;
 }
 
-static void tcam_ic4_device_class_init(TcamIC4DeviceClass* klass)
+static void ic4_device_class_init(IC4DeviceClass* klass)
 {
     GObjectClass* gobject_class = G_OBJECT_CLASS(klass);
     GstDeviceClass* gst_device_class = GST_DEVICE_CLASS(klass);
 
-    gobject_class->finalize = tcam_ic4_device_finalize;
-    gobject_class->dispose = tcam_ic4_device_dispose;
+    gobject_class->finalize = ic4_device_finalize;
+    gobject_class->dispose = ic4_device_dispose;
 
-    gst_device_class->create_element = tcam_ic4_device_create_element;
+    gst_device_class->create_element = ic4_device_create_element;
 }
