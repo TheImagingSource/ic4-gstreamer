@@ -35,8 +35,8 @@ target_include_directories(gstic4src
   ${GSTREAMER_BASE_INCLUDE_DIRS}
   ${GSTREAMER_VIDEO_INCLUDE_DIRS}
 
-   ${GLIB2_INCLUDE_DIR}
-   ${GObject_INCLUDE_DIR}
+  ${GLIB2_INCLUDE_DIR}
+  ${GObject_INCLUDE_DIR}
 
 )
 

@@ -59,6 +59,14 @@ set(default_build_type "Release")   # Override the default build type to be 'Rel
 include("cmake/StandardProjectSettings.cmake")
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
+
+set(CMAKE_THREAD_LIBS_INIT "-lpthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+set(CMAKE_HAVE_THREADS_LIBRARY 1)
+set(CMAKE_USE_WIN32_THREADS_INIT 0)
+set(CMAKE_USE_PTHREADS_INIT 1)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+
 find_git_settings() # exports GIT_COMMIT_COUNT, GIT_TAG, ...
 
 set(IC4SRC_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
