@@ -2,7 +2,11 @@
 
 add_executable(test_ic4src
   main.cpp
-  caps_negotiation.cpp
+  test_helper.h
+  test_helper.cpp
+  test_device_monitor.cpp
+  test_caps_negotiation.cpp
+  test_properties.cpp
 )
 
 find_package(doctest CONFIG REQUIRED)
@@ -25,7 +29,8 @@ target_link_libraries(test_ic4src
   ${GLIB2_LIBRARIES}
   ${GObject_LIBRARIES}
   ${INTROSPECTION_LIBS}
-  
+  tcam::tcam-property
+
 )
 
 

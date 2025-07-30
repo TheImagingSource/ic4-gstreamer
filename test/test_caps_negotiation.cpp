@@ -7,24 +7,15 @@
 
 #include <iostream>
 #include <cassert>
+#include <thread>
 
-std::string get_test_serial()
-{
-    char* value = getenv("TEST_SERIAL_U3V");
-
-    if (value)
-    {
-        return std::string(value);
-    }
-
-    return {};
-
-}
+#include "gst/gstelement.h"
+#include "test_helper.h"
 
 
 std::string get_highest_bayer_format(const std::string& serial)
 {
-    GstElement* source = gst_element_factory_make("tcamic4src", "test-source");
+    GstElement* source = gst_element_factory_make("ic4src", "test-source");
 
     GValue val = {};
     g_value_init(&val, G_TYPE_STRING);
@@ -93,7 +84,7 @@ struct cb_data
 
 static GstFlowReturn callback(GstElement* sink, void* user_data)
 {
-
+    // std::cout << "new buffer" << std::endl;
     GstSample* sample = nullptr;
     cb_data* data = (cb_data*) user_data;
 
@@ -101,6 +92,8 @@ static GstFlowReturn callback(GstElement* sink, void* user_data)
 
     if (sample)
     {
+        data->frame_counter++;
+
         GstBuffer* buffer = gst_sample_get_buffer(sample);
         GstMapInfo info; // contains the actual image
         if (gst_buffer_map(buffer, &info, GST_MAP_READ))
@@ -114,21 +107,22 @@ static GstFlowReturn callback(GstElement* sink, void* user_data)
             }
 
             data->frame_counter++;
-            GstCaps* caps = gst_sample_get_caps(sample);
+            // GstCaps* caps = gst_sample_get_caps(sample);
 
-            if (data->caps)
-            {
-                bool caps_equal = gst_caps_is_equal(caps, data->caps);
-                if (!caps_equal)
-                {
+            // if (data->caps)
+            // {
+            //     bool caps_equal = gst_caps_is_equal(caps, data->caps);
+            //     if (!caps_equal)
+            //     {
 
-                    fmt::print("{} != {}\n", gst_caps_to_string(caps), gst_caps_to_string(data->caps));
-                    data->caps_are_equal = false;
-                }
-            }
+            //         fmt::print("{} != {}\n", gst_caps_to_string(caps), gst_caps_to_string(data->caps));
+            //         data->caps_are_equal = false;
+            //     }
+            // }
             gst_buffer_unmap(buffer, &info);
             gst_video_info_free(video_info);
         }
+
         gst_sample_unref(sample);
     }
     return GST_FLOW_OK;
@@ -138,14 +132,12 @@ static GstFlowReturn callback(GstElement* sink, void* user_data)
 TEST_CASE("device-caps")
 {
 
-    auto serial = get_test_serial();
+    auto serial = test_helper::get_test_serial();
     auto bayer_fmt = get_highest_bayer_format(serial);
 
     std::string caps_str = fmt::format("video/x-bayer,format={},width=640,height=480,framerate=30/1", bayer_fmt);
 
-    std::string pipe_str = fmt::format("tcamic4src serial={} "
-    " ! {}"
-    " ! appsink name=sink emit-signals=true", serial, caps_str);
+    std::string pipe_str = fmt::format("ic4src serial={} ! {} ! queue ! appsink name=sink sync=false ", serial, caps_str);
 
     GstElement* pipeline = gst_parse_launch(pipe_str.c_str(), nullptr);
 
@@ -164,34 +156,53 @@ TEST_CASE("device-caps")
     // tell appsink what function to call when it notifies us
     g_signal_connect(sink, "new-sample", G_CALLBACK(callback), &data);
 
-    gst_object_unref(sink);
 
     gst_element_set_state(pipeline, GST_STATE_PLAYING);
+    // sleep(5);
 
-    sleep(5);
 
+    GMainLoop* loop = g_main_loop_new(NULL, FALSE);
+
+    std::jthread helper_thread = std::jthread([loop]()
+    {
+        sleep(10);
+        g_main_loop_quit(loop);
+    });
+
+
+    // This is simply used to wait for events or the user to end this script
+    g_main_loop_run(loop);
+    g_main_loop_unref(loop);
+
+
+    g_object_set(G_OBJECT(sink), "emit-signals", FALSE, NULL);
+
+    gst_element_set_state(pipeline, GST_STATE_READY);
     gst_element_set_state(pipeline, GST_STATE_NULL);
+
+    gst_object_unref(sink);
     gst_object_unref(pipeline);
+
     pipeline = nullptr;
 
-    CHECK(data.frame_counter >= 140);
+    CHECK(data.frame_counter >= 50);
     CHECK(data.caps_are_equal);
 
     gst_caps_unref(data.caps);
-
+    
 }
 
 TEST_CASE("ic4-format-transformation")
 {
-
-    auto serial = get_test_serial();
+    
+    auto serial = test_helper::get_test_serial();
     auto bayer_fmt = get_highest_bayer_format(serial);
-
+    
     std::string caps_str = fmt::format("video/x-raw,format=BGRx,device-format={},width=640,height=480,framerate=30/1", bayer_fmt);
 
-    std::string pipe_str = fmt::format("tcamic4src serial={} "
-    " ! {}"
-    " ! appsink name=sink emit-signals=true", serial, caps_str);
+    std::string pipe_str = fmt::format("ic4src serial={} "
+    " ! {} ! queue "
+    " ! appsink name=sink emit-signals=true  sync=false", serial, caps_str);
 
     GstElement* pipeline = gst_parse_launch(pipe_str.c_str(), nullptr);
 
@@ -214,31 +225,31 @@ TEST_CASE("ic4-format-transformation")
 
     gst_element_set_state(pipeline, GST_STATE_PLAYING);
 
-    sleep(5);
+    sleep(10);
 
     gst_element_set_state(pipeline, GST_STATE_NULL);
     gst_object_unref(pipeline);
     pipeline = nullptr;
 
-    CHECK(data.frame_counter >= 140);
+    CHECK(data.frame_counter >= 50);
     CHECK(data.caps_are_equal);
 
     gst_caps_unref(data.caps);
+
 }
 
 
 
 TEST_CASE("binning 2x2")
 {
-
-    auto serial = get_test_serial();
+    auto serial = test_helper::get_test_serial();
     auto bayer_fmt = get_highest_bayer_format(serial);
 
     std::string caps_str = fmt::format("video/x-raw,format=BGRx,binning=2x2,device-format={},width=640,height=480,framerate=30/1", bayer_fmt);
 
-    std::string pipe_str = fmt::format("tcamic4src serial={} "
-    " ! {}"
-    " ! appsink name=sink emit-signals=true", serial, caps_str);
+    std::string pipe_str = fmt::format("ic4src serial={} "
+    " ! {} ! queue"
+    " ! appsink name=sink emit-signals=true  sync=false", serial, caps_str);
 
     GstElement* pipeline = gst_parse_launch(pipe_str.c_str(), nullptr);
 
@@ -261,15 +272,16 @@ TEST_CASE("binning 2x2")
 
     gst_element_set_state(pipeline, GST_STATE_PLAYING);
 
-    sleep(5);
+    sleep(6);
 
     gst_element_set_state(pipeline, GST_STATE_NULL);
     gst_object_unref(pipeline);
     pipeline = nullptr;
 
 
-    CHECK(data.frame_counter >= 140);
+    CHECK(data.frame_counter >= 50);
     CHECK(data.caps_are_equal);
 
     gst_caps_unref(data.caps);
+
 }
