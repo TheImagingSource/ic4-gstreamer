@@ -9,6 +9,7 @@
 #include "ic4/ImageType.h"
 #include "ic4/Grabber.h"
 #include "ic4/QueueSink.h"
+#include <cstdint>
 #include <memory>
 #include <atomic>
 #include <mutex>
@@ -475,12 +476,36 @@ static gboolean gst_ic4_src_set_caps(GstBaseSrc* src, GstCaps* caps)
     }
     else
     {
-        GST_INFO("No device-format given.");
-    }
+        GST_INFO("No device-format given. Attempting general caps as device PixelFormat.");
 
-    GST_INFO("IC4 conversion from %s to %s",
-             ic4::to_string(ic4::PixelFormat((int32_t)p.getValueInt64(ic4::PropId::PixelFormat))).c_str(),
-             ic4::to_string(sink_format).c_str());
+        //
+        // iterate over device formats to ensure
+        // the given caps::device-format is valid
+        //
+        auto p_fmt = p.findEnumeration("PixelFormat");
+
+        bool is_valid = false;
+
+        for (const auto& f : p_fmt.entries())
+        {
+            if (f.intValue() == (int64_t)fmt)
+            {
+                p.setValue("PixelFormat", f.name());
+                is_valid = true;
+                break;
+            }
+
+        }
+        if (!is_valid)
+        {
+            GST_ERROR("Given caps are not in the device PixelFormat list. IC4 will attempt a conversion.");
+
+            GST_INFO("IC4 conversion from %s to %s",
+                     ic4::to_string(ic4::PixelFormat((int32_t)p.getValueInt64(ic4::PropId::PixelFormat))).c_str(),
+                     ic4::to_string(sink_format).c_str());
+        }
+
+    }
 
     self->device->sink = ic4::QueueSink::create(listener, sink_format);
 
