@@ -177,7 +177,7 @@ set(CPACK_DEBIAN_DEBUGINFO_PACKAGE "ON")
 
 include(package-name)
 
-create_package_name(CPACK_DEBIAN_FILE_NAME "ic4src" "${IC4SRC_VERSION}")
+create_package_name(CPACK_DEBIAN_FILE_NAME "ic4-gstreamer" "${IC4SRC_VERSION}")
 set(CPACK_DEBIAN_FILE_NAME "${CPACK_DEBIAN_FILE_NAME}.deb")
 
 # always last
