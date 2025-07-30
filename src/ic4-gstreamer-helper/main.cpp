@@ -75,20 +75,20 @@ int main(int argc, char *argv[])
     caps_cmd->add_option("serial", serial,
                          "Serial of the camera to open. e.g. '12345678'. Use `devices` subcommand to get a list." )->required();
 
-    auto transform_cmd = app.add_subcommand("transform", "List available transformations of a GstElement");
-    std::string transform_element = "videoconvert";
-    transform_cmd->add_option("-e,--element", transform_element, "Which transform element to use.");
+    // auto transform_cmd = app.add_subcommand("transform", "List available transformations of a GstElement");
+    // std::string transform_element = "videoconvert";
+    // transform_cmd->add_option("-e,--element", transform_element, "Which transform element to use.");
 
-    auto transform_group = transform_cmd->add_option_group("caps");
-    auto list_transform_in = transform_group->add_option("--in", "Caps that go into the transform element");
-    auto list_transform_out = transform_group->add_option("--out", "Caps to come out of the transform element");
-    list_transform_in->excludes(list_transform_out);
+    // auto transform_group = transform_cmd->add_option_group("caps");
+    // auto list_transform_in = transform_group->add_option("--in", "Caps that go into the transform element");
+    // auto list_transform_out = transform_group->add_option("--out", "Caps to come out of the transform element");
+    // list_transform_in->excludes(list_transform_out);
 
-    // the help Formatter instance is inherited/shared from the parent (app)
-    // We want a separate formatter to have different place holder texts
-    // create new Formatter instance as we really only need the text and nothing else
-    transform_cmd->formatter(std::make_shared<CLI::Formatter>());
-    transform_cmd->get_formatter()->label("TEXT", "GstElement");
+    // // the help Formatter instance is inherited/shared from the parent (app)
+    // // We want a separate formatter to have different place holder texts
+    // // create new Formatter instance as we really only need the text and nothing else
+    // transform_cmd->formatter(std::make_shared<CLI::Formatter>());
+    // transform_cmd->get_formatter()->label("TEXT", "GstElement");
 
     try
     {
@@ -110,23 +110,26 @@ int main(int argc, char *argv[])
     {
         ic4::gst::helper::list_gstreamer_1_0_formats(serial);
     }
-    else if (transform_cmd->parsed())
-    {
-        std::string transform_caps = "";
-        ic4::gst::helper::ElementPadDirection transform_direction = ic4::gst::helper::ElementPadDirection::Both;
+    //
+    // disabled for time being, needs investigating how useful it actually is
+    //
+    // else if (transform_cmd->parsed())
+    // {
+    //     std::string transform_caps = "";
+    //     ic4::gst::helper::ElementPadDirection transform_direction = ic4::gst::helper::ElementPadDirection::Both;
 
-        if (*list_transform_in)
-        {
-            list_transform_in->results(transform_caps);
-            transform_direction = ic4::gst::helper::ElementPadDirection::In;
-        }
-        else if (*list_transform_out)
-        {
-            list_transform_out->results(transform_caps);
-            transform_direction = ic4::gst::helper::ElementPadDirection::Out;
-        }
-        ic4::gst::helper::convert(transform_element, transform_direction, transform_caps);
-    }
+    //     if (*list_transform_in)
+    //     {
+    //         list_transform_in->results(transform_caps);
+    //         transform_direction = ic4::gst::helper::ElementPadDirection::In;
+    //     }
+    //     else if (*list_transform_out)
+    //     {
+    //         list_transform_out->results(transform_caps);
+    //         transform_direction = ic4::gst::helper::ElementPadDirection::Out;
+    //     }
+    //     ic4::gst::helper::convert(transform_element, transform_direction, transform_caps);
+    // }
     else
     {
         std::cout << app.help() << std::endl;
