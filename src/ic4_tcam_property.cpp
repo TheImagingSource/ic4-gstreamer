@@ -134,30 +134,30 @@ tcamprop1::Visibility_t vis_to_prop(ic4::PropVisibility vis)
     return tcamprop1::Visibility_t::Beginner;
 }
 
-TcamPropertyVisibility visibility_to_tcamprop(ic4::PropVisibility vis)
-{
-    switch (vis)
-    {
-        case ic4::PropVisibility::Beginner:
-        {
-            return TcamPropertyVisibility::TCAM_PROPERTY_VISIBILITY_BEGINNER;
-        }
-        case ic4::PropVisibility::Expert:
-        {
-            return TcamPropertyVisibility::TCAM_PROPERTY_VISIBILITY_EXPERT;
-        }
-        case ic4::PropVisibility::Guru:
-        {
-            return TcamPropertyVisibility::TCAM_PROPERTY_VISIBILITY_GURU;
-        }
-        case ic4::PropVisibility::Invisible:
-        {
-            return TcamPropertyVisibility::TCAM_PROPERTY_VISIBILITY_INVISIBLE;
-        }
-    }
-    return TcamPropertyVisibility::TCAM_PROPERTY_VISIBILITY_BEGINNER;
+// TcamPropertyVisibility visibility_to_tcamprop(ic4::PropVisibility vis)
+// {
+//     switch (vis)
+//     {
+//         case ic4::PropVisibility::Beginner:
+//         {
+//             return TcamPropertyVisibility::TCAM_PROPERTY_VISIBILITY_BEGINNER;
+//         }
+//         case ic4::PropVisibility::Expert:
+//         {
+//             return TcamPropertyVisibility::TCAM_PROPERTY_VISIBILITY_EXPERT;
+//         }
+//         case ic4::PropVisibility::Guru:
+//         {
+//             return TcamPropertyVisibility::TCAM_PROPERTY_VISIBILITY_GURU;
+//         }
+//         case ic4::PropVisibility::Invisible:
+//         {
+//             return TcamPropertyVisibility::TCAM_PROPERTY_VISIBILITY_INVISIBLE;
+//         }
+//     }
+//     return TcamPropertyVisibility::TCAM_PROPERTY_VISIBILITY_BEGINNER;
 
-}
+// }
 
 } //namespace
 

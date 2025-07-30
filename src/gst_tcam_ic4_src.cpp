@@ -716,11 +716,6 @@ static bool is_state_null(GstIC4Src* self)
     return is_gst_state_equal_or_less(GST_ELEMENT(self), GST_STATE_NULL);
 }
 
-static bool is_state_ready_or_lower(GstIC4Src* self)
-{
-    return is_gst_state_equal_or_less(GST_ELEMENT(self), GST_STATE_READY);
-}
-
 
 static void gst_ic4_src_set_property(GObject* object,
                                      guint prop_id,
