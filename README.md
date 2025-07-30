@@ -24,6 +24,21 @@ Setting properties is done as follows:
 ic4src prop="ExposureAuto=Continuous GainAuto=Continuous"
 ```
 
+## Tests
+
+Tests imply the following:
+
+Installation of a GenTL provider
+
+Set TEST_SERIAL_IC4SRC to the device to use.
+
+The device MUST have the following properties:
+
+- DeviceReset
+- ExposureTime
+- ExposureAuto
+- Contrast
+
 ## Build Requirements
 
 - ic4
