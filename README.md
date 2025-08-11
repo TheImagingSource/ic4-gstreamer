@@ -24,7 +24,12 @@ Setting properties is done as follows:
 ic4src prop="ExposureAuto=Continuous GainAuto=Continuous"
 ```
 
+
 ## Tests
+
+Require `IC4SRC_ENABLE_TESTS` to be set to `ON`.
+doclib has to installed.
+Add it to vcpkg for easiest usage.
 
 Tests imply the following:
 

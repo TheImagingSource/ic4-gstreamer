@@ -19,6 +19,8 @@ set(IC4SRC_VERSION "${IC4SRC_VERSION_MAJOR}.${IC4SRC_VERSION_MINOR}.${IC4SRC_VER
 
 set(IC4SRC_ORIGIN "https://theimagingsource.com")
 
+option(IC4_ENABLE_TESTS "Enable unit/integration tests" OFF)
+
 ### installation paths
 
 
@@ -121,8 +123,11 @@ set(ic4_LIBRARIES "${IC4_LIBRARIES}")
 add_subdirectory(libs)
 add_subdirectory(src)
 
-include(CTest)
-add_subdirectory(test)
+if (IC4SRC_ENABLE_TESTS)
+  include(CTest)
+  add_subdirectory(test)
+endif (IC4SRC_ENABLE_TESTS)
+
 
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
