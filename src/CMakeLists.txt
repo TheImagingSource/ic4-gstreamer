@@ -64,8 +64,8 @@ target_link_libraries( gstic4src
 
 target_compile_definitions(gstic4src PRIVATE -DIC4SRC_VERSION="${IC4SRC_VERSION}")
 
-set_property(TARGET gstic4src PROPERTY VERSION "${IC4SRC_VERSION}")
-set_property(TARGET gstic4src PROPERTY SOVERSION "${IC4SRC_VERSION}")
+# set_property(TARGET gstic4src PROPERTY VERSION "${IC4SRC_VERSION}")
+# set_property(TARGET gstic4src PROPERTY SOVERSION "${IC4SRC_VERSION}")
 
 set_project_warnings(gstic4src)
 
