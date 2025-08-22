@@ -26,7 +26,7 @@ bool ic4::gst::helper::is_valid_device_serial (const std::string& serial)
     bool ret = false;
 
     auto monitor = gst_device_monitor_new();
-    gst_device_monitor_add_filter(monitor, "Video/Source/tcam", NULL);
+    gst_device_monitor_add_filter(monitor, "Video/Source/tcam/ic4", NULL);
 
     GList* devices = gst_device_monitor_get_devices(monitor);
 
