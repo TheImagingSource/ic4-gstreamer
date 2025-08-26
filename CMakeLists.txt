@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 #Name your project here
-project(ic4src LANGUAGES CXX)
+project(ic4-gstreamer LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
