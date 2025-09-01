@@ -26,52 +26,55 @@ struct gst_pfnc {
 
 static const gst_pfnc format_list[] = {
     { ic4::PixelFormat::Mono8, "Mono8",   "video/x-raw", "GRAY8" },
-    { ic4::PixelFormat::Mono10p, "Mono10p", "video/x-raw", "Mono10p" },
-    { ic4::PixelFormat::Mono12p, "Mono12p", "video/x-raw", "Mono12p" },
+    { ic4::PixelFormat::Mono10p, "Mono10p", "video/x-raw", "GRAY10p" },
+    { ic4::PixelFormat::Mono12p, "Mono12p", "video/x-raw", "GRAY12p" },
+    { ic4::PixelFormat::Mono12Packed, "Mono12sp", "video/x-raw", "GRAY12sp" },
     { ic4::PixelFormat::Mono16, "Mono16",  "video/x-raw", "GRAY16_LE" },
     { ic4::PixelFormat::BayerBG8, "BayerBG8",   "video/x-bayer", "bggr" },
     { ic4::PixelFormat::BayerBG10p, "BayerBG10p", "video/x-bayer", "bggr10p" },
     { ic4::PixelFormat::BayerBG12p, "BayerBG12p", "video/x-bayer", "bggr12p" },
+    { ic4::PixelFormat::BayerBG12Packed, "BayerBG12Packed", "video/x-bayer", "bggr12sp" },
     { ic4::PixelFormat::BayerBG16, "BayerBG16",  "video/x-bayer", "bggr16" },
     { ic4::PixelFormat::BayerGB8, "BayerGB8",   "video/x-bayer", "gbrg" },
     { ic4::PixelFormat::BayerGB10p, "BayerGB10p", "video/x-bayer", "gbrg10p" },
     { ic4::PixelFormat::BayerGB12p, "BayerGB12p", "video/x-bayer", "gbrg12p" },
+    { ic4::PixelFormat::BayerGB12Packed, "BayerGB12Packed", "video/x-bayer", "gbrg12ps" },
     { ic4::PixelFormat::BayerGB16, "BayerGB16",  "video/x-bayer", "gbrg16" },
     { ic4::PixelFormat::BayerGR8, "BayerGR8",   "video/x-bayer", "grbg" },
     { ic4::PixelFormat::BayerGR10p, "BayerGR10p", "video/x-bayer", "grbg10p" },
     { ic4::PixelFormat::BayerGR12p, "BayerGR12p", "video/x-bayer", "grbg12p" },
+    { ic4::PixelFormat::BayerGR12Packed, "BayerGR12Packed", "video/x-bayer", "grbg12sp" },
     { ic4::PixelFormat::BayerGR16, "BayerGR16",  "video/x-bayer", "grbg16" },
     { ic4::PixelFormat::BayerRG8, "BayerRG8",   "video/x-bayer", "rggb" },
     { ic4::PixelFormat::BayerRG10p, "BayerRG10p", "video/x-bayer", "rggb10p" },
     { ic4::PixelFormat::BayerRG12p, "BayerRG12p", "video/x-bayer", "rggb12p" },
+    { ic4::PixelFormat::BayerRG12Packed, "BayerRG12Packed", "video/x-bayer", "rggb12sp" },
     { ic4::PixelFormat::BayerRG16, "BayerRG16",  "video/x-bayer", "rggb16" },
 
     { ic4::PixelFormat::BGR8, "BGR8",   "video/x-raw", "BGR"},
     { ic4::PixelFormat::BGRa8, "BGRa8",  "video/x-raw", "BGRx" },
     { ic4::PixelFormat::BGRa16, "BGRa16", "video/x-raw", "BGRA16_LE" },
-// YUV422_8 	YUV 4:2:2 8-bit.
-// YCbCr422_8 	YCbCr 4:2:2 8-bit.
-// {"YCbCr411_8_CbYYCrYY", "video/x-raw", "IYU1"} //	YCbCr 4:1:1 8-bit (CbYYCrYY)
-// YCbCr411_8 	YCbCr 4:1:1 8-bit (YYCbYYCr)
-//     { "", "video/x-raw", "I420"},
-//     { "", "video/x-raw", "YV12"},
-
-    ////// dutils
-
-    //{ img::fourcc::YUY2,                    "video/x-raw", "YUY2", },
-    { ic4::PixelFormat::YCbCr422_8, "YCbCr422_8_CbYCrY",                    "video/x-raw",  "UYVY", },
-        //{ img::fourcc::YCbCr411_8_CbYYCrYY,     "video/x-raw", "IYU1", },
-
-    //{ ic4::PixelFormat::YCbCr420_, "YCbCr420_8_YY_CrCb_Semiplanar", "video/x-raw", "NV12", },
+    { ic4::PixelFormat::YUV422_8, "YUV422_8", "video/x-raw", "YUY2"},
+    { ic4::PixelFormat::YCbCr411_8, "YCbCr411_8", "video/x-raw", "Y41B"},
+    // { ic4::PixelFormat::YCbCr422_8,          "YCbCr422_8", "video/x-raw", "YUY2"},
+    { ic4::PixelFormat::YCbCr422_8,          "YCbCr422_8",            "video/x-raw",  "UYVY", },
+    { ic4::PixelFormat::YCbCr411_8_CbYYCrYY, "YCbCr411_8_CbYYCrYY",           "video/x-raw", "IYU1", },
     { ic4::PixelFormat::YCbCr411_8_CbYYCrYY, "YCbCr420_8_YY_CrCb_Semiplanar", "video/x-raw", "NV12", },
-        // { img::fourcc::YV12,                    "video/x-raw", "YV12", },
 
-        // { PfncFormat::YCbCr422_8_CbYCrY,                    fourcc::UYVY },
-        // { PfncFormat::YCbCr8_CbYCr,                         fourcc::IYU2 },
-        // { PfncFormat::YCbCr420_8_YY_CrCb_Semiplanar,        fourcc::NV12 },
+    ////// polarization formats
+    { ic4::PixelFormat::PolarizedMono8, "PolarizedMono8", "video/x-raw", "polarized-GRAY8-v0"},
+    { ic4::PixelFormat::PolarizedMono12p, "PolarizedMono12p", "video/x-raw", "polarized-GRAY12p-v0"},
+    { ic4::PixelFormat::PolarizedMono12Packed, "PolarizedMono12Packed", "video/x-raw", "polarized-GRAY12sp-v0"},
+    { ic4::PixelFormat::PolarizedMono16, "PolarizedMono16", "video/x-raw", "polarized-GRAY16-v0"},
 
-
-    //////
+    { ic4::PixelFormat::PolarizedBayerBG8, "PolarizedBayerBG8", "video/x-bayer", "polarized-bggr8-v0"},
+    { ic4::PixelFormat::PolarizedBayerBG12p, "PolarizedBayerBG12p", "video/x-bayer", "polarized-bayer-bggr12p-v0"},
+    { ic4::PixelFormat::PolarizedBayerBG12Packed, "PolarizedBayerBG12Packed", "video/x-bayer", "polarized-bayer-bggr12sp-v0"},
+    { ic4::PixelFormat::PolarizedBayerBG16, "PolarizedBayerBG16", "video/x-bayer", "polarized-bayer-bggr16-v0"},
+    { ic4::PixelFormat::PolarizedADIMono8, "PolarizedADIMono8", "tis", "polarized-ADI-GRAY8"},
+    { ic4::PixelFormat::PolarizedADIMono16, "PolarizedADIMono16", "tis", "polarized-ADI-GRAY16"},
+    { ic4::PixelFormat::PolarizedADIRGB8, "PolarizedADIRGB8", "tis", "polarized-ADI-RGB8"},
+    { ic4::PixelFormat::PolarizedADIRGB16, "PolarizedADIRGB16", "tis", "polarized-ADI-RGB16"},
 
     // the following are either not supported
     // or not tested
@@ -277,18 +280,12 @@ static const gst_pfnc format_list[] = {
     // {"YCbCr2020_422_12p_CbYCrY", "", "YCbCr2020_422_12p_CbYCrY"},
     // {"YUV8_UYV", "", "YUV8_UYV"},
     // {"YUV411_8_UYYVYY", "", "YUV411_8_UYYVYY"},
-    // {"YUV422_8", "", "YUV422_8"},
     // {"YUV422_8_UYVY", "", "YUV422_8_UYVY"},
     // {"Mono10Packed", "video/x-raw", "Mono10Packed"},
-    // {"Mono12Packed", "video/x-raw", "Mono12Packed"},
     // {"BayerBG10Packed", "video/x-raw", "BayerBG10Packed"},
-    // {"BayerBG12Packed", "video/x-raw", "BayerBG12Packed"},
     // {"BayerGB10Packed", "Video/x-bayer", "BayerGB10Packed"},
-    // {"BayerGB12Packed", "Video/x-bayer", "BayerGB12Packed"},
     // {"BayerGR10Packed", "Video/x-bayer", "BayerGR10Packed"},
-    // {"BayerGR12Packed", "Video/x-bayer", "BayerGR12Packed"},
     // {"BayerRG10Packed", "Video/x-bayer", "BayerRG10Packed"},
-    // {"BayerRG12Packed", "Video/x-bayer", "BayerRG12Packed"},
     // {"RGB10V1Packed", "video/x-raw", "RGB10V1Packed"},
     // {"RGB12V1Packed", "video/x-raw", "RGB12V1Packed"},
 };
@@ -325,14 +322,29 @@ const char* ic4::gst::PixelFormat_to_gst_format_string(const char* pixel_format)
 }
 
 
-const char* ic4::gst::format_string_to_PixelFormat(const char* format_str)
+ic4::PixelFormat format_string_to_Pixel(const char* format_str)
 {
+
 
     for (const auto& e : format_list)
     {
         if (strcmp(format_str, e.gst_format) == 0)
         {
-            return e.pfnc_str;
+            return e.ic4_fmt;
+        }
+    }
+
+    return ic4::PixelFormat::Invalid;
+}
+
+const char* ic4::gst::format_string_to_PixelFormat(const char* format_str)
+{
+
+    for (const auto& e : format_list)
+    {
+      if (strcmp(format_str, e.gst_format) == 0) {
+          //return ic4::to_string(e.ic4_fmt);
+          return e.pfnc_str;
         }
     }
 
