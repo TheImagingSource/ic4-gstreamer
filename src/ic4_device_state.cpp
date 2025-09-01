@@ -5,6 +5,8 @@
 #include "ic4_tcam_property.h"
 #include <algorithm>
 #include <ic4/Error.h>
+#include <ic4/Grabber.h>
+#include <memory>
 
 #include "gst_tcam_ic4_src.h"
 
@@ -104,7 +106,7 @@ bool ic4_device_state::open_device()
         return false;
     }
     // use first device
-    if (serial_.empty())
+    if (identifier_.empty())
     {
 
         if (!grabber->deviceOpen(dev_list.at(0)))
@@ -112,21 +114,18 @@ bool ic4_device_state::open_device()
             GST_ERROR("Unable to open device");
             return false;
         }
-        serial_ = dev_list.at(0).serial();
+        identifier_ = dev_list.at(0).serial();
     }
     else
     {
-        for (auto& item : dev_list)
+        ic4::Error err;
+        grabber = std::make_shared<ic4::Grabber>(identifier_, err);
+
+        if (err)
         {
-            if (item.serial() == serial_)
-            {
-                if (!grabber->deviceOpen(item))
-                {
-                    GST_ERROR("Unable to open device");
-                    return false;
-                }
-                break;
-            }
+
+            GST_ERROR("Unable to open the wanted device. %s", err.message().c_str());
+            return false;
         }
     }
     listener = std::make_shared<sink_listener>();
@@ -134,7 +133,7 @@ bool ic4_device_state::open_device()
 
     populate_tcamprop_interface();
 
-    GST_INFO("Opened device with serial: %s", serial_.c_str());
+    GST_INFO("Opened device with identifier: %s", identifier_.c_str());
 
     if (!set_property_cache_.empty())
     {

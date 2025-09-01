@@ -25,7 +25,8 @@ The following is a list of custom properties. Standard Gstreamer properties are 
 | Name        | Description                                                             | Default | Note       |
 |-------------|-------------------------------------------------------------------------|---------|------------|
 | num-buffers | Number of buffers to output before sending EOS (-1 = unlimited)         | -1      |            |
-| serial      | Serial of the camera to be used. Empty opens first camera               | empty   |            |
+| ident       | Identifier of the camera to be used. Empty opens first camera.          | empty   |            |
+|             | Valid identifier are: serial, device model, user defined name and IP.   |         |            |
 | type        | backend type. Used only for tiscamera compatibility.                    | ic4     | read-only  |
 | prop        | Set IC4 properties. Syntax: prop="ExposureAuto=Off ExposureTime=1000.0" |         | write-only |
 |             |                                                                         |         |            |

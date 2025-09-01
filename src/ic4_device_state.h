@@ -69,23 +69,23 @@ struct ic4_device_state
     std::mutex stream_mtx_;
     std::condition_variable stream_cv_;
 
-    std::string serial_;
+    std::string identifier_;
 
     std::string set_property_cache_;
 
-    std::string get_serial()
+    std::string get_ident()
     {
-        return serial_;
+        return identifier_;
     };
 
-    bool set_serial(const std::string s)
+    bool set_ident(const std::string s)
     {
         if (is_open())
         {
             return false;
         }
-        GST_DEBUG("Device serial is now: %s", s.c_str());
-        serial_ = s;
+        GST_DEBUG("Device identifier is now: %s", s.c_str());
+        identifier_ = s;
         return true;
     };
 

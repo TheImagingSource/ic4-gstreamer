@@ -127,7 +127,7 @@ void print_conversion_table(GstBaseTransform* base)
 
 }
 
-void ic4::gst::helper::list_gstreamer_1_0_formats (const std::string& serial)
+void ic4::gst::helper::list_gstreamer_1_0_formats (const std::string& ident)
 {
     GstElement* source = gst_element_factory_make("ic4src", "ic4-print-caps-source");
 
@@ -137,24 +137,24 @@ void ic4::gst::helper::list_gstreamer_1_0_formats (const std::string& serial)
         return;
     }
 
-    if (!is_valid_device_serial(serial))
-    {
-        std::cerr << "Device with given serial does not exist." << std::endl;
-        return;
-    }
+    // if (!is_valid_device_serial(ident))
+    // {
+    //     std::cerr << "Device with given serial does not exist." << std::endl;
+    //     return;
+    // }
 
     GValue val = {};
     g_value_init(&val, G_TYPE_STRING);
-    g_value_set_static_string(&val, serial.c_str());
+    g_value_set_static_string(&val, ident.c_str());
 
-    g_object_set_property(G_OBJECT(source), "serial", &val);
+    g_object_set_property(G_OBJECT(source), "ident", &val);
 
     gst_element_set_state(source, GST_STATE_READY);
 
 
     if (!block_until_state_change_done(source))
     {
-        std::cout << "Unable to open device. Is someone using the camera?" << std::endl;
+        std::cout << "Unable to open device. Is someone using the camera? Is the identifier correct?" << std::endl;
         gst_object_unref(source);
         return;
     }

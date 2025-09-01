@@ -41,7 +41,7 @@ enum {
 
 enum {
     PROP_0,
-    PROP_SERIAL,
+    PROP_IDENT,
     PROP_DEVICE_TYPE,
     PROP_DEVICE_PROP,
 };
@@ -68,7 +68,7 @@ static bool ic4_src_open_camera(GstIC4Src *self)
             return;
         }
 
-        auto serial = self->device->get_serial();
+        auto serial = self->device->get_ident();
 
         // set serial as args entry and in actual message
         // that way users have multiple ways of accessing the serial
@@ -238,8 +238,8 @@ static gboolean gst_ic4_src_negotiate(GstBaseSrc* basesrc)
                 int width = 0, height = 0;
 
                 /* Walk the structure backwards to get the first entry of the
-                     * smallest resolution bigger (or equal to) the preferred resolution)
-                     */
+                 * smallest resolution bigger (or equal to) the preferred resolution)
+                 */
                 for (gint i = (gint)gst_caps_get_size(icaps) - 1; i >= 0; i--)
                 {
                     GstStructure* is = gst_caps_get_structure(icaps, i);
@@ -726,23 +726,23 @@ static void gst_ic4_src_set_property(GObject* object,
 
     switch (prop_id)
     {
-        case PROP_SERIAL:
+        case PROP_IDENT:
         {
             if (!is_state_null(self))
             {
-                GST_ERROR_OBJECT(self, "GObject property 'serial' is not writable "
+                GST_ERROR_OBJECT(self, "GObject property 'ident' is not writable "
                                  "in state >= GST_STATE_READY.");
                 return;
             }
             if (g_value_get_string(value) == nullptr)
             {
-                self->device->set_serial(std::string{});
+                self->device->set_ident(std::string{});
             }
             else
             {
                 std::string string_value = g_value_get_string(value);
 
-                if (!self->device->set_serial(string_value))
+                if (!self->device->set_ident(string_value))
                 {
                     GST_ERROR("Unable to open device");
                 }
@@ -771,9 +771,9 @@ static void gst_ic4_src_get_property(GObject* object,
 
     switch (prop_id)
     {
-        case PROP_SERIAL:
+        case PROP_IDENT:
         {
-            g_value_set_string(value, self->device->get_serial().c_str());
+            g_value_set_string(value, self->device->get_ident().c_str());
             break;
         }
         case PROP_DEVICE_TYPE:
@@ -825,8 +825,8 @@ static void gst_ic4_src_class_init(GstIC4SrcClass *klass)
     gobject_class->get_property = gst_ic4_src_get_property;
 
     g_object_class_install_property(
-        gobject_class, PROP_SERIAL,
-        g_param_spec_string("serial", "Camera serial", "Serial of the camera",
+        gobject_class, PROP_IDENT,
+        g_param_spec_string("ident", "Camera identifier", "Identifier of the camera",
                             NULL,
                             static_cast<GParamFlags>(G_PARAM_READWRITE |
                                                      G_PARAM_STATIC_STRINGS)));

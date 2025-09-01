@@ -67,13 +67,13 @@ int main(int argc, char *argv[])
     app.get_formatter()->label("TEXT", "SERIAL");
         app.allow_extras();
 
-    std::string serial;
+    std::string ident;
     auto list_cmd = app.add_subcommand("devices",
                                        "List available devices and interfaces by connection.");
     auto caps_cmd = app.add_subcommand("caps",
                                        "List gstreamer caps of the devices with given serial.");
-    caps_cmd->add_option("serial", serial,
-                         "Serial of the camera to open. e.g. '12345678'. Use `devices` subcommand to get a list." )->required();
+    caps_cmd->add_option("ident", ident,
+                         "Identifier of the camera to open. e.g. serial '12345678'. Use `devices` subcommand to get a list." )->required();
 
     // auto transform_cmd = app.add_subcommand("transform", "List available transformations of a GstElement");
     // std::string transform_element = "videoconvert";
@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
     }
     else if (caps_cmd->parsed())
     {
-        ic4::gst::helper::list_gstreamer_1_0_formats(serial);
+        ic4::gst::helper::list_gstreamer_1_0_formats(ident);
     }
     //
     // disabled for time being, needs investigating how useful it actually is
