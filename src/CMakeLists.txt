@@ -18,6 +18,9 @@ add_library(gstic4src SHARED
   ic4_gst_conversions.h
   ic4_gst_conversions.cpp
 
+  format.h
+  format.cpp
+
   ic4_device_state.h
   ic4_device_state.cpp
   ic4_tcam_property.h

@@ -16,6 +16,8 @@
 #include <condition_variable>
 
 #include "ic4_device_state.h"
+
+#include "format.h"
 #include "ic4_tcam_property.h"
 
 #include "../libs/tcam-property/src/gst/meta/gstmetatcamstatistics.h"
@@ -391,7 +393,7 @@ static gboolean gst_ic4_src_set_caps(GstBaseSrc* src, GstCaps* caps)
 
     auto p = self->device->grabber->devicePropertyMap();
 
-    const ic4::PixelFormat fmt = ic4::gst::caps_to_PixelFormat(*caps);
+    const ic4::PixelFormat fmt = ic4::gst::gst_caps_to_pixel_format(*caps);
 
     if (fmt == ic4::PixelFormat::Invalid)
     {
@@ -444,9 +446,18 @@ static gboolean gst_ic4_src_set_caps(GstBaseSrc* src, GstCaps* caps)
 
     if (dev_fmt_str)
     {
-        auto name = ic4::gst::format_string_to_PixelFormat(dev_fmt_str);
-        
-        GST_INFO("Setting device-caps to %s", name);
+        auto dev_fmt = ic4::gst::gst_format_to_pixel_format(dev_fmt_str);
+
+        if (dev_fmt == ic4::PixelFormat::Invalid)
+        {
+            GST_ERROR("Unable to convert \"%s\" to a valid ic4 PixelFormat. "
+                      "Please sekect a different device-format.",
+                      dev_fmt_str);
+            return FALSE;
+        }
+        auto name = ic4::to_string(dev_fmt);
+
+        GST_INFO("Setting device-caps to %s", name.c_str());
 
         //
         // iterate over device formats to ensure
@@ -476,7 +487,7 @@ static gboolean gst_ic4_src_set_caps(GstBaseSrc* src, GstCaps* caps)
     }
     else
     {
-        GST_INFO("No device-format given. Attempting general caps as device PixelFormat.");
+        //GST_INFO("No device-format given. Attempting caps \"%s\"as device PixelFormat.", ic4::to_string(fmt).c_str());
 
         //
         // iterate over device formats to ensure
@@ -532,15 +543,13 @@ gst_ic4_src_change_state(GstElement* element, GstStateChange change)
             }
             break;
         }
-        case GST_STATE_CHANGE_READY_TO_PAUSED: {
-          // self->device->n_buffers_delivered_ = 0; //
-          //GST_INFO("ready->paused");
-          ret = GST_STATE_CHANGE_NO_PREROLL;
-          break;
+        case GST_STATE_CHANGE_READY_TO_PAUSED:
+        {
+            ret = GST_STATE_CHANGE_NO_PREROLL;
+            break;
         }
         case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
         {
-            //self->device->grabber->s
             break;
         }
         default:
@@ -565,7 +574,8 @@ gst_ic4_src_change_state(GstElement* element, GstStateChange change)
             //GST_INFO("paused->ready");
 
             self->device->streaming_ = false;
-            if (self->device->grabber->isStreaming()) {
+            if (self->device->grabber->isStreaming())
+            {
                 self->device->grabber->streamStop();
             }
             break;

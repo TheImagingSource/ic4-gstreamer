@@ -1,5 +1,6 @@
 
 #include "ic4_gst_conversions.h"
+#include "format.h"
 #include "ic4/Properties.h"
 #include "gst/gst.h"
 #include <algorithm>
@@ -14,386 +15,6 @@
 
 // make gstreamer logging work
 #define GST_CAT_DEFAULT ic4_src_debug
-
-namespace {
-
-struct gst_pfnc {
-    ic4::PixelFormat ic4_fmt;
-    const char* pfnc_str;
-    const char* gst_name;
-    const char* gst_format;
-};
-
-static const gst_pfnc format_list[] = {
-    { ic4::PixelFormat::Mono8, "Mono8",   "video/x-raw", "GRAY8" },
-    { ic4::PixelFormat::Mono10p, "Mono10p", "video/x-raw", "GRAY10p" },
-    { ic4::PixelFormat::Mono12p, "Mono12p", "video/x-raw", "GRAY12p" },
-    { ic4::PixelFormat::Mono12Packed, "Mono12Packed", "video/x-raw", "GRAY12sp" },
-    { ic4::PixelFormat::Mono16, "Mono16",  "video/x-raw", "GRAY16_LE" },
-    { ic4::PixelFormat::BayerBG8, "BayerBG8",   "video/x-bayer", "bggr" },
-    { ic4::PixelFormat::BayerBG10p, "BayerBG10p", "video/x-bayer", "bggr10p" },
-    { ic4::PixelFormat::BayerBG12p, "BayerBG12p", "video/x-bayer", "bggr12p" },
-    { ic4::PixelFormat::BayerBG12Packed, "BayerBG12Packed", "video/x-bayer", "bggr12sp" },
-    { ic4::PixelFormat::BayerBG16, "BayerBG16",  "video/x-bayer", "bggr16" },
-    { ic4::PixelFormat::BayerGB8, "BayerGB8",   "video/x-bayer", "gbrg" },
-    { ic4::PixelFormat::BayerGB10p, "BayerGB10p", "video/x-bayer", "gbrg10p" },
-    { ic4::PixelFormat::BayerGB12p, "BayerGB12p", "video/x-bayer", "gbrg12p" },
-    { ic4::PixelFormat::BayerGB12Packed, "BayerGB12Packed", "video/x-bayer", "gbrg12sp" },
-    { ic4::PixelFormat::BayerGB16, "BayerGB16",  "video/x-bayer", "gbrg16" },
-    { ic4::PixelFormat::BayerGR8, "BayerGR8",   "video/x-bayer", "grbg" },
-    { ic4::PixelFormat::BayerGR10p, "BayerGR10p", "video/x-bayer", "grbg10p" },
-    { ic4::PixelFormat::BayerGR12p, "BayerGR12p", "video/x-bayer", "grbg12p" },
-    { ic4::PixelFormat::BayerGR12Packed, "BayerGR12Packed", "video/x-bayer", "grbg12sp" },
-    { ic4::PixelFormat::BayerGR16, "BayerGR16",  "video/x-bayer", "grbg16" },
-    { ic4::PixelFormat::BayerRG8, "BayerRG8",   "video/x-bayer", "rggb" },
-    { ic4::PixelFormat::BayerRG10p, "BayerRG10p", "video/x-bayer", "rggb10p" },
-    { ic4::PixelFormat::BayerRG12p, "BayerRG12p", "video/x-bayer", "rggb12p" },
-    { ic4::PixelFormat::BayerRG12Packed, "BayerRG12Packed", "video/x-bayer", "rggb12sp" },
-    { ic4::PixelFormat::BayerRG16, "BayerRG16",  "video/x-bayer", "rggb16" },
-
-    { ic4::PixelFormat::BGR8, "BGR8",   "video/x-raw", "BGR"},
-    { ic4::PixelFormat::BGRa8, "BGRa8",  "video/x-raw", "BGRx" },
-    { ic4::PixelFormat::BGRa16, "BGRa16", "video/x-raw", "BGRA16_LE" },
-    { ic4::PixelFormat::YUV422_8, "YUV422_8", "video/x-raw", "YUY2"},
-    { ic4::PixelFormat::YCbCr411_8, "YCbCr411_8", "video/x-raw", "Y41B"},
-    // { ic4::PixelFormat::YCbCr422_8,          "YCbCr422_8", "video/x-raw", "YUY2"},
-    { ic4::PixelFormat::YCbCr422_8,          "YCbCr422_8",            "video/x-raw",  "UYVY", },
-    { ic4::PixelFormat::YCbCr411_8_CbYYCrYY, "YCbCr411_8_CbYYCrYY",           "video/x-raw", "IYU1", },
-    { ic4::PixelFormat::YCbCr411_8_CbYYCrYY, "YCbCr420_8_YY_CrCb_Semiplanar", "video/x-raw", "NV12", },
-
-    ////// polarization formats
-    { ic4::PixelFormat::PolarizedMono8, "PolarizedMono8", "video/x-raw", "polarized-GRAY8-v0"},
-    { ic4::PixelFormat::PolarizedMono12p, "PolarizedMono12p", "video/x-raw", "polarized-GRAY12p-v0"},
-    { ic4::PixelFormat::PolarizedMono12Packed, "PolarizedMono12Packed", "video/x-raw", "polarized-GRAY12sp-v0"},
-    { ic4::PixelFormat::PolarizedMono16, "PolarizedMono16", "video/x-raw", "polarized-GRAY16-v0"},
-
-    { ic4::PixelFormat::PolarizedBayerBG8, "PolarizedBayerBG8", "video/x-bayer", "polarized-bggr8-v0"},
-    { ic4::PixelFormat::PolarizedBayerBG12p, "PolarizedBayerBG12p", "video/x-bayer", "polarized-bayer-bggr12p-v0"},
-    { ic4::PixelFormat::PolarizedBayerBG12Packed, "PolarizedBayerBG12Packed", "video/x-bayer", "polarized-bayer-bggr12sp-v0"},
-    { ic4::PixelFormat::PolarizedBayerBG16, "PolarizedBayerBG16", "video/x-bayer", "polarized-bayer-bggr16-v0"},
-    { ic4::PixelFormat::PolarizedADIMono8, "PolarizedADIMono8", "tis", "polarized-ADI-GRAY8"},
-    { ic4::PixelFormat::PolarizedADIMono16, "PolarizedADIMono16", "tis", "polarized-ADI-GRAY16"},
-    { ic4::PixelFormat::PolarizedADIRGB8, "PolarizedADIRGB8", "tis", "polarized-ADI-RGB8"},
-    { ic4::PixelFormat::PolarizedADIRGB16, "PolarizedADIRGB16", "tis", "polarized-ADI-RGB16"},
-
-    // the following are either not supported
-    // or not tested
-
-    // { "RGBa10", "video/x-raw", "RGBa10" },
-    // { "RGBa10p", "video/x-raw", "RGBa10p" },
-    // { "RGBa12", "video/x-raw", "RGBa12" },
-    // { "RGBa12p", "video/x-raw", "RGBa12p" },
-    // { "RGBa14", "video/x-raw", "RGBa14" },
-    // { "RGBa16", "video/x-raw", "RGBa16" },
-    // { "RGB8", "video/x-raw", "RGB8" },
-    // { "RGB8_Planar", "video/x-raw", "RGB8_Planar" },
-    // { "RGB10", "video/x-raw", "RGB10" },
-    // { "RGB10_Planar", "video/x-raw", "RGB10_Planar" },
-    // { "RGB10p", "video/x-raw", "RGB10p" },
-    // { "RGB10p32", "video/x-raw", "RGB10p32" },
-    // { "RGB12", "video/x-raw", "RGB12" },
-    // { "RGB12_Planar", "video/x-raw", "RGB12_Planar" },
-    // { "RGB12p", "video/x-raw", "RGB12p" },
-    // { "RGB14", "video/x-raw", "RGB14" },
-    // { "RGB16", "video/x-raw", "RGB16" },
-    // { "RGB16_Planar", "video/x-raw", "RGB16_Planar" },
-    // { "RGB565p", "video/x-raw", "RGB565p" },
-    // { "BGRa8", "video/x-raw", "BGRa8" },
-    // { "BGRa10", "video/x-raw", "BGRa10" },
-    // { "BGRa10p", "video/x-raw", "BGRa10p" },
-    // { "BGRa12", "video/x-raw", "BGRa12" },
-    // { "BGRa12p", "video/x-raw", "BGRa12p" },
-    // { "BGRa14", "video/x-raw", "BGRa14" },
-    // { "BGRa16", "video/x-raw", "BGRa16" },
-    // { "BGR8", "video/x-raw", "BGR8" },
-    // { "BGR10", "video/x-raw", "BGR10" },
-    // { "BGR10p", "video/x-raw", "BGR10p" },
-    // { "BGR12", "video/x-raw", "BGR12" },
-    // { "BGR12p", "video/x-raw", "BGR12p" },
-    // { "BGR14", "video/x-raw", "BGR14" },
-    // { "BGR16", "video/x-raw", "BGR16" },
-    // { "BGR565p", "video/x-raw", "BGR565p" },
-
-    // {"R8", "video/x-raw", "R8"},
-    // {"R10", "video/x-raw", "R10"},
-    // {"R12", "video/x-raw", "R12"},
-    // {"R16", "video/x-raw", "R16"},
-    // {"G8", "video/x-raw", "G8"},
-    // {"G10", "video/x-raw", "G10"},
-    // {"G12", "", "G12"},
-    // {"G16", "", "G16"},
-    // {"B8", "", "B8"},
-    // {"B10", "", "B10"},
-    // {"B12", "", "B12"},
-    // {"B16", "", "B16"},
-    // {"Coord3D_ABC8", "", "Coord3D_ABC8"},
-    // {"Coord3D_ABC8_Planar", "", "Coord3D_ABC8_Planar"},
-    // {"Coord3D_ABC10p", "",
-
-    //  "Coord3D_ABC10p"},
-    // {"Coord3D_ABC10p_Planar", "", "Coord3D_ABC10p_Planar"},
-    // {"Coord3D_ABC12p", "", "Coord3D_ABC12p"},
-    // {"Coord3D_ABC12p_Planar", "", "Coord3D_ABC12p_Planar"},
-    // {"Coord3D_ABC16", "",  "Coord3D_ABC16"},
-    // {"Coord3D_ABC16_Planar", "",  "Coord3D_ABC16_Planar"},
-    // {"Coord3D_ABC32f", "",  "Coord3D_ABC32f"},
-    // {"Coord3D_ABC32f_Planar", "", "Coord3D_ABC32f_Planar"},
-    // {"Coord3D_AC8", "", "Coord3D_AC8"},
-    // {"Coord3D_AC8_Planar", "", "Coord3D_AC8_Planar"},
-    // {"Coord3D_AC10p", "", "Coord3D_AC10p"},
-    // {"Coord3D_AC10p_Planar", "", "Coord3D_AC10p_Planar"},
-    // {"Coord3D_AC12p", "", "Coord3D_AC12p"},
-    // {"Coord3D_AC12p_Planar", "", "Coord3D_AC12p_Planar"},
-    // {"Coord3D_AC16", "", "Coord3D_AC16"},
-    // {"Coord3D_AC16_Planar", "", "Coord3D_AC16_Planar"},
-    // {"Coord3D_AC32f", "", "Coord3D_AC32f"},
-    // {"Coord3D_AC32f_Planar", "", "Coord3D_AC32f_Planar"},
-    // {"Coord3D_A8", "", "Coord3D_A8"},
-    // {"Coord3D_A10p", "", "Coord3D_A10p"},
-    // {"Coord3D_A12p", "", "Coord3D_A12p"},
-    // {"Coord3D_A16", "", "Coord3D_A16"},
-    // {"Coord3D_A32f", "", "Coord3D_A32f"},
-    // {"Coord3D_B8", "", "Coord3D_B8"},
-    // {"Coord3D_B10p", "", "Coord3D_B10p"},
-    // {"Coord3D_B12p", "", "Coord3D_B12p"},
-    // {"Coord3D_B16", "", "Coord3D_B16"},
-    // {"Coord3D_B32f", "", "Coord3D_B32f"},
-    // {"Coord3D_C8", "", "Coord3D_C8"},
-    // {"Coord3D_C10p", "", "Coord3D_C10p"},
-    // {"Coord3D_C12p", "", "Coord3D_C12p"},
-    // {"Coord3D_C16", "", "Coord3D_C16"},
-    // {"Coord3D_C32f", "",
-
-    //  "Coord3D_C32f"},
-    // {"Confidence1", "",
-
-    //  "Confidence1"},
-    // {"Confidence1p", "", "Confidence1p"},
-    // {"Confidence8", "", "Confidence8"},
-    // {"Confidence16", "", "Confidence16"},
-    // {"Confidence32f", "", "Confidence32f"},
-    // {"BiColorBGRG8", "", "BiColorBGRG8"},
-    // {"BiColorBGRG10", "", "BiColorBGRG10"},
-    // {"BiColorBGRG10p", "",
-
-    //  "BiColorBGRG10p"},
-    // {"BiColorBGRG12", "", "BiColorBGRG12"},
-    // {"BiColorBGRG12p", "", "BiColorBGRG12p"},
-    // {"BiColorRGBG8", "", "BiColorRGBG8"},
-    // {"BiColorRGBG10", "", "BiColorRGBG10"},
-    // {"BiColorRGBG10p", "", "BiColorRGBG10p"},
-    // {"BiColorRGBG12", "", "BiColorRGBG12"},
-    // {"BiColorRGBG12p", "", "BiColorRGBG12p"},
-    // {"SCF1WBWG8", "", "SCF1WBWG8"},
-    // {"SCF1WBWG10", "", "SCF1WBWG10"},
-    // {"SCF1WBWG10p", "", "SCF1WBWG10p"},
-    // {"SCF1WBWG12", "", "SCF1WBWG12"},
-    // {"SCF1WBWG12p", "", "SCF1WBWG12p"},
-    // {"SCF1WBWG14", "", "SCF1WBWG14"},
-    // {"SCF1WBWG16", "", "SCF1WBWG16"},
-    // {"SCF1WGWB8", "", "SCF1WGWB8"},
-    // {"SCF1WGWB10", "", "SCF1WGWB10"},
-    // {"SCF1WGWB10p", "", "SCF1WGWB10p"},
-    // {"SCF1WGWB12", "", "SCF1WGWB12"},
-    // {"SCF1WGWB12p", "", "SCF1WGWB12p"},
-    // {"SCF1WGWB14", "", "SCF1WGWB14"},
-    // {"SCF1WGWB16", "", "SCF1WGWB16"},
-    // {"SCF1WGWR8", "", "SCF1WGWR8"},
-    // {"SCF1WGWR10", "", "SCF1WGWR10"},
-    // {"SCF1WGWR10p", "", "SCF1WGWR10p"},
-    // {"SCF1WGWR12", "", "SCF1WGWR12"},
-    // {"SCF1WGWR12p", "", "SCF1WGWR12p"},
-    // {"SCF1WGWR14", "", "SCF1WGWR14"},
-    // {"SCF1WGWR16", "", "SCF1WGWR16"},
-    // {"SCF1WRWG8", "", "SCF1WRWG8"},
-    // {"SCF1WRWG10", "", "SCF1WRWG10"},
-    // {"SCF1WRWG10p", "", "SCF1WRWG10p"},
-    // {"SCF1WRWG12", "", "SCF1WRWG12"},
-    // {"SCF1WRWG12p", "", "SCF1WRWG12p"},
-    // {"SCF1WRWG14", "", "SCF1WRWG14"},
-    // {"SCF1WRWG16", "", "SCF1WRWG16"},
-    // {"YCbCr8", "", "YCbCr8"},
-    // {"YCbCr8_CbYCr", "", "YCbCr8_CbYCr"},
-    // {"YCbCr10_CbYCr", "", "YCbCr10_CbYCr"},
-    // {"YCbCr10p_CbYCr", "", "YCbCr10p_CbYCr"},
-    // {"YCbCr12_CbYCr", "", "YCbCr12_CbYCr"},
-    // {"YCbCr12p_CbYCr", "", "YCbCr12p_CbYCr"},
-    // {"YCbCr411_8", "", "YCbCr411_8"},
-    // {"YCbCr411_8_CbYYCrYY", "", "YCbCr411_8_CbYYCrYY"},
-    // {"YCbCr422_8", "", "YCbCr422_8"},
-    // {"YCbCr422_8_CbYCrY", "", "YCbCr422_8_CbYCrY"},
-    // {"YCbCr422_10", "", "YCbCr422_10"},
-    // {"YCbCr422_10_CbYCrY", "", "YCbCr422_10_CbYCrY"},
-    // {"YCbCr422_10p", "", "YCbCr422_10p"},
-    // {"YCbCr422_10p_CbYCrY", "", "YCbCr422_10p_CbYCrY"},
-    // {"YCbCr422_12", "", "YCbCr422_12"},
-    // {"YCbCr422_12_CbYCrY", "", "YCbCr422_12_CbYCrY"},
-    // {"YCbCr422_12p", "", "YCbCr422_12p"},
-    // {"YCbCr422_12p_CbYCrY", "", "YCbCr422_12p_CbYCrY"},
-    // {"YCbCr601_8_CbYCr", "", "YCbCr601_8_CbYCr"},
-    // {"YCbCr601_10_CbYCr", "", "YCbCr601_10_CbYCr"},
-    // {"YCbCr601_10p_CbYCr", "", "YCbCr601_10p_CbYCr"},
-    // {"YCbCr601_12_CbYCr", "", "YCbCr601_12_CbYCr"},
-    // {"YCbCr601_12p_CbYCr", "", "YCbCr601_12p_CbYCr"},
-    // {"YCbCr601_411_8_CbYYCrYY", "", "YCbCr601_411_8_CbYYCrYY"},
-    // {"YCbCr601_422_8", "", "YCbCr601_422_8"},
-    // {"YCbCr601_422_8_CbYCrY", "", "YCbCr601_422_8_CbYCrY"},
-    // {"YCbCr601_422_10", "", "YCbCr601_422_10"},
-    // {"YCbCr601_422_10_CbYCrY", "", "YCbCr601_422_10_CbYCrY"},
-    // {"YCbCr601_422_10p", "", "YCbCr601_422_10p"},
-    // {"YCbCr601_422_10p_CbYCrY", "", "YCbCr601_422_10p_CbYCrY"},
-    // {"YCbCr601_422_12", "", "YCbCr601_422_12"},
-    // {"YCbCr601_422_12_CbYCrY", "", "YCbCr601_422_12_CbYCrY"},
-    // {"YCbCr601_422_12p", "", "YCbCr601_422_12p"},
-    // {"YCbCr601_422_12p_CbYCrY", "", "YCbCr601_422_12p_CbYCrY"},
-    // {"YCbCr709_8_CbYCr", "", "YCbCr709_8_CbYCr"},
-    // {"YCbCr709_10_CbYCr", "", "YCbCr709_10_CbYCr"},
-    // {"YCbCr709_10p_CbYCr", "", "YCbCr709_10p_CbYCr"},
-    // {"YCbCr709_12_CbYCr", "", "YCbCr709_12_CbYCr"},
-    // {"YCbCr709_12p_CbYCr", "", "YCbCr709_12p_CbYCr"},
-    // {"YCbCr709_411_8_CbYYCrYY", "", "YCbCr709_411_8_CbYYCrYY"},
-    // {"YCbCr709_422_8", "", "YCbCr709_422_8"},
-    // {"YCbCr709_422_8_CbYCrY", "", "YCbCr709_422_8_CbYCrY"},
-    // {"YCbCr709_422_10", "", "YCbCr709_422_10"},
-    // {"YCbCr709_422_10_CbYCrY", "", "YCbCr709_422_10_CbYCrY"},
-    // {"YCbCr709_422_10p", "", "YCbCr709_422_10p"},
-    // {"YCbCr709_422_10p_CbYCrY", "", "YCbCr709_422_10p_CbYCrY"},
-    // {"YCbCr709_422_12", "", "YCbCr709_422_12"},
-    // {"YCbCr709_422_12_CbYCrY", "", "YCbCr709_422_12_CbYCrY"},
-    // {"YCbCr709_422_12p", "", "YCbCr709_422_12p"},
-    // {"YCbCr709_422_12p_CbYCrY", "", "YCbCr709_422_12p_CbYCrY"},
-    // {"YCbCr2020_8_CbYCr", "", "YCbCr2020_8_CbYCr"},
-    // {"YCbCr2020_10_CbYCr", "", "YCbCr2020_10_CbYCr"},
-    // {"YCbCr2020_10p_CbYCr", "", "YCbCr2020_10p_CbYCr"},
-    // {"YCbCr2020_12_CbYCr", "", "YCbCr2020_12_CbYCr"},
-    // {"YCbCr2020_12p_CbYCr", "", "YCbCr2020_12p_CbYCr"},
-    // {"YCbCr2020_411_8_CbYYCrYY", "", "YCbCr2020_411_8_CbYYCrYY"},
-    // {"YCbCr2020_422_8", "", "YCbCr2020_422_8"},
-    // {"YCbCr2020_422_8_CbYCrY", "", "YCbCr2020_422_8_CbYCrY"},
-    // {"YCbCr2020_422_10", "", "YCbCr2020_422_10"},
-    // {"YCbCr2020_422_10_CbYCrY", "", "YCbCr2020_422_10_CbYCrY"},
-    // {"YCbCr2020_422_10p", "", "YCbCr2020_422_10p"},
-    // {"YCbCr2020_422_10p_CbYCrY", "", "YCbCr2020_422_10p_CbYCrY"},
-    // {"YCbCr2020_422_12", "", "YCbCr2020_422_12"},
-    // {"YCbCr2020_422_12_CbYCrY", "", "YCbCr2020_422_12_CbYCrY"},
-    // {"YCbCr2020_422_12p", "", "YCbCr2020_422_12p"},
-    // {"YCbCr2020_422_12p_CbYCrY", "", "YCbCr2020_422_12p_CbYCrY"},
-    // {"YUV8_UYV", "", "YUV8_UYV"},
-    // {"YUV411_8_UYYVYY", "", "YUV411_8_UYYVYY"},
-    // {"YUV422_8_UYVY", "", "YUV422_8_UYVY"},
-    // {"Mono10Packed", "video/x-raw", "Mono10Packed"},
-    // {"BayerBG10Packed", "video/x-raw", "BayerBG10Packed"},
-    // {"BayerGB10Packed", "Video/x-bayer", "BayerGB10Packed"},
-    // {"BayerGR10Packed", "Video/x-bayer", "BayerGR10Packed"},
-    // {"BayerRG10Packed", "Video/x-bayer", "BayerRG10Packed"},
-    // {"RGB10V1Packed", "video/x-raw", "RGB10V1Packed"},
-    // {"RGB12V1Packed", "video/x-raw", "RGB12V1Packed"},
-};
-
-
-const gst_pfnc* get_entry(const char* pfnc_str)
-{
-
-    for (const auto& e : format_list)
-    {
-        if (strcmp(pfnc_str, e.pfnc_str) == 0)
-        {
-            return &e;
-        }
-    }
-    return nullptr;
-}
-
-} // namespace
-
-
-const char* ic4::gst::PixelFormat_to_gst_format_string(const char* pixel_format)
-{
-
-    for (const auto& e : format_list)
-    {
-        if (strcmp(pixel_format, e.pfnc_str) == 0)
-        {
-            return e.gst_format;
-        }
-    }
-
-    return nullptr;
-}
-
-
-ic4::PixelFormat format_string_to_Pixel(const char* format_str)
-{
-
-
-    for (const auto& e : format_list)
-    {
-        if (strcmp(format_str, e.gst_format) == 0)
-        {
-            return e.ic4_fmt;
-        }
-    }
-
-    return ic4::PixelFormat::Invalid;
-}
-
-const char* ic4::gst::format_string_to_PixelFormat(const char* format_str)
-{
-
-    for (const auto& e : format_list)
-    {
-      if (strcmp(format_str, e.gst_format) == 0) {
-          //return ic4::to_string(e.ic4_fmt);
-          return e.pfnc_str;
-        }
-    }
-
-    return nullptr;
-}
-
-
-ic4::PixelFormat ic4::gst::caps_to_PixelFormat(const GstCaps& caps)
-{
-
-    if (!gst_caps_is_fixed(&caps))
-    {
-        return ic4::PixelFormat::Invalid;
-    }
-
-    GstStructure* struc = gst_caps_get_structure(&caps, 0);
-
-    const char* name = gst_structure_get_name(struc);
-    const char* format = gst_structure_get_string(struc, "format");
-
-    for (const auto& e : format_list)
-    {
-        if (strcmp(name, e.gst_name) == 0
-            && strcmp(format, e.gst_format) == 0)
-        {
-            return e.ic4_fmt;
-        }
-    }
-
-    return ic4::PixelFormat::Invalid;
-}
-
-GstCaps *ic4::gst::PixelFormat_to_GstCaps(const char* fmt) {
-
-    for (const auto& e : format_list)
-    {
-        if (strcmp(fmt, e.pfnc_str) == 0)
-        {
-            std::string s = e.gst_name;
-            s += ",format=";
-            s += e.gst_format;
-            GstCaps* caps = gst_caps_from_string(s.c_str());
-            return caps;
-        }
-    }
-
-    return nullptr;
-}
-
 
 bool format_is_bayer(const std::string &format)
 {
@@ -641,7 +262,6 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
         do_ranges = false;
     }
 
-    p_fmt.entries();
     std::vector<std::string> fmt_names;
     fmt_names.reserve(p_fmt.entries().size());
     for (const auto& f : p_fmt.entries())
@@ -686,7 +306,7 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
 
     for (const auto& f : fmt_names)
     {
-        auto gst_f = PixelFormat_to_gst_format_string(f.c_str());
+        auto gst_f = pixel_format_name_to_gst_format(f);
         if (gst_f)
         {
             natural_formats.push_back(gst_f);
@@ -699,16 +319,18 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
 
     for (const auto& f : fmt_names)
     {
-        auto fmt = get_entry(f.c_str());
+        auto fmt_ret = get_entry_by_pixel_format_name(f);
 
-        if (!fmt)
+        if (!fmt_ret)
         {
             GST_ERROR("Unable to process pfnc format %s. Skipping.", f.c_str());
             continue;
         }
 
-        GstStructure* struc_base = gst_structure_new(fmt->gst_name,
-                                            "format", G_TYPE_STRING, fmt->gst_format,
+        auto fmt = fmt_ret.value();
+
+        GstStructure* struc_base = gst_structure_new(fmt.gst_name,
+                                            "format", G_TYPE_STRING, fmt.gst_format,
                                             nullptr);
 
         // 
