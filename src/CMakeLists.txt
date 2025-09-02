@@ -9,6 +9,9 @@ find_package(GObjectIntrospection REQUIRED QUIET)
 
 find_package(GStreamer REQUIRED QUIET)
 find_package(fmt REQUIRED QUIET)
+find_package(PkgConfig REQUIRED QUIET)
+
+pkg_check_modules(TCAMPROP REQUIRED tcam-property-1.0)
 
 
 add_library(gstic4src SHARED
@@ -23,8 +26,6 @@ add_library(gstic4src SHARED
 
   ic4_device_state.h
   ic4_device_state.cpp
-  ic4_tcam_property.h
-  ic4_tcam_property.cpp
 
   ic4src_gst_device_provider.cpp
   ic4src_gst_device_provider.h
@@ -40,7 +41,6 @@ target_include_directories(gstic4src
 
   ${GLIB2_INCLUDE_DIR}
   ${GObject_INCLUDE_DIR}
-
 )
 
 target_link_libraries( gstic4src
@@ -57,18 +57,35 @@ target_link_libraries( gstic4src
   ic4::core
   fmt::fmt
   tcam::gst-helper
-  tcam::tcam-property
-  tcam::tcamgststatistics
-  tcamprop1::provider_gobject
+  outcome::outcome
 
   -static-libstdc++
   -static-libgcc
 )
 
-target_compile_definitions(gstic4src PRIVATE -DIC4SRC_VERSION="${IC4SRC_VERSION}")
+target_compile_definitions(gstic4src PRIVATE -DIC4SRC_VERSION="${IC4SRC_VERSION}" )
 
-# set_property(TARGET gstic4src PROPERTY VERSION "${IC4SRC_VERSION}")
-# set_property(TARGET gstic4src PROPERTY SOVERSION "${IC4SRC_VERSION}")
+if (IC4_ENABLE_TCAM_STATS)
+  target_compile_definitions(gstic4src PRIVATE -DENABLE_TCAM_STATS)
+  target_link_libraries(gstic4src
+    PRIVATE
+    -ltcamgststatistics)
+
+endif()
+
+if (IC4_ENABLE_TCAM_PROP)
+
+  target_sources(gstic4src PRIVATE ic4_tcam_property.h ic4_tcam_property.cpp)
+
+  target_compile_definitions(gstic4src
+    PRIVATE -DENABLE_TCAM_PROP)
+  target_include_directories(gstic4src
+    PRIVATE ${TCAMPROP_INCLUDE_DIRS})
+  target_link_libraries(gstic4src
+    PRIVATE
+    ${TCAMPROP_LIBRARIES}
+    tcamprop1::provider_gobject)
+endif()
 
 set_project_warnings(gstic4src)
 

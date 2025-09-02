@@ -50,6 +50,7 @@ bool is_blacklist_property(const std::string& property_name)
 
 } // namespace
 
+#ifdef ENABLE_TCAM_PROP
 
 void iterate_node_children(ic4::PropCategory& category, ic4::gst::src_interface_list& interface)
 {
@@ -79,10 +80,12 @@ void iterate_node_children(ic4::PropCategory& category, ic4::gst::src_interface_
         }
     }
 }
-
+#endif /* ENABLE_TCAM_PROP */
 
 void ic4_device_state::populate_tcamprop_interface()
 {
+#ifdef ENABLE_TCAM_PROP
+
     auto properties = grabber->devicePropertyMap();
 
     auto root  = properties.findCategory("Root");
@@ -90,6 +93,8 @@ void ic4_device_state::populate_tcamprop_interface()
     iterate_node_children(root, tcamprop_interface_);
 
     tcamprop_container_.create_list(&tcamprop_interface_);
+
+#endif /* ENABLE_TCAM_PROP */
 }
 
 
@@ -148,7 +153,7 @@ bool ic4_device_state::open_device()
     }
     else
     {
-        GST_INFO("NO  PROPERTIES TO APPLY");
+        GST_INFO("No user properties to apply.");
 
     }
 

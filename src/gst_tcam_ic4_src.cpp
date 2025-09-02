@@ -18,9 +18,17 @@
 #include "ic4_device_state.h"
 
 #include "format.h"
-#include "ic4_tcam_property.h"
 
-#include "../libs/tcam-property/src/gst/meta/gstmetatcamstatistics.h"
+#ifdef ENABLE_TCAM_PROP
+#include "ic4_tcam_property.h"
+#endif
+
+
+#ifdef ENABLE_TCAM_STATS
+
+#include <gstmetatcamstatistics.h>
+
+#endif
 
 using namespace ic4;
 
@@ -29,11 +37,17 @@ GST_DEBUG_CATEGORY(ic4_src_debug);
 
 
 
-
+#ifdef ENABLE_TCAM_PROP
 G_DEFINE_TYPE_WITH_CODE(
     GstIC4Src, gst_ic4_src, GST_TYPE_PUSH_SRC,
      G_IMPLEMENT_INTERFACE(TCAM_TYPE_PROPERTY_PROVIDER,
                            ic4::gst::ic4_tcam_property_init))
+
+#else
+G_DEFINE_TYPE_WITH_CODE(
+                        GstIC4Src, gst_ic4_src, GST_TYPE_PUSH_SRC, nullptr)
+
+#endif
 
 enum {
     SIGNAL_DEVICE_OPEN,
@@ -662,6 +676,7 @@ get_buf:
                                     trans,
                                     buffer_destroy);
 
+#ifdef ENABLE_TCAM_STATS
 
     ic4::ImageBuffer::MetaData meta_data = frame->metaData(err);
     if (err.isSuccess())
@@ -689,6 +704,7 @@ get_buf:
         gst_buffer_add_tcam_statistics_meta(new_buf, struc);
     }
 
+#endif
 
     *buffer = new_buf;
     gst_buffer_set_flags(*buffer, GST_BUFFER_FLAG_LIVE);

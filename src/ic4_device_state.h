@@ -1,9 +1,6 @@
 
 #pragma once
 
-#include "../libs/gst-helper/include/gst-helper/gstelement_helper.h"
-#include "../libs/gst-helper/include/gst-helper/helper_functions.h"
-#include "../libs/gst-helper/include/tcamprop1.0_gobject/tcam_property_provider.h"
 #include "ic4_gst_conversions.h"
 
 #include <atomic>
@@ -12,11 +9,21 @@
 #include <ic4/ic4.h>
 #include <memory>
 #include <mutex>
+
+#ifdef ENABLE_TCAM_PROP
 #include <tcamprop1.0_base/tcamprop_property_interface.h>
+#endif
+
+#include "../libs/gst-helper/include/gst-helper/gstelement_helper.h"
+#include "../libs/gst-helper/include/gst-helper/helper_functions.h"
+#include "../libs/gst-helper/include/tcamprop1.0_gobject/tcam_property_provider.h"
 
 
 namespace ic4::gst
 {
+
+#ifdef ENABLE_TCAM_PROP
+
 struct src_interface_list : tcamprop1::property_list_interface
 {
     std::vector<std::unique_ptr<tcamprop1::property_interface>> tcamprop_properties;
@@ -49,6 +56,8 @@ struct src_interface_list : tcamprop1::property_list_interface
         tcamprop_properties.clear();
     }
 };
+
+#endif /* ENABLE_TCAM_PROP */
 
 } // namespace ic4::gst
 
@@ -118,14 +127,20 @@ struct ic4_device_state
         return ic4::gst::create_caps(props);
     }
 
+#ifdef ENABLE_TCAM_PROP
+
     auto get_container() -> tcamprop1_gobj::tcam_property_provider&
     {
         return tcamprop_container_;
     }
 
+#endif /* ENABLE_TCAM_PROP */
+
 private:
+#ifdef ENABLE_TCAM_PROP
     ic4::gst::src_interface_list tcamprop_interface_;
     tcamprop1_gobj::tcam_property_provider tcamprop_container_;
+#endif
     void populate_tcamprop_interface();
 };
 
