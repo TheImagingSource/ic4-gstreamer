@@ -158,7 +158,11 @@ include(CPackComponent)
 
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "The Imaging Source Europe GmbH <support@theimagingsource.com>")
 
+string(CONCAT PACKAGE_DESCRIPTION "IC4 GStreamer Source\n"
+  "  Allows accessing ic4 devices via gstreamer.")
+
 set(CPACK_PACKAGE_DESCRIPTION "The Imaging Source Linux Software")
+
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "IC4 GStreamer Source")
 set(CPACK_PACKAGE_VENDOR "The Imaging Source Europe GmbH")
 set(CPACK_PACKAGE_CONTACT "support@theimagingsource.com")
