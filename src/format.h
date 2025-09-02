@@ -4,6 +4,7 @@
 #include <vector>
 #include <gst/gst.h>
 #include <expected>
+#include <system_error>
 
 namespace ic4::gst
 {
