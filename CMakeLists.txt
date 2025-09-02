@@ -20,6 +20,8 @@ set(IC4SRC_VERSION "${IC4SRC_VERSION_MAJOR}.${IC4SRC_VERSION_MINOR}.${IC4SRC_VER
 set(IC4SRC_ORIGIN "https://theimagingsource.com")
 
 option(IC4_ENABLE_TESTS "Enable unit/integration tests" OFF)
+option(IC4_ENABLE_TCAM_PROP  "Compile ic4src with tcam-property interface." ON)
+option(IC4_ENABLE_TCAM_STATS "Compile ic4src with gsttcamstatistics." ON)
 
 ### installation paths
 
