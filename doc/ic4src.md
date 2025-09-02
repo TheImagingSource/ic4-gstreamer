@@ -14,8 +14,10 @@ The GStreamer element requires:
 - GStreamer
   Best installed via package manager
 - tcam-property
-  Downloadable on theimagingsource.com or self built.
+  Downloadable on https://theimagingsource.com or self built.
   Sources can be found here: https://github.com/TheImagingSource/tiscamera-tcamprop
+- IC4 SDK
+  Downloadable on https://theimagingsource.com  
   
 ## Gst Properties
 
@@ -79,19 +81,12 @@ A caps description for a camera might look like this (captured with `tcam-ctrl -
 ```
 
    video/x-raw,format=GRAY8,framerate=[1/1,130963/1000],width=[256,3072,16],height=[4,2048,4];
-   video/x-raw,format=GRAY8,framerate=[1/1,130963/1000],binning=2x2,width=[256,1536,16],height=[4,1024,4];
    video/x-bayer,format=rggb,framerate=[1/1,130963/1000],width=[256,3072,16],height=[4,2048,4];
-   video/x-bayer,format=rggb,framerate=[1/1,130963/1000],binning=2x2,width=[256,1536,16],height=[4,1024,4];
    video/x-bayer,format=rggb12p,framerate=[1/1,130963/1000],width=[256,3072,16],height=[4,2048,4];
-   video/x-bayer,format=rggb12p,framerate=[1/1,130963/1000],binning=2x2,width=[256,1536,16],height=[4,1024,4];
    video/x-bayer,format=rggb16,framerate=[1/1,130963/1000],width=[256,3072,16],height=[4,2048,4];
-   video/x-bayer,format=rggb16,framerate=[1/1,130963/1000],binning=2x2,width=[256,1536,16],height=[4,1024,4];
    video/x-raw,format=BGR,framerate=[1/1,130963/1000],width=[256,3072,16],height=[4,2048,4];
-   video/x-raw,format=BGR,framerate=[1/1,130963/1000],binning=2x2,width=[256,1536,16],height=[4,1024,4];
    video/x-raw,format=BGRx,device-format={GRAY8,rggb,rggb12p,rggb16,BGR},framerate=[1/1,130963/1000],width=[256,3072,16],height=[4,2048,4];
-   video/x-raw,format=BGRx,device-format={GRAY8,rggb,rggb12p,rggb16,BGR},framerate=[1/1,130963/1000],binning=2x2,width=[256,1536,16],height=[4,1024,4];
    video/x-raw,format=BGRA16_LE,device-format={GRAY8,rggb,rggb12p,rggb16,BGR},framerate=[1/1,130963/1000],width=[256,3072,16],height=[4,2048,4];
-   video/x-raw,format=BGRA16_LE,device-format={GRAY8,rggb,rggb12p,rggb16,BGR},framerate=[1/1,130963/1000],binning=2x2,width=[256,1536,16],height=[4,1024,4]
 
 ```
 
@@ -132,8 +127,6 @@ The following properties will not be passed through:
 
 - Width
 - Height
-- BinningHorizontal
-- BinningVertical
 - PixelFormat
 - AcquisitionFrameRate
 - PayloadSize
