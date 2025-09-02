@@ -26,15 +26,22 @@ add_library( tcamprop1_provider_gobject STATIC
 	"guard_state.cpp"
 )
 
+find_package(PkgConfig REQUIRED QUIET)
+
+pkg_check_modules(TCAMPROP REQUIRED tcam-property-1.0)
+
+
 target_compile_features( tcamprop1_provider_gobject PUBLIC cxx_std_17 )
 target_link_libraries( tcamprop1_provider_gobject
 PUBLIC
 	tcamprop1::provider 
 PRIVATE
-	tcam::tcam-property 
+    ${TCAMPROP_LIBRARIES}
 	fmt::fmt 
 	project-warnings 
 	tcam::gst-helper
 )
-target_include_directories( tcamprop1_provider_gobject PRIVATE ${GSTREAMER_INCLUDE_DIRS} )
+target_include_directories( tcamprop1_provider_gobject
+  PRIVATE ${GSTREAMER_INCLUDE_DIRS}
+  PRIVATE ${TCAMPROP_INCLUDE_DIRS})
 add_library( tcamprop1::provider_gobject ALIAS tcamprop1_provider_gobject )
