@@ -523,14 +523,49 @@ static gboolean gst_ic4_src_set_caps(GstBaseSrc* src, GstCaps* caps)
         }
         if (!is_valid)
         {
-            GST_ERROR("Given caps are not in the device PixelFormat list. IC4 will attempt a conversion.");
+            GST_INFO("Given caps are not in the device PixelFormat list. IC4 will attempt a conversion.");
 
-            GST_INFO("IC4 conversion from %s to %s",
-                     ic4::to_string(ic4::PixelFormat((int32_t)p.getValueInt64(ic4::PropId::PixelFormat))).c_str(),
-                     ic4::to_string(sink_format).c_str());
+            auto dev_format = ic4::PixelFormat((int32_t)p.getValueInt64(ic4::PropId::PixelFormat));
+            auto transform_valid = ic4::canTransform(dev_format, sink_format);
+
+            if (transform_valid)
+            {
+                GST_INFO("IC4 will convert from %s to %s",
+                         ic4::to_string(dev_format).c_str(),
+                         ic4::to_string(sink_format).c_str());
+            }
+            else
+            {
+                GST_ERROR("IC4 cannot transform from %s to %s. Please select "
+                          "different formats.",
+                          ic4::to_string(dev_format).c_str(),
+                          ic4::to_string(sink_format).c_str());
+                return FALSE;
+            }
         }
-
+        else
+        {
+            GST_INFO("Set \"%s\" as device PixelFormat.", ic4::to_string(fmt).c_str());
+        }
     }
+
+            auto dev_format = ic4::PixelFormat((int32_t)p.getValueInt64(ic4::PropId::PixelFormat));
+            auto transform_valid = ic4::canTransform(dev_format, sink_format);
+
+            if (transform_valid)
+            {
+                GST_INFO("IC4 will convert from %s to %s",
+                         ic4::to_string(dev_format).c_str(),
+                         ic4::to_string(sink_format).c_str());
+            }
+            else
+            {
+                GST_ERROR("IC4 cannot transform from %s to %s. Please select "
+                          "different formats.",
+                          ic4::to_string(dev_format).c_str(),
+                          ic4::to_string(sink_format).c_str());
+                return FALSE;
+            }
 
     self->device->sink = ic4::QueueSink::create(listener, sink_format);
 

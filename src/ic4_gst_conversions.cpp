@@ -335,12 +335,18 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
             GValue format_list = G_VALUE_INIT;
             g_value_init(&format_list, GST_TYPE_LIST);
 
-            for (const auto& e : natural_formats)
+            for (const auto &dev_fmt : natural_formats)
             {
+                auto in = gst_format_to_pixel_format(dev_fmt.c_str());
+
+                if (!ic4::canTransform(in, fmt.ic4_format))
+                {
+                    continue;
+                }
                 GValue entry = G_VALUE_INIT;
                 g_value_init(&entry, G_TYPE_STRING);
 
-                g_value_set_string(&entry, e.c_str());
+                g_value_set_string(&entry, dev_fmt.c_str());
 
                 gst_value_list_append_value(&format_list, &entry);
 
@@ -454,7 +460,7 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
         }
         else
         {
-            GST_INFO("Binning not correctly implemented and thus missing");
+            // GST_INFO("Binning not correctly implemented and thus missing");
 
             auto min_w = std::min_element(width_values.begin(), width_values.end());
             auto max_w = std::max_element(width_values.begin(), width_values.end());
@@ -489,16 +495,9 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
                 g_value_init(&w, G_TYPE_INT);
                 g_value_set_int(&w, r.width);
 
-                // gst_value_list_append_value(&val_width, &w);
-                // g_value_unset(&w);
-
                 GValue h = G_VALUE_INIT;
                 g_value_init(&h, G_TYPE_INT);
                 g_value_set_int(&h, r.height);
-
-                // gst_value_list_append_value(&val_height, &h);
-                // g_value_unset(&h);
-
 
                 gst_structure_take_value(struc_base, "width", &w);
                 gst_structure_take_value(struc_base, "height", &h);
@@ -518,36 +517,47 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
 
     add_to_caps(caps, fmt_names);
 
+    // add caps that we can transform into
+    // we do this by asking ic4 for supported transform pixelformats
+
     std::vector<std::string> artificial_fmt;
 
-    if (std::find(fmt_names.begin(), fmt_names.end(), "BGR8") == fmt_names.end())
+    for (const auto &dev_fmt : p_fmt.entries())
     {
-        artificial_fmt.push_back("BGR8");
+
+        auto dev_pix = ic4::PixelFormat(dev_fmt.intValue());
+        auto transform_fmts = ic4::enumTransforms(dev_pix);
+
+        // debug print input-> available conversion
+        // {
+        //     std::string s;
+        //     for (const auto &t : transform_fmts)
+        //     {
+
+        //         s += ic4::to_string(t);
+        //         s += " ";
+        //     }
+
+        //     GST_ERROR("%s ----> {%s}", ic4::to_string(dev_pix).c_str(), s.c_str());
+        // }
+        for (const auto &t : transform_fmts)
+        {
+            if (t == dev_pix)
+            {
+                continue;
+            }
+            if (std::find_if(artificial_fmt.begin(), artificial_fmt.end(),
+                             [t](const auto &name) {
+                                 return name == ic4::to_string(t);}) != artificial_fmt.end())
+            {
+                continue;
+            }
+            artificial_fmt.push_back(ic4::to_string(t));
+        }
     }
 
-    if (std::find(fmt_names.begin(), fmt_names.end(), "BGRa8") == fmt_names.end())
-    {
-        artificial_fmt.push_back("BGRa8");
-    }
-    if (std::find(fmt_names.begin(), fmt_names.end(), "BGRa16") == fmt_names.end())
-    {
-        artificial_fmt.push_back("BGRa16");
-    }
-
-    if (std::find(fmt_names.begin(), fmt_names.end(), "Mono8") == fmt_names.end())
-    {
-        artificial_fmt.push_back("Mono8");
-    }
-
-    if (std::find(fmt_names.begin(), fmt_names.end(), "YCbCr422_8_CbYCrY") == fmt_names.end())
-    {
-        artificial_fmt.push_back("YCbCr422_8_CbYCrY");
-    }
-    if (std::find(fmt_names.begin(), fmt_names.end(), "YCbCr420_8_YY_CrCb_Semiplanar") == fmt_names.end())
-    {
-        artificial_fmt.push_back("YCbCr420_8_YY_CrCb_Semiplanar");
-    }
-
+    // make ordering predictable
+    artificial_fmt = sort_fmt_names(artificial_fmt);
 
     add_to_caps(caps, artificial_fmt, true);
 
