@@ -75,24 +75,52 @@ std::vector<image_size> get_standard_resolutions(const image_size& min,
 
 GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
 {
+    // auto p_bin_x = props.findInteger("BinningHorizontal");
+    // auto p_bin_y = props.findInteger("BinningVertical");
+    // bool has_binning = p_bin_x.is_valid();
+    // std::vector<std::string> gst_binning_entries;
 
-    auto p_bin_x = props.findInteger("BinningHorizontal");
-    auto p_bin_y = props.findInteger("BinningVertical");
-    bool has_binning = p_bin_x.is_valid();
-    std::vector<std::string> gst_binning_entries;
-    
-    if (p_bin_x.is_valid())
-    {
+    // if (has_binning)
+    // {
+    //     // GST_INFO("HAS BINNING");
+
+    //     // there are cameras with
+    //     // BinningHorizontal == 1
+    //     // BinningVertical == 1
+    //     // for those we ignore binning
+    //     if (p_bin_x.minimum() == p_bin_x.maximum())
+    //     {
+    //         gst_binning_entries.push_back("1x1");
+    //         GST_DEBUG("only binning 1x1 exists");
+    //         has_binning = false;
+    //     }
+    //     else
+    //     {
+
+    //     }
+    // }
+    // else
+    // {
+    //     gst_binning_entries.push_back("1x1");
+    //     GST_INFO("No binning");
+    // }
 
 
-    }
-    else
-    {
-        gst_binning_entries.push_back("1x1");
-        GST_INFO("No binning");
-    }
+    // auto p_skip_x = props.findInteger("DecimationHorizontal");
+    // auto p_skip_y = props.findInteger("DecimationVertical");
+    // bool has_skipping = p_skip_x.is_valid();
+    // std::vector<std::string> gst_skipping_entries;
 
-    
+    // if (has_skipping)
+    // {
+    //     GST_INFO("HAS SKIPPING");
+    // }
+    // else
+    // {
+    //     GST_INFO("NO SKIPPING");
+    // }
+
+
     auto p_fmt = props.findEnumeration("PixelFormat");
 
     auto p_width = props.findInteger("Width");
@@ -173,47 +201,47 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
         }
     }
 
-    if (has_binning)
-    {
-        const auto& bin_x = p_bin_x.asInteger();
-        auto entries = bin_x.validValueSet();
+    // if (has_binning)
+    // {
+    //     const auto& bin_x = p_bin_x.asInteger();
+    //     auto entries = bin_x.validValueSet();
 
-        // not a valueSet; determine via range
-        if (entries.empty())
-        {
-            for (int i = bin_x.minimum(); i <= bin_x.maximum(); i++)
-            {
-                // TODO: does a camera exist with 8x binning
-                if (i == 3)
-                {
-                    continue;
-                }
+    //     // not a valueSet; determine via range
+    //     if (entries.empty())
+    //     {
+    //         for (int i = bin_x.minimum(); i <= bin_x.maximum(); i++)
+    //         {
+    //             // TODO: does a camera exist with 8x binning
+    //             if (i == 3)
+    //             {
+    //                 continue;
+    //             }
 
-                entries.push_back(i);
-            }
+    //             entries.push_back(i);
+    //         }
 
-        }
+    //     }
 
-        for (const auto& e: entries)
-        {
-            gst_binning_entries.push_back(fmt::format("{}x{}", e, e));
-        }
+    //     for (const auto& e: entries)
+    //     {
+    //         gst_binning_entries.push_back(fmt::format("{}x{}", e, e));
+    //     }
 
-        // //gst_value_array_init(&binning, gst_binning_entries.size());
-        // gst_value_list_init(&binning, gst_binning_entries.size());
+    //     // //gst_value_array_init(&binning, gst_binning_entries.size());
+    //     // gst_value_list_init(&binning, gst_binning_entries.size());
 
-        // // transform entries into something gstreamer can use
-        // for (const auto& e: gst_binning_entries)
-        // {
-        //     GValue entry = G_VALUE_INIT;
-        //     g_value_init(&entry, G_TYPE_STRING);
-        //     g_value_set_string(&entry, e.c_str());
+    //     // // transform entries into something gstreamer can use
+    //     // for (const auto& e: gst_binning_entries)
+    //     // {
+    //     //     GValue entry = G_VALUE_INIT;
+    //     //     g_value_init(&entry, G_TYPE_STRING);
+    //     //     g_value_set_string(&entry, e.c_str());
 
-        //     gst_value_list_append_value(&binning, &entry);
-        //     //gst_value_array_append_value(&binning, &entry);
-        // }
+    //     //     gst_value_list_append_value(&binning, &entry);
+    //     //     //gst_value_array_append_value(&binning, &entry);
+    //     // }
 
-    }
+    // }
 
     GstCaps* caps = gst_caps_new_empty();
 
@@ -369,40 +397,44 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
         // binning
         //
 
-        for (const auto& binning : gst_binning_entries)
-        {
-            // no binning is equal to 1x1
-            // in that case leave it at that
-            if (binning != "1x1")
-            {
-                GValue b = G_VALUE_INIT;
-                g_value_init(&b, G_TYPE_STRING);
-                g_value_set_string(&b, binning.c_str());
-                gst_structure_set_value(struc_base, "binning", &b);
-            }
+        // for (const auto& binning : gst_binning_entries)
+        // {
+        //     // no binning is equal to 1x1
+        //     // in that case leave it at that
+        //     if (binning != "1x1")
+        //     {
+        //         GValue b = G_VALUE_INIT;
+        //         g_value_init(&b, G_TYPE_STRING);
+        //         g_value_set_string(&b, binning.c_str());
+        //         gst_structure_set_value(struc_base, "binning", &b);
+        //     }
 
-            if (do_ranges)
-            {
-                int b = 1;
-                if (binning == "2x2")
-                {
-                    b = 2;
-                }
-                else if (binning == "4x4")
-                {
-                    b = 4;
-                }
+        //     if (do_ranges)
+        //     {
+        //         int b = 1;
+        //         if (binning == "2x2")
+        //         {
+        //             b = 2;
+        //         }
+        //         else if (binning == "4x4")
+        //         {
+        //             b = 4;
+        //         }
 
                 add_res_range(width_min, width_max, width_step,
                               height_min, height_max, height_step,
-                              b);
-            }
-            else
-            {
-                // TODO: implement; requires v4l2 provider
-            }
+                              1);
+        //     }
+        //     else
+        //     {
+        //         // TODO: implement; requires v4l2 provider
+        //     }
 
-        }
+        // }
+
+        //
+        // end binning
+        //
 
         if (do_ranges)
         {

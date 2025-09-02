@@ -405,37 +405,37 @@ static gboolean gst_ic4_src_set_caps(GstBaseSrc* src, GstCaps* caps)
     p.setValue("Height", height);
     p.setValue("AcquisitionFrameRate", fps);
 
-    if (gst_structure_has_field(struc, "binning"))
-    {
-        std::string field_value = gst_structure_get_string(struc, "binning");
+    // if (gst_structure_has_field(struc, "binning"))
+    // {
+    //     std::string field_value = gst_structure_get_string(struc, "binning");
 
-        uint32_t to_fill_horizontal;
-        uint32_t to_fill_vertical;
+    //     uint32_t to_fill_horizontal;
+    //     uint32_t to_fill_vertical;
 
-        const std::string delimiter = "x";
-        std::string token_horizontal = field_value.substr(0, field_value.find(delimiter));
-        std::string token_vertical = field_value.substr(field_value.find(delimiter) + 1);
+    //     const std::string delimiter = "x";
+    //     std::string token_horizontal = field_value.substr(0, field_value.find(delimiter));
+    //     std::string token_vertical = field_value.substr(field_value.find(delimiter) + 1);
 
-        try
-        {
-            to_fill_horizontal = std::atoi(token_horizontal.c_str());
-            to_fill_vertical = std::atoi(token_vertical.c_str());
-        }
-        catch (const std::exception& e)
-        {
-            GST_ERROR("Error while handling binning string '%s'", field_value.c_str());
-            to_fill_horizontal = 1;
-            to_fill_vertical = 1;
-        }
-        p.setValue("BinningHorizontal", to_fill_horizontal);
-        p.setValue("BinningVertical", to_fill_vertical);
-    }
-    else
-    {
-        // ensure we are always in a defined state
-        p.setValue("BinningHorizontal", 1);
-        p.setValue("BinningVertical", 1);
-    }
+    //     try
+    //     {
+    //         to_fill_horizontal = std::atoi(token_horizontal.c_str());
+    //         to_fill_vertical = std::atoi(token_vertical.c_str());
+    //     }
+    //     catch (const std::exception& e)
+    //     {
+    //         GST_ERROR("Error while handling binning string '%s'", field_value.c_str());
+    //         to_fill_horizontal = 1;
+    //         to_fill_vertical = 1;
+    //     }
+    //     p.setValue("BinningHorizontal", to_fill_horizontal);
+    //     p.setValue("BinningVertical", to_fill_vertical);
+    // }
+    // else
+    // {
+    //     // ensure we are always in a defined state
+    //     p.setValue("BinningHorizontal", 1);
+    //     p.setValue("BinningVertical", 1);
+    // }
 
 
     ic4::QueueSinkListener& listener = *self->device->listener.get();
