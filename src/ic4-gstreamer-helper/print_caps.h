@@ -20,7 +20,10 @@
 
 namespace ic4::gst::helper
 {
-
+    /**
+     * Print table of ic4::PixelFormat to GstCaps naming.
+     */
+    void list_pixelformat_gst_table();
 
     /**
      * @brief print function for VideoFormatDescriptions as gstreamer-1.0 caps

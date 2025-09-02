@@ -9,6 +9,8 @@ add_executable(ic4-gst-helper
   base_functions.cpp
   print_caps.h
   print_caps.cpp
+  ../format.h
+  ../format.cpp
 )
 set_project_warnings(ic4-gst-helper)
 
@@ -22,6 +24,7 @@ PRIVATE
 	${GSTREAMER_LIBRARIES}
 	${GSTREAMER_BASE_LIBRARIES}
 	${GSTREAMER_VIDEO_LIBRARIES}
+    ic4::core
 
     -static-libstdc++
     -static-libgcc

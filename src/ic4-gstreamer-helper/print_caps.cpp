@@ -23,6 +23,9 @@
 
 #include <iostream>
 #include <regex>
+#include <iomanip>
+
+#include "../format.h"
 
 namespace
 {
@@ -126,6 +129,20 @@ void print_conversion_table(GstBaseTransform* base)
 
 
 }
+
+
+void ic4::gst::helper::list_pixelformat_gst_table()
+{
+    auto format_table = ic4::gst::get_ic4_gst_table();
+
+    std::cout << std::setw(25) << std::left << "IC4 PixelFormat" << " - GstCaps" << std::endl << std::endl;
+
+    for (const auto& f : format_table)
+    {
+        std::cout << std::setw(25) << std::left << ic4::to_string(f.ic4_format) << " - " << f.gst_name << ",format=" << f.gst_format << std::endl;
+    }
+}
+
 
 void ic4::gst::helper::list_gstreamer_1_0_formats (const std::string& ident)
 {

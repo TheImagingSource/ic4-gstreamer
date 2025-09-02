@@ -75,6 +75,8 @@ int main(int argc, char *argv[])
     caps_cmd->add_option("ident", ident,
                          "Identifier of the camera to open. e.g. serial '12345678'. Use `devices` subcommand to get a list." )->required();
 
+    auto list_formats = app.add_subcommand("format-table", "List ic4::PixelFormat <-> GstCaps table");
+
     // auto transform_cmd = app.add_subcommand("transform", "List available transformations of a GstElement");
     // std::string transform_element = "videoconvert";
     // transform_cmd->add_option("-e,--element", transform_element, "Which transform element to use.");
@@ -109,6 +111,10 @@ int main(int argc, char *argv[])
     else if (caps_cmd->parsed())
     {
         ic4::gst::helper::list_gstreamer_1_0_formats(ident);
+    }
+    else if (list_formats->parsed())
+    {
+        ic4::gst::helper::list_pixelformat_gst_table();
     }
     //
     // disabled for time being, needs investigating how useful it actually is
