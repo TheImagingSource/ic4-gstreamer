@@ -18,48 +18,13 @@
 
 bool format_is_bayer(const std::string &format)
 {
-  static const std::vector<std::string> bayer_formats = {
-    "BayerRG8",
-    "BayerGR8",
-    "BayerGB8",
-    "BayerBG8",
-    "BayerRG10",
-    "BayerGR10",
-    "BayerGB10",
-    "BayerBG10",
-    "BayerRG12",
-    "BayerGR12",
-    "BayerGB12",
-    "BayerBG12",
-    "BayerRG14",
-    "BayerGR14",
-    "BayerGB14",
-    "BayerBG14",
-    "BayerRG16",
-    "BayerGR16",
-    "BayerGB16",
-    "BayerBG16",
-  };
-
-    auto res = std::find(bayer_formats.begin(),
-                         bayer_formats.end(),
-                         format);
-
-    return res != bayer_formats.end();
+    return format.find("Bayer") != std::string::npos;
 }
 
 
 bool format_is_mono(const std::string &format)
 {
-    static const std::vector<std::string> mono_formats = {
-        "Mono8",
-        "Mono16",
-    };
-
-    auto res = std::find(mono_formats.begin(), mono_formats.end(), format);
-
-    return res != mono_formats.end();
-
+    return format.find("Mono") != std::string::npos;
 }
 
 
