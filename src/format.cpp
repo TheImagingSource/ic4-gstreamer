@@ -60,6 +60,10 @@ static const ic4::gst::ic4_gst_table_entry format_list[] = {
     { ic4::PixelFormat::PolarizedADIMono16, "tis", "polarized-ADI-GRAY16"},
     { ic4::PixelFormat::PolarizedADIRGB8, "tis", "polarized-ADI-RGB8"},
     { ic4::PixelFormat::PolarizedADIRGB16, "tis", "polarized-ADI-RGB16"},
+    { ic4::PixelFormat::PolarizedQuadMono8, "tis", "polarized-quad-GRAY8"},
+    { ic4::PixelFormat::PolarizedQuadMono16, "tis", "polarized-quad-GREY16"},
+    { ic4::PixelFormat::PolarizedQuadBG8, "tis", "polarized-quad-bggr8"},
+    { ic4::PixelFormat::PolarizedQuadBG16, "tis", "polarized-quad-bggr16"},
 }; // format_list
 
 
