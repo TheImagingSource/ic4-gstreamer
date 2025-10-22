@@ -451,7 +451,7 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
         //             b = 4;
         //         }
 
-        if (width_min == width_max)
+        if (!do_ranges)
         {
             add_fixed_res(width_min, height_min, 1);
         }
