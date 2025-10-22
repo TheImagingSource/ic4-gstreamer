@@ -250,7 +250,7 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
     assert(height_values.empty() == width_values.empty());
 
     bool do_ranges = true;
-    if (!width_values.empty())
+    if (!width_values.empty() || width_values.size() == 1)
     {
         do_ranges = false;
     }
