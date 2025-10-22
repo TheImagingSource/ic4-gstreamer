@@ -399,120 +399,46 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
 
         };
 
-        // helper function
-        // adding resolutions needs to be done multiple times for binning
-        auto add_fixed_res = [caps, struc_base] (int width,
-                                                 int height,
-                                                 int binning)
-        {
-            GstStructure* s = gst_structure_copy(struc_base);
-            GValue val_width = G_VALUE_INIT;
-            GValue val_height = G_VALUE_INIT;
 
-            g_value_init(&val_width, G_TYPE_INT);
-            g_value_set_int(&val_width, width);
-
-            g_value_init(&val_height, G_TYPE_INT);
-            g_value_set_int(&val_height, height);
-
-
-            gst_structure_take_value(s, "width", &val_width);
-            gst_structure_take_value(s, "height", &val_height);
-
-            // caps now owns s
-            gst_caps_append_structure(caps, s);
-
-        };
-        //
-        // binning
-        //
-
-        // for (const auto& binning : gst_binning_entries)
-        // {
-        //     // no binning is equal to 1x1
-        //     // in that case leave it at that
-        //     if (binning != "1x1")
-        //     {
-        //         GValue b = G_VALUE_INIT;
-        //         g_value_init(&b, G_TYPE_STRING);
-        //         g_value_set_string(&b, binning.c_str());
-        //         gst_structure_set_value(struc_base, "binning", &b);
-        //     }
-
-        //     if (do_ranges)
-        //     {
-        //         int b = 1;
-        //         if (binning == "2x2")
-        //         {
-        //             b = 2;
-        //         }
-        //         else if (binning == "4x4")
-        //         {
-        //             b = 4;
-        //         }
-
-        if (!do_ranges)
-        {
-            add_fixed_res(width_min, height_min, 1);
-        }
-        else
+        if (do_ranges)
         {
             add_res_range(width_min, width_max, width_step,
                           height_min, height_max, height_step,
                           1);
         }
-        //     }
-        //     else
-        //     {
-        //         // TODO: implement; requires v4l2 provider
-        //     }
-
-        // }
-
-        //
-        // end binning
-        //
-
-        if (do_ranges)
-        {
-
-            // g_value_init(&val_width, GST_TYPE_INT_RANGE);
-            // gst_value_set_int_range_step(&val_width, width_min, width_max, width_step);
-
-            // g_value_init(&val_height, GST_TYPE_INT_RANGE);
-            // ///g_value_init(&val_height, GST_TYPE_L);
-            // gst_value_set_int_range_step(&val_height, height_min, height_max, height_step);
-
-
-            // gst_structure_take_value(struc_base, "width", &val_width);
-            // gst_structure_take_value(struc_base, "height", &val_height);
-
-            // gst_caps_append_structure(caps, struc_base);
-        }
         else
         {
             // GST_INFO("Binning not correctly implemented and thus missing");
+            std::vector<image_size> res;
 
-            auto min_w = std::min_element(width_values.begin(), width_values.end());
-            auto max_w = std::max_element(width_values.begin(), width_values.end());
-            auto min_h = std::min_element(height_values.begin(), height_values.end());
-            auto max_h = std::max_element(height_values.begin(), height_values.end());
-
-            image_size min_size = { (int)*min_w, (int)*min_h };
-            image_size max_size = { (int)*max_w, (int)*max_h };
-            image_size step_size = { 1, 1 };
-            auto res = get_standard_resolutions(min_size, max_size, step_size);
-
-            if (std::find(res.begin(), res.end(), min_size) == res.end())
+            if (width_values.size() > 1)
             {
-                res.insert(res.begin(), min_size);
-            }
+                auto min_w = std::min_element(width_values.begin(), width_values.end());
+                auto max_w = std::max_element(width_values.begin(), width_values.end());
+                auto min_h = std::min_element(height_values.begin(), height_values.end());
+                auto max_h = std::max_element(height_values.begin(), height_values.end());
 
-            if (std::find(res.begin(), res.end(), max_size) == res.end())
+                image_size min_size = { (int)*min_w, (int)*min_h };
+                image_size max_size = { (int)*max_w, (int)*max_h };
+                image_size step_size = { 1, 1 };
+                res = get_standard_resolutions(min_size, max_size, step_size);
+
+                if (std::find(res.begin(), res.end(), min_size) == res.end())
+                {
+                    res.insert(res.begin(), min_size);
+                }
+
+                if (std::find(res.begin(), res.end(), max_size) == res.end())
+                {
+                    res.insert(res.begin(), max_size);
+                }
+            }
+            else
             {
-                res.insert(res.begin(), max_size);
+                image_size s = {(int)width_values.front(), (int)height_values.front()};
+                res.push_back(s);
             }
-
+            
             GValue val_width = G_VALUE_INIT;
             GValue val_height = G_VALUE_INIT;
             g_value_init(&val_width, GST_TYPE_LIST);
