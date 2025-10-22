@@ -399,6 +399,30 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
 
         };
 
+        // helper function
+        // adding resolutions needs to be done multiple times for binning
+        auto add_fixed_res = [caps, struc_base] (int width,
+                                                 int height,
+                                                 int binning)
+        {
+            GstStructure* s = gst_structure_copy(struc_base);
+            GValue val_width = G_VALUE_INIT;
+            GValue val_height = G_VALUE_INIT;
+
+            g_value_init(&val_width, G_TYPE_INT);
+            g_value_set_int(&val_width, width);
+
+            g_value_init(&val_height, G_TYPE_INT);
+            g_value_set_int(&val_height, height);
+
+
+            gst_structure_take_value(s, "width", &val_width);
+            gst_structure_take_value(s, "height", &val_height);
+
+            // caps now owns s
+            gst_caps_append_structure(caps, s);
+
+        };
         //
         // binning
         //
@@ -427,9 +451,16 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
         //             b = 4;
         //         }
 
-                add_res_range(width_min, width_max, width_step,
-                              height_min, height_max, height_step,
-                              1);
+        if (width_min == width_max)
+        {
+            add_fixed_res(width_min, height_min, 1);
+        }
+        else
+        {
+            add_res_range(width_min, width_max, width_step,
+                          height_min, height_max, height_step,
+                          1);
+        }
         //     }
         //     else
         //     {
