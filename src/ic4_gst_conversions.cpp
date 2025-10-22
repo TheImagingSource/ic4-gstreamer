@@ -250,7 +250,7 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
     assert(height_values.empty() == width_values.empty());
 
     bool do_ranges = true;
-    if (!width_values.empty() || width_values.size() == 1)
+    if (!width_values.empty())
     {
         do_ranges = false;
     }
@@ -456,8 +456,8 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
                 g_value_init(&h, G_TYPE_INT);
                 g_value_set_int(&h, r.height);
 
-                gst_structure_take_value(struc_base, "width", &w);
-                gst_structure_take_value(struc_base, "height", &h);
+                gst_structure_take_value(s2, "width", &w);
+                gst_structure_take_value(s2, "height", &h);
 
                 gst_caps_append_structure(caps, s2);
             }
