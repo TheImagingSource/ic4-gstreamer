@@ -84,7 +84,7 @@ if (IC4_ENABLE_TCAM_PROP)
   target_link_libraries(gstic4src
     PRIVATE
     ${TCAMPROP_LIBRARIES}
-    tcamprop1::provider_gobject)
+  )
 endif()
 
 set_project_warnings(gstic4src)
