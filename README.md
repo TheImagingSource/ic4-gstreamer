@@ -11,7 +11,7 @@ gst-launch-1.0 -v ic4src serial=40210174
 To activate conversion by ic4, add `device-format` to the caps.
 
 ```
-gst-launch-1.0 ic4src serial=28710095 ! video/x-raw,format=BGRx,device-format=GRAY8,width=1920,height=1080,framerate=30/1 !  videoconvert ! waylandsink sync=false 
+gst-launch-1.0 ic4src ident=28710095 ! video/x-raw,format=BGRx,device-format=GRAY8,width=1920,height=1080,framerate=30/1 !  videoconvert ! waylandsink sync=false 
 ```
 
 You will get BGRx. The camera is set to Mono8. 
@@ -21,7 +21,7 @@ The internal conversions of IC4 replaces the tcamdutils, which should not be nee
 Setting properties is done as follows:
 
 ```
-ic4src prop="ExposureAuto=Continuous GainAuto=Continuous"
+gst-launch-1.0 ic4src prop="ExposureAuto=Continuous GainAuto=Continuous" ! ....
 ```
 
 
