@@ -8,3 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - ??????
 
 Initial release
+
+- Contains gstreamer element 'ic4src'
+- Contains commandline tool 'ic4-gst-helper' meant to retrieve
+  information about camera information in a gstreamer context
