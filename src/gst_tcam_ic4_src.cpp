@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <memory>
 #include <atomic>
+#include <algorithm>
 #include <mutex>
 #include <condition_variable>
 
@@ -280,52 +281,101 @@ static gboolean gst_ic4_src_negotiate(GstBaseSrc* basesrc)
             {
                 // ensure that there is no range but a high resolution with adequate framerate
 
-                int best = 0;
-                int twidth = 0, theight = 0;
-                int width = G_MAXINT, height = G_MAXINT;
+                GstIC4Src* self = GST_IC4_SRC(basesrc);
+                self->device->open_device();
 
-                /* Walk the structure backwards to get the first entry of the
-                 * smallest resolution bigger (or equal to) the preferred resolution)
-                 */
-                for (guint i = 0; i >= gst_caps_get_size(icaps); i++)
-                {
-                    GstStructure* is = gst_caps_get_structure(icaps, i);
-                    int w, h;
+                auto props = self->device->grabber->devicePropertyMap();
 
-                    if (gst_structure_get_int(is, "width", &w)
-                        && gst_structure_get_int(is, "height", &h))
-                    {
-                        if (w >= twidth && w <= width && h >= theight && h <= height)
-                        {
-                            width = w;
-                            height = h;
-                            best = i;
-                        }
-                    }
-                }
+                auto p_width = props.findInteger("Width");
+                auto p_height = props.findInteger("Height");
 
-                /* caps = icaps; */
-                caps = gst_caps_copy_nth(icaps, best);
+                caps = gst_caps_copy_nth(icaps, 0);
+                //GST_ERROR("!!!!! %s ", gst_caps_to_string(caps));
+                GstStructure* structure = gst_caps_get_structure(caps, 0);
 
-                GstStructure* structure;
-                double frame_rate = G_MAXINT;
-
-                structure = gst_caps_get_structure(caps, 0);
+                // these properties behave as follows
+                // - if it is not defined by the user, leave it at the current
+                //   camera setting
+                // - if it is defined but not fixed we have a range,
+                //   check if current setting is within that range, if not, change it
 
                 if (gst_structure_has_field(structure, "width"))
                 {
-                    gst_structure_fixate_field_nearest_int(structure, "width", G_MAXUINT);
+                    auto width_val = gst_structure_get_value(structure, "width");
+                    if (!gst_value_is_fixed(width_val)) {
+
+                        auto val_min = gst_value_get_int_range_min(width_val);
+                        auto val_max = gst_value_get_int_range_max(width_val);
+
+                        auto current = p_width.getValue();
+                        auto new_val = std::clamp(current, (long)val_min, (long)val_max);
+                        if (new_val != current)
+                        {
+                            p_width.setValue(new_val);
+                        }
+                        gst_structure_fixate_field_nearest_int(structure, "width",
+                                                               p_width.getValue());
+                    }
                 }
                 if (gst_structure_has_field(structure, "height"))
                 {
-                    gst_structure_fixate_field_nearest_int(structure, "height", G_MAXUINT);
+                    auto height_val = gst_structure_get_value(structure, "height");
+                    if (!gst_value_is_fixed(height_val))
+                    {
+                        auto val_min = gst_value_get_int_range_min(height_val);
+                        auto val_max = gst_value_get_int_range_max(height_val);
+
+                        auto current = p_height.getValue();
+                        auto new_val = std::clamp(current, (long)val_min, (long)val_max);
+                        if (new_val != current)
+                        {
+                            p_height.setValue(new_val);
+                        }
+
+                        gst_structure_fixate_field_nearest_int(structure, "height",
+                                                               p_height.getValue());
+                    }
                 }
                 if (gst_structure_has_field(structure, "framerate"))
                 {
-                    gst_structure_fixate_field_nearest_fraction(
-                        structure, "framerate", frame_rate, 1);
+                    auto fps_val = gst_structure_get_value(structure, "framerate");
+                    if (!gst_value_is_fixed(fps_val))
+                    {
+
+                        auto p_fps = props.findFloat("AcquisitionFrameRate");
+
+                        auto val_min = gst_value_get_fraction_range_min(fps_val);
+                        auto val_max = gst_value_get_fraction_range_max(fps_val);
+
+                        auto min_num = gst_value_get_fraction_numerator(val_min);
+                        auto min_den = gst_value_get_fraction_denominator(val_min);
+
+                        auto max_num = gst_value_get_fraction_numerator(val_max);
+                        auto max_den = gst_value_get_fraction_denominator(val_max);
+
+                        double min = min_num / min_den;
+                        double max = max_num / max_den;
+
+                        auto current = p_fps.getValue();
+
+                        auto new_val = std::clamp(current, min, max);
+
+                        if (new_val != current)
+                        {
+                            p_fps.setValue(new_val);
+                        }
+
+                        auto val = p_fps.getValue();
+                        int fps_num;
+                        int fps_den;
+                        gst_util_double_to_fraction(val, &fps_num, &fps_den);
+
+                        gst_structure_fixate_field_nearest_fraction(structure, "framerate",
+                                                                    fps_num, fps_den);
+                    }
                 }
                 gst_caps_unref(icaps);
+
             }
         }
         gst_caps_unref(tmp);
@@ -351,7 +401,7 @@ static gboolean gst_ic4_src_negotiate(GstBaseSrc* basesrc)
         if (!gst_caps_is_empty(caps))
         {
             caps = gst_ic4_src_fixate_caps(basesrc, caps);
-            //GST_DEBUG_OBJECT(self, "fixated to: %" GST_PTR_FORMAT, static_cast<void*>(caps));
+            GST_DEBUG("fixated to: %" GST_PTR_FORMAT, static_cast<void*>(caps));
 
             if (gst_caps_is_any(caps))
             {
@@ -379,7 +429,7 @@ static GstCaps* gst_ic4_src_get_caps (GstBaseSrc* src,
     auto caps = self->device->get_caps();
 
     // GST_DEBUG("Returning device caps: %s", gst_caps_to_string(caps));
-  
+
     return caps;
 }
 
@@ -414,7 +464,7 @@ static gboolean gst_ic4_src_set_caps(GstBaseSrc* src, GstCaps* caps)
         GST_ERROR("Given gst caps can not be associated with ic4 format descriptions!");
         return FALSE;
     }
-    
+
     p.setValue("Width", width);
     p.setValue("Height", height);
     p.setValue("AcquisitionFrameRate", fps);
@@ -476,7 +526,7 @@ static gboolean gst_ic4_src_set_caps(GstBaseSrc* src, GstCaps* caps)
         //
         // iterate over device formats to ensure
         // the given caps::device-format is valid
-        // 
+        //
         auto p_fmt = p.findEnumeration("PixelFormat");
 
         bool is_valid = false;
