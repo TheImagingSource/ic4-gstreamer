@@ -46,12 +46,12 @@ The device MUST have the following properties:
 
 ## Build Requirements
 
-- ic4
-- vcpkg
-- gstreamer-1.0
 - g++/clang
-- sphinx
-- tcam-properties
+- cmake                 >= 3.16
+- vcpkg                 (VCPKG_ROOT set)
+- ic4                   >= 1.4.0
+- gstreamer-1.0         libgstreamer1.0-dev
+- tcam-properties       tiscamera_1.1.1 + tiscamera-dev_1.1.1
 
 ## Building
 

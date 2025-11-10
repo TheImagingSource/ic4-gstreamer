@@ -4,20 +4,11 @@
 cmake_minimum_required(VERSION 3.16)
 
 #Name your project here
-project(ic4-gstreamer LANGUAGES CXX)
+project(ic4-gstreamer VERSION 1.0.0 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-# include(version.cmake)
-set(IC4SRC_VERSION_MAJOR 1)
-set(IC4SRC_VERSION_MINOR 0)
-set(IC4SRC_VERSION_PATCH 0)
-set(IC4SRC_VERSION_MODIFIER "")
-
-set(IC4SRC_VERSION "${IC4SRC_VERSION_MAJOR}.${IC4SRC_VERSION_MINOR}.${IC4SRC_VERSION_PATCH}${IC4SRC_VERSION_MODIFIER}" CACHE STRING "Version number")
-
-
-set(IC4SRC_ORIGIN "https://theimagingsource.com")
+set(IC4SRC_VERSION "${PROJECT_VERSION}")
 
 option(IC4_ENABLE_TESTS "Enable unit/integration tests" OFF)
 option(IC4_ENABLE_TCAM_PROP  "Compile ic4src with tcam-property interface." ON)
@@ -53,8 +44,6 @@ else()
 endif()
 
 ### end paths
-
-include( StandardProjectSettings )
 
 include("cmake/CompilerWarnings.cmake")
 include("cmake/git-helper.cmake")
@@ -115,13 +104,6 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/doc/ic4-gst-helper.md
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE
   DESTINATION "${IC4SRC_INSTALL_LICENCE_DIR}")
 
-find_package(ic4 REQUIRED)
-
-set(ic4_INCLUDE_PATH "${IC4_INCLUDE_PATH}")
-set(ic4_LIBRARY_PATH "")
-set(ic4_LIBRARIES "${IC4_LIBRARIES}")
-
-
 add_subdirectory(libs)
 add_subdirectory(src)
 
@@ -172,15 +154,9 @@ set(CPACK_PACKAGE_CHECKSUM "SHA512")
 set(CPACK_SET_DESTDIR "ON")
 set(CPACK_GENERATOR "DEB")
 
-set(CPACK_PACKAGE_VERSION_MAJOR "${IC4SRC_VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR "${IC4SRC_VERSION_MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH "${IC4SRC_VERSION_PATCH}")
-
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgstreamer1.0-0 (>= 1.8.0), tiscamera-tcamproperty (>= 1.1.0), ic4 (>= 1.4.0), libc6 (>=2.27)")
 
-git_commit_count(GIT_COMMIT_COUNT)
-
-set(CPACK_DEBIAN_PACKAGE_VERSION "${IC4SRC_VERSION}.${GIT_COMMIT_COUNT}")
+set(CPACK_DEBIAN_PACKAGE_VERSION "${IC4SRC_VERSION_FULL}")
 set(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
 
 set(CPACK_DEBIAN_BIN_PACKAGE_PRIORITY "optional")
@@ -188,7 +164,7 @@ set(CPACK_DEBIAN_DEBUGINFO_PACKAGE "ON")
 
 include(package-name)
 
-create_package_name(CPACK_DEBIAN_FILE_NAME "ic4-gstreamer" "${IC4SRC_VERSION}")
+create_package_name(CPACK_DEBIAN_FILE_NAME "ic4-gstreamer" "${PROJECT_VERSION}")
 set(CPACK_DEBIAN_FILE_NAME "${CPACK_DEBIAN_FILE_NAME}.deb")
 
 # always last

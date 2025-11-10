@@ -1,4 +1,5 @@
 
+find_package(ic4 1.4.0 REQUIRED)
 
 add_subdirectory(ic4-gstreamer-helper)
 
