@@ -59,6 +59,7 @@ enum {
 enum {
     PROP_0,
     PROP_IDENT,
+    PROP_SERIAL,
     PROP_DEVICE_TYPE,
     PROP_DEVICE_PROP,
 };
@@ -860,6 +861,29 @@ static void gst_ic4_src_set_property(GObject* object,
             }
             break;
         }
+        case PROP_SERIAL:
+        {
+            if (!is_state_null(self))
+            {
+                GST_ERROR_OBJECT(self, "GObject property 'serial' is not writable "
+                                 "in state >= GST_STATE_READY.");
+                return;
+            }
+            if (g_value_get_string(value) == nullptr)
+            {
+                self->device->set_ident(std::string{});
+            }
+            else
+            {
+                std::string string_value = g_value_get_string(value);
+
+                if (!self->device->set_ident(string_value))
+                {
+                    GST_ERROR("Unable to open device");
+                }
+            }
+            break;
+        }
         case PROP_DEVICE_PROP:
         {
             std::string string_value = g_value_get_string(value);
@@ -883,6 +907,11 @@ static void gst_ic4_src_get_property(GObject* object,
     switch (prop_id)
     {
         case PROP_IDENT:
+        {
+            g_value_set_string(value, self->device->get_ident().c_str());
+            break;
+        }
+        case PROP_SERIAL:
         {
             g_value_set_string(value, self->device->get_ident().c_str());
             break;
@@ -938,6 +967,13 @@ static void gst_ic4_src_class_init(GstIC4SrcClass *klass)
     g_object_class_install_property(
         gobject_class, PROP_IDENT,
         g_param_spec_string("ident", "Camera identifier", "Identifier of the camera",
+                            NULL,
+                            static_cast<GParamFlags>(G_PARAM_READWRITE |
+                                                     G_PARAM_STATIC_STRINGS)));
+
+    g_object_class_install_property(
+        gobject_class, PROP_IDENT,
+        g_param_spec_string("serial", "Camera serial", "Legacy identifier of the camera, use ident when possible.",
                             NULL,
                             static_cast<GParamFlags>(G_PARAM_READWRITE |
                                                      G_PARAM_STATIC_STRINGS)));
