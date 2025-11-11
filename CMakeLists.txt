@@ -154,7 +154,7 @@ set(CPACK_PACKAGE_CHECKSUM "SHA512")
 set(CPACK_SET_DESTDIR "ON")
 set(CPACK_GENERATOR "DEB")
 
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgstreamer1.0-0 (>= 1.8.0), tiscamera-tcamproperty (>= 1.1.0), ic4 (>= 1.4.0), libc6 (>=2.27)")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgstreamer1.0-0 (>= 1.8.0), tiscamera-tcamproperty (>= 1.1.0), ic4 (>= 1.4.0), libc6 (>=2.35)")
 
 set(CPACK_DEBIAN_PACKAGE_VERSION "${IC4SRC_VERSION_FULL}")
 set(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
