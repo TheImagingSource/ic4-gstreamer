@@ -241,9 +241,16 @@ struct TcamPropertyInteger : TcamPropertyBase<tcamprop1::property_interface_inte
 
         tcamprop1::prop_range_integer ret = {};
 
+        ic4::Error err;
+
         ret.min = tmp.minimum();
         ret.max = tmp.maximum();
-        ret.stp = tmp.increment();
+        ret.stp = tmp.increment(err);
+
+        if (err.isError())
+        {
+            ret.stp = 1;
+        }
 
         return ret;
     }
@@ -358,9 +365,15 @@ struct TcamPropertyFloat : TcamPropertyBase<tcamprop1::property_interface_float>
 
         tcamprop1::prop_range_float ret = {};
 
+        ic4::Error err;
+
         ret.min = tmp.minimum();
         ret.max = tmp.maximum();
-        ret.stp = tmp.increment();
+        ret.stp = tmp.increment(err);
+        if (err.isError())
+        {
+            ret.stp = 0.01;
+        }
 
         return ret;
     }
