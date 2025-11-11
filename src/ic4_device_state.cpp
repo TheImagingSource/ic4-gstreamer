@@ -100,6 +100,10 @@ void ic4_device_state::populate_tcamprop_interface()
 
 bool ic4_device_state::open_device()
 {
+    if (grabber)
+    {
+        return true;
+    }
 
     grabber = std::make_shared<ic4::Grabber>();
 
