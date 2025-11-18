@@ -182,6 +182,7 @@ static GstCaps* gst_ic4_src_fixate_caps(GstBaseSrc* bsrc, GstCaps* caps)
 
 static gboolean gst_ic4_src_negotiate(GstBaseSrc* basesrc)
 {
+    GstIC4Src* self = (GstIC4Src*) basesrc;
     /* first see what is possible on our source pad */
     GstCaps* src_caps = gst_pad_query_caps(GST_BASE_SRC_PAD(basesrc), NULL);
 
@@ -232,7 +233,40 @@ static gboolean gst_ic4_src_negotiate(GstBaseSrc* basesrc)
 
             GST_DEBUG("peer: %" GST_PTR_FORMAT, static_cast<void*>(ipcaps));
 
-            //icaps = gst_caps_intersect(src_caps, ipcaps);
+            GstStructure* struc =  gst_caps_get_structure(ipcaps, 0);
+
+            if (gst_structure_get_field_type(struc, "width") == GST_TYPE_INT_RANGE)
+            {
+
+                auto p = self->device->grabber->devicePropertyMap();
+
+                auto val = p.getValueInt64(ic4::PropId::Width);
+
+                GST_DEBUG("Fixating width to camera value %d", val);
+                //gst_caps_fix
+                gst_structure_fixate_field_nearest_int(struc, "width", val);
+            }
+            if (gst_structure_get_field_type(struc, "height") == GST_TYPE_INT_RANGE)
+            {
+                auto p = self->device->grabber->devicePropertyMap();
+
+                auto val = p.getValueInt64(ic4::PropId::Height);
+                GST_DEBUG("Fixating height to camera value %d", val);
+                //gst_caps_fix
+                gst_structure_fixate_field_nearest_int(struc, "height", val);
+            }
+            if (gst_structure_get_field_type(struc, "framerate") == GST_TYPE_INT_RANGE)
+            {
+                auto p = self->device->grabber->devicePropertyMap();
+
+                auto val = p.getValueDouble(ic4::PropId::AcquisitionFrameRate);
+                GST_DEBUG("Fixating fps to camera value %f", val);
+                int num = 0;
+                int den = 0;
+                gst_util_double_to_fraction(val, &num, &den);
+                gst_structure_fixate_field_nearest_fraction(struc, "framerate", num, den);
+            }
+
             icaps = gst_caps_intersect_full(src_caps, ipcaps, GST_CAPS_INTERSECT_FIRST);
             gst_caps_unref(ipcaps);
 

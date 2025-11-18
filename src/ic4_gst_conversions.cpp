@@ -148,7 +148,7 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
     int64_t height_max;
     int64_t height_step;
 
-    int64_t height_current_value = p_width.getValue();
+    int64_t height_current_value = p_height.getValue();
 
     std::vector<int64_t> height_values;
 
