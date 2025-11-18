@@ -127,6 +127,9 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
     int64_t width_min;
     int64_t width_max;
     int64_t width_step;
+
+    int64_t width_current_value = p_width.getValue();
+
     std::vector<int64_t> width_values;
 
     if (p_width.incrementMode() == ic4::PropIncrementMode::Increment)
@@ -144,6 +147,9 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
     int64_t height_min;
     int64_t height_max;
     int64_t height_step;
+
+    int64_t height_current_value = p_width.getValue();
+
     std::vector<int64_t> height_values;
 
     if (p_height.incrementMode() == ic4::PropIncrementMode::Increment)
@@ -156,6 +162,41 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
     {
         height_values = p_height.validValueSet();
     }
+
+    auto set_min_resolution = [&] ()
+    {
+        if (height_values.empty())
+        {
+            p_width.setValue(width_min);
+            p_height.setValue(height_min);
+        }
+        else
+        {
+            p_width.setValue(*std::min_element(width_values.begin(), width_values.end()));
+            p_height.setValue(*std::min_element(height_values.begin(), height_values.end()));
+        }
+    };
+
+    auto set_max_resolution = [&] ()
+    {
+        if (height_values.empty())
+        {
+            p_width.setValue(width_max);
+            p_height.setValue(height_max);
+        }
+        else
+        {
+            p_width.setValue(*std::max_element(width_values.begin(), width_values.end()));
+            p_height.setValue(*std::max_element(height_values.begin(), height_values.end()));
+        }
+    };
+
+    auto reset_resolution = [&] ()
+    {
+        p_width.setValue(width_current_value);
+        p_height.setValue(height_current_value);
+    };
+
 
     auto p_fps = props.findFloat("AcquisitionFrameRate");
 
@@ -172,17 +213,41 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
     if (p_fps.incrementMode() != ic4::PropIncrementMode::ValueSet)
     {
 
+        set_max_resolution();
+
         double fps_min;
         fps_min = p_fps.minimum();
 
+        set_min_resolution();
+
         double fps_max;
         fps_max = p_fps.maximum();
+
         gst_util_double_to_fraction(fps_min, &fps_min_num, &fps_min_den);
         gst_util_double_to_fraction(fps_max, &fps_max_num, &fps_max_den);
     }
     else
     {
-        fps_values = p_fps.validValueSet();
+        set_min_resolution();
+        auto fps_values_min = p_fps.validValueSet();
+        set_max_resolution();
+        auto fps_values_max = p_fps.validValueSet();
+
+        auto add_if = [] (std::vector<double>& vector_to_add,
+                          const std::vector<double>& vector_from)
+        {
+            for (const auto& v : vector_from)
+            {
+                if (std::find(vector_to_add.begin(), 
+                              vector_to_add.end(), v) == vector_to_add.end())
+                {
+                    vector_to_add.push_back(v);
+                }
+            };
+        };
+
+        add_if(fps_values, fps_values_min);
+        add_if(fps_values, fps_values_max);
 
         g_value_init(&fps, GST_TYPE_LIST);
         for (const auto& val : fps_values)
@@ -200,6 +265,8 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
 
         }
     }
+
+    reset_resolution();
 
     // if (has_binning)
     // {
