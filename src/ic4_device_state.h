@@ -154,7 +154,7 @@ struct sink_listener : public ic4::QueueSinkListener
         (void)frameType;
 
         GST_INFO("sinkConnected");
-        state->sink->allocAndQueueBuffers(20);
+        state->sink->allocAndQueueBuffers(10);
         return true;
     }
 
