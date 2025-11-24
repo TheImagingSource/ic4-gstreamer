@@ -157,6 +157,14 @@ GstCaps* ic4::gst::create_caps(ic4::PropertyMap& props)
         height_min = p_height.minimum();
         height_max = p_height.maximum();
         height_step = p_height.increment();
+
+        // fix for 23G cameras, can give weird settings like step=4 max=602
+        auto mod = height_max % height_step;
+        if (mod != 0)
+        {
+            height_max -= mod;
+        }
+
     }
     else
     {
